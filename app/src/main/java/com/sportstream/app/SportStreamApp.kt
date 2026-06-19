@@ -6,6 +6,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.google.firebase.messaging.FirebaseMessaging
 import com.sportstream.app.data.local.LocalModule
 import com.sportstream.app.data.remote.NetworkModule
+import com.sportstream.app.data.repository.RepositoryModule
 import io.sentry.android.core.SentryAndroid
 
 /**
@@ -30,6 +31,11 @@ class SportStreamApp : Application() {
     lateinit var local: LocalModule
         private set
 
+    /** Repository-side DI seam. Lazy: built on first touch from the
+     *  already-resolved network + local data sources. */
+    lateinit var repository: RepositoryModule
+        private set
+
     override fun onCreate() {
         super.onCreate()
 
@@ -43,9 +49,13 @@ class SportStreamApp : Application() {
         //    isAutoInitEnabled ensures FCM starts token registration on app launch.
         FirebaseMessaging.getInstance().isAutoInitEnabled = true
 
-        // 3. DI seams  both lazy, so they're cheap on cold start.
+        // 3. DI seams  all 3 lazy, so they're cheap on cold start.
         network = NetworkModule(this)
         local = LocalModule(this)
+        repository = RepositoryModule(
+            remoteDataSource = network.remoteDataSource,
+            localDataSource = local.localDataSource
+        )
     }
 
     companion object {
