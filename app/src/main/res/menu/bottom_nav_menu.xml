@@ -21,7 +21,7 @@
 
     <item
         android:id="@+id/favoritesFragment"
-        android:icon="@android:drawable/btn_star_big_on"
+        android:icon="@android:drawable/star_on"
         android:title="@string/main_nav_favorites" />
 
     <item

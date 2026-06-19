@@ -12,6 +12,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.sportstream.app.R
 import com.sportstream.app.SportStreamApp
 import com.sportstream.app.databinding.ActivityMainBinding
+import com.sportstream.app.ui.common.UiState
 import com.sportstream.app.ui.viewmodels.MainViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -77,8 +78,14 @@ class MainActivity : AppCompatActivity() {
         // in viewModelScope, catches Throwable (maps to UiState.Error), and
         // **re-throws CancellationException** so structured concurrency
         // survives Activity destroy. One call here triggers the full
-        // boot-population of `mainVm.state`.
-        mainVm.load()
+        // boot-population of `mainVm.state`. The Idle guard skips redundant
+        // network fetches on Activity recreation (rotation, theme change) —
+        // the VM is **activity-scoped** (not application-scoped), so each
+        // recreate rebuilds the VM. Once the state has moved past
+        // Idle → Loading → Success/Error we don't refetch on recreate.
+        if (mainVm.state.value is UiState.Idle) {
+            mainVm.load()
+        }
 
         // Observe state for the STARTED window. Currently a no-op sink — Step 3.x
         // will attach a Snackbar handler on UiState.Error and a global loader
