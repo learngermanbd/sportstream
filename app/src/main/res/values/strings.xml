@@ -47,6 +47,14 @@
     <string name="fragment_categories_chip_all">All</string>
     <string name="fragment_categories_empty">No channels in this category</string>
 
+    <!-- Highlights tab (Step 3.5) — section header + empty-state copy. -->
+    <string name="fragment_highlights_header">HIGHLIGHTS</string>
+    <string name="fragment_highlights_empty">No highlights yet</string>
+
+    <!-- view_item_highlight.xml row content (Step 3.5). -->
+    <string name="view_item_highlight_default_title">Highlight</string>
+    <string name="view_item_highlight_default_duration">00:00</string>
+
     <!-- Nav graph label for the Categories destination (used by toolbars, action labels). -->
     <string name="main_nav_categories">CATEGORIES</string>
 

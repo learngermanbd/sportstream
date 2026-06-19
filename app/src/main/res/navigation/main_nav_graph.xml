@@ -39,4 +39,20 @@
         android:label="@string/main_nav_settings"
         tools:layout="@layout/fragment_settings" />
 
+    <!--
+        Phase 3 · Step 3.5 — Highlights destination.
+
+        Not in bottom_nav_menu.xml (BottomNav is reserved for the 4
+        always-visible tabs Home / Categories / Favorites / Settings).
+        Reachable from the Step 5.5 Drawer menu (drawer item "Highlights"
+        -> navController.navigate(R.id.highlightsFragment)) and from any
+        future PlayerActivity intent that wants to surface related
+        highlights as a sub-list.
+    -->
+    <fragment
+        android:id="@+id/highlightsFragment"
+        android:name="com.sportstream.app.ui.fragments.HighlightsFragment"
+        android:label="@string/fragment_highlights_header"
+        tools:layout="@layout/fragment_highlights" />
+
 </navigation>
