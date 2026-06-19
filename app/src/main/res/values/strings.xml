@@ -129,4 +129,8 @@
     <string name="player_gesture_brightness_label">Brightness</string>
     <string name="player_gesture_volume_label">Volume</string>
     <string name="player_gesture_seek_label">Seek</string>
+    <string name="player_lock_short">Lock</string>
+    <string name="player_unlock_short">Unlock</string>
+    <string name="player_lock_desc">Lock player controls</string>
+    <string name="player_unlock_desc">Unlock player controls</string>
 </resources>

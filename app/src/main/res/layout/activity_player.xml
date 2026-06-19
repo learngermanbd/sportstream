@@ -48,6 +48,25 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Step 4.4 polish: lock dim overlay. visibility=gone by default. Toggled VISIBLE
+         by PlayerActivity.applyLockedState() while isLocked=true so the user sees
+         "slightly dimmed" video per the strict-plan spec (still bright enough for
+         subtitles). Sits BETWEEN playerView and the control chrome so it dims the
+         video while the unlock button (topBar) remains fully visible. -->
+    <View
+        android:id="@+id/lockDimOverlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/lock_dim"
+        android:clickable="false"
+        android:focusable="false"
+        android:importantForAccessibility="no"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <!--
         Top bar \u2014 back, title (marquee-ready TextView with marqueeRepeatLimit),
         lock, PiP, resize, settings. Anchored to top of parent.

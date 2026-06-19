@@ -17,6 +17,11 @@
     <!-- Glass red fill: error card bg at ~8% alpha (0x14 = 20/255) -->
     <color name="glass_red">#14EF4444</color>
 
+    <!-- Step 4.4 polish: 40% black overlay applied via lockDimOverlay when isLocked=true.
+         "Slightly dim the screen" per the strict plan; deliberately translucent so
+         subtitles @default 100% white remain readable over the dimmed video. -->
+    <color name="lock_dim">#66000000</color>
+
     <!-- Semantic accents -->
     <color name="live_red">#EF4444</color>
     <color name="success_green">#22C55E</color>

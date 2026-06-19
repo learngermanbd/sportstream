@@ -672,18 +672,37 @@ class PlayerActivity : AppCompatActivity() {
         applyLockedState()
     }
 
+    /**
+     * Step 4.4 polish — when `isLocked=true`:
+     *   - Keep topBar VISIBLE (the lock / unlock button lives in topBar; otherwise
+     *     the user has no escape hatch from the locked state).
+     *   - Hide bottomBar, centerControls, linksBar (rest of the chrome).
+     *   - Show lockDimOverlay (40% black) so the video is "slightly dimmed".
+     *   - Update the lock button icon + content-description for a11y.
+     *   - The back button is already swallowed in onBackPressed per Step 4.2.
+     */
     private fun applyLockedState() {
-        val visibility = if (isLocked) View.GONE else View.VISIBLE
-        binding.topBar.visibility = visibility
-        binding.bottomBar.visibility = visibility
-        binding.centerControls.visibility = visibility
-        binding.linksBar.visibility = visibility
-        binding.btnLock.setIconResource(
-            if (isLocked) android.R.drawable.ic_lock_lock
-            else android.R.drawable.ic_lock_idle_lock
-        )
-        binding.btnLock.contentDescription =
-            if (isLocked) getString(R.string.player_top_lock) else getString(R.string.player_top_lock_unlocked)
+        val bottom = binding.bottomBar
+        val center = binding.centerControls
+        val links = binding.linksBar
+        val dim = binding.lockDimOverlay
+        if (isLocked) {
+            bottom.visibility = View.GONE
+            center.visibility = View.GONE
+            links.visibility = View.GONE
+            dim.visibility = View.VISIBLE
+            binding.btnLock.setIconResource(android.R.drawable.ic_lock_idle_lock)
+            binding.btnLock.contentDescription = getString(R.string.player_unlock_desc)
+            binding.btnLock.text = getString(R.string.player_unlock_short)
+        } else {
+            bottom.visibility = View.VISIBLE
+            center.visibility = View.VISIBLE
+            links.visibility = View.VISIBLE
+            dim.visibility = View.GONE
+            binding.btnLock.setIconResource(android.R.drawable.ic_lock_lock)
+            binding.btnLock.contentDescription = getString(R.string.player_lock_desc)
+            binding.btnLock.text = getString(R.string.player_lock_short)
+        }
     }
 
     // PlayerView extends androidx.media3.ui.AspectRatioFrameLayout, which
