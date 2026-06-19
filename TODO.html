@@ -587,16 +587,16 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p><strong>Next:</strong> Step 2.6 — Architecture review (Thinker, MAX).</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
-                <span class="step-num purple">STEP 2.6</span>
-                <span class="agent think">Thinker</span>
+                <span class="step-num green">STEP 2.6</span>
+                <span class="agent think">Buff (manual review — thinker couldn't reach files)</span>
                 <span class="meta-chip max-mode">MAX</span>
-                <span class="meta-chip premium-yes">💎 Premium</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Architecture review</h4>
-            <p>Done when: clean review + all fixes applied. Reviews data flow API→Repo→VM→UI, coroutine scopes, Room TypeConverters, StateFlow patterns; applies anti-pattern fixes.</p>
+            <p>Done when: ✓ Read 5 structural files (RemoteDataSource / LocalDataSource / StateViewModel / MainViewModel / Converters) covering the full API→Repo→VM→UI chain. ✓ 10-point audit complete: CancellationException discipline, Dispatchers.IO placement, StateFlow correctness, TypeConverter round-tripping, Repository thinness, DI seam ordering, dead code/@Suppress abuse, N+1 query risk, ApiResult mapping, Room migration posture. ✓ <strong>1 SHOULD-FIX applied:</strong> <code>RemoteDataSource.fetchAndParse</code> used <code>catch (e: Throwable)</code> without a preceding <code>catch (e: CancellationException) { throw e }</code> — the blanket Throwable catch silently swallowed structured-concurrency cancels. Added the explicit rethrow + <code>import kotlinx.coroutines.CancellationException</code>. ✓ No ship-blockers found. ✓ LocalDataSource.write ops, StateViewModel.launch, MainViewModel sequential fetches, Converters round-tripping, DI order in SportStreamApp all passed the audit. ✓ <code>./gradlew :app:compileDebugKotlin --no-daemon</code> BUILD SUCCESSFUL via the one-basher workflow.</p>
+            <p><strong>Next:</strong> Step 2.7 — Build verification (<code>./gradlew assembleDebug</code>).</p>
         </div>
 
         <div class="step todo">

@@ -5,6 +5,7 @@ import com.sportstream.app.data.models.Channel
 import com.sportstream.app.data.models.Event
 import com.sportstream.app.data.models.Highlight
 import com.sportstream.app.data.models.Playlist
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -76,6 +77,8 @@ class RemoteDataSource(
             ApiResult.Success(parse(fetch()))
         } catch (e: ApiHttpException) {
             ApiResult.Failure(e, "Server returned HTTP ${e.code}")
+        } catch (e: CancellationException) {
+            throw e // structured concurrency — never swallow
         } catch (e: Throwable) {
             ApiResult.Failure(e, e.message ?: e.javaClass.simpleName)
         }
