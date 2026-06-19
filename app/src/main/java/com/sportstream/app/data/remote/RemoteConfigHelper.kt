@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.sportstream.app.SportStreamApp.Companion.remoteConfigDataStore
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -74,6 +75,8 @@ object RemoteConfigHelper {
         } catch (e: IOException) {
             // Network failure: prefer cache over hard defaults.
             returnCacheOrDefaults(context, cached)
+        } catch (e: CancellationException) {
+            throw e // structured concurrency — never swallow
         } catch (e: Exception) {
             // Parsing failure: same fallback.
             returnCacheOrDefaults(context, cached)
