@@ -88,6 +88,15 @@ class HighlightAdapter(
                 .centerCrop()
                 .into(binding.thumbnail)
 
+            // Per-row contentDescription for TalkBack (overrides the
+            // layout's static `Highlight` which would otherwise read
+            // identically for every thumbnail + overlay pair).
+            val title = highlight.title.ifBlank {
+                ctx.getString(R.string.view_item_highlight_default_title)
+            }
+            binding.thumbnail.contentDescription = title
+            binding.playOverlay.contentDescription = "Play $title"
+
             // Duration pill — format as mm:ss (or H:mm:ss when >= 1 h).
             binding.duration.text = formatDuration(highlight.duration)
 

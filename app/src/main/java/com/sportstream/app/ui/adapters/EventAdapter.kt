@@ -111,6 +111,16 @@ class EventAdapter(
                 .circleCrop()
                 .into(binding.teamBLogo)
 
+            // Per-row contentDescription for TalkBack — the layout's
+            // static `Team A logo` / `Team B logo` would otherwise read
+            // identically for every row. Fall back to the TBD sentinel
+            // when the API sends an empty team name (matches the
+            // teamAName / teamBName fall-back below).
+            binding.teamALogo.contentDescription =
+                event.teamA.name.ifBlank { ctx.getString(R.string.view_item_match_default_team) }
+            binding.teamBLogo.contentDescription =
+                event.teamB.name.ifBlank { ctx.getString(R.string.view_item_match_default_team) }
+
             // LIVE badge — visible iff isLive, and start the pulse
             // animation on first bind of a LIVE row. Stable IDs keep the
             // ViewHolder across rebinds so the animation is NOT restarted

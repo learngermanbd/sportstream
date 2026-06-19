@@ -87,6 +87,12 @@ class CategoryAdapter(
                 .circleCrop()
                 .into(binding.channelLogo)
 
+            // Per-row contentDescription for TalkBack (overrides the
+            // layout's static `Channel logo` which would otherwise read
+            // identically for every category card).
+            binding.channelLogo.contentDescription =
+                channel.name.ifBlank { ctx.getString(R.string.view_item_channel_default_name) }
+
             // LIVE dot \u2014 only shown when channel.isActive is true.
             // Channel.isActive mirrors the backend's per-channel toggle,
             // so a freshly-tagged "currently broadcasting" channel lights
