@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SportStream — Master Build Todo</title>
+    <style>
+        :root {
+            --primary: #1CCBD4;
+            --primary-dark: #17a8b0;
+            --secondary: #131931;
+            --bg: #0a0f1a;
+            --bg-card: #121a27;
+            --text: #e0e6ed;
+            --text-muted: #8899aa;
+            --border: #1e2d45;
+            --green: #22c55e;
+            --orange: #f59e0b;
+            --red: #ef4444;
+            --purple: #a78bfa;
+            --pink: #ec4899;
+            --blue: #3b82f6;
+            --glass: rgba(28,203,212,0.08);
+            --glass-border: rgba(28,203,212,0.15);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg); color: var(--text); line-height: 1.7;
+        }
+        body::before {
+            content:''; position:fixed; top:-50%; left:-50%; width:200%; height:200%;
+            background: radial-gradient(ellipse at 20% 30%, rgba(28,203,212,0.04) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 70%, rgba(167,139,250,0.03) 0%, transparent 50%);
+            z-index:-1; animation: bgShift 25s ease-in-out infinite alternate;
+        }
+        @keyframes bgShift { 0%{transform:translate(0,0)} 100%{transform:translate(-3%,-3%)} }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+        .container { max-width:1200px; margin:0 auto; padding:0 24px; }
+
+        /* Hero */
+        .hero { text-align:center; padding:60px 20px 50px; position:relative; }
+        .hero::after {
+            content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+            width:80%; max-width:600px; height:1px;
+            background:linear-gradient(90deg,transparent,var(--primary),transparent);
+        }
+        .hero-badge {
+            display:inline-block; background:var(--glass); border:1px solid var(--glass-border);
+            padding:6px 18px; border-radius:50px; font-size:13px; color:var(--primary);
+            letter-spacing:1px; text-transform:uppercase; margin-bottom:16px;
+        }
+        .hero h1 {
+            font-size:3rem; font-weight:800;
+            background:linear-gradient(135deg,var(--primary),var(--purple));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+            margin-bottom:10px;
+        }
+        .hero .sub { font-size:1.1rem; color:var(--text-muted); max-width:720px; margin:0 auto; }
+        .hero .meta { display:inline-flex; gap:14px; margin-top:20px; flex-wrap:wrap; justify-content:center; }
+        .hero .meta-item {
+            padding:6px 14px; border-radius:8px; font-size:12px; color:var(--text-muted);
+            background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+        }
+        .hero .meta-item strong { color:var(--primary); }
+
+        /* Stats bar */
+        .stats-bar {
+            display:flex; justify-content:center; gap:20px; flex-wrap:wrap;
+            padding:30px 0; margin:20px 0;
+        }
+        .stat {
+            text-align:center; padding:14px 20px; border-radius:12px;
+            background:var(--bg-card); border:1px solid var(--border); min-width:120px;
+        }
+        .stat .num {
+            font-size:1.8rem; font-weight:800;
+            background:linear-gradient(135deg,var(--primary),var(--purple));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+        }
+        .stat .label { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; }
+
+        /* TOC */
+        .toc { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:30px 0; }
+        .toc a {
+            padding:8px 16px; border-radius:10px; background:var(--glass);
+            border:1px solid var(--glass-border); color:var(--text); text-decoration:none;
+            font-size:13px; font-weight:600; transition:all 0.2s;
+        }
+        .toc a:hover { background:rgba(28,203,212,0.18); color:var(--primary); border-color:var(--primary); transform:translateY(-2px); }
+
+        /* Section */
+        .section { margin:50px 0; }
+        .section-header {
+            display:flex; align-items:center; gap:14px; margin-bottom:24px;
+        }
+        .section-title { font-size:1.5rem; font-weight:700; color:#fff; }
+
+        /* Card */
+        .card {
+            background:var(--bg-card); border:1px solid var(--border); border-radius:16px;
+            padding:28px; transition:all 0.3s; position:relative; overflow:hidden;
+        }
+        .card::before {
+            content:''; position:absolute; top:0; left:0; right:0; height:2px;
+            background:linear-gradient(90deg,var(--primary),var(--purple));
+            opacity:0; transition:opacity 0.3s;
+        }
+        .card:hover { border-color:var(--glass-border); transform:translateY(-2px); box-shadow:0 8px 32px rgba(0,0,0,0.3); }
+        .card:hover::before { opacity:1; }
+
+        /* Legend table */
+        .legend-row { display:flex; flex-wrap:wrap; gap:18px; align-items:center; padding:6px 0; }
+        .legend-box {
+            display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-muted);
+        }
+        .legend-box code {
+            background:rgba(0,0,0,0.3); padding:3px 9px; border-radius:6px; font-size:12px;
+            border:1px solid var(--border);
+        }
+
+        /* Phase */
+        .phase { margin-bottom:48px; scroll-margin-top:60px; }
+        .phase-header {
+            display:flex; align-items:center; gap:14px; margin-bottom:18px;
+            padding-bottom:14px; border-bottom:1px solid var(--border);
+        }
+        .phase-num {
+            width:50px; height:50px; border-radius:14px; display:flex; align-items:center;
+            justify-content:center; font-size:20px; font-weight:800; flex-shrink:0;
+            border:2px solid;
+        }
+        .phase-num.p0 { background:rgba(34,197,94,0.12); border-color:var(--green); color:var(--green); }
+        .phase-num.p1 { background:rgba(59,130,246,0.12); border-color:var(--blue); color:var(--blue); }
+        .phase-num.p2 { background:rgba(167,139,250,0.12); border-color:var(--purple); color:var(--purple); }
+        .phase-num.p3 { background:rgba(236,72,153,0.12); border-color:var(--pink); color:var(--pink); }
+        .phase-num.p4 { background:rgba(245,158,11,0.12); border-color:var(--orange); color:var(--orange); }
+        .phase-num.p5 { background:rgba(34,197,94,0.12); border-color:var(--green); color:var(--green); }
+        .phase-num.p6 { background:rgba(239,68,68,0.12); border-color:var(--red); color:var(--red); }
+        .phase-num.p7 { background:rgba(28,203,212,0.12); border-color:var(--primary); color:var(--primary); }
+        .phase-num.p8 { background:rgba(167,139,250,0.12); border-color:var(--purple); color:var(--purple); }
+        .phase-num.p9 { background:rgba(236,72,153,0.12); border-color:var(--pink); color:var(--pink); }
+        .phase-title { font-size:1.25rem; font-weight:700; color:#fff; }
+        .phase-subtitle { font-size:12px; color:var(--text-muted); margin-top:2px; }
+
+        /* Step card */
+        .step {
+            padding:18px 20px 18px 26px; border-radius:12px;
+            background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04);
+            margin-bottom:12px; transition:all 0.2s; position:relative;
+        }
+        .step::before {
+            content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+            border-radius:3px;
+        }
+        .step.blue::before    { background:var(--blue); }
+        .step.purple::before  { background:var(--purple); }
+        .step.pink::before    { background:var(--pink); }
+        .step.orange::before  { background:var(--orange); }
+        .step.green::before   { background:var(--green); }
+        .step.red::before     { background:var(--red); }
+        .step.cyan::before    { background:var(--primary); }
+        .step.todo    { opacity:0.92; }
+        .step.todo:hover        { background:rgba(255,255,255,0.04); border-color:rgba(255,255,255,0.08); transform:translateX(4px); }
+        .step.done              { background:rgba(34,197,94,0.05); border-color:rgba(34,197,94,0.18); }
+        .step.done::before      { background:var(--green); }
+        .step.done h4           { color:var(--green); }
+        .step.inprogress        { background:rgba(245,158,11,0.05); border-color:rgba(245,158,11,0.20); }
+        .step.inprogress::before{ background:var(--orange); }
+        .step.blocked           { background:rgba(239,68,68,0.05); border-color:rgba(239,68,68,0.20); }
+        .step.blocked::before   { background:var(--red); }
+
+        .step-header {
+            display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap;
+        }
+        .step-num {
+            font-size:11px; font-weight:700; padding:3px 10px; border-radius:4px;
+            text-transform:uppercase; letter-spacing:0.5px;
+        }
+        .step-num.blue   { background:rgba(59,130,246,0.2); color:var(--blue); }
+        .step-num.purple { background:rgba(167,139,250,0.2); color:var(--purple); }
+        .step-num.pink   { background:rgba(236,72,153,0.2); color:var(--pink); }
+        .step-num.orange { background:rgba(245,158,11,0.2); color:var(--orange); }
+        .step-num.green  { background:rgba(34,197,94,0.2); color:var(--green); }
+        .step-num.red    { background:rgba(239,68,68,0.2); color:var(--red); }
+        .step-num.cyan   { background:rgba(28,203,212,0.2); color:var(--primary); }
+        .step h4 { font-size:15px; font-weight:600; color:#fff; margin-bottom:6px; }
+
+        /* Checkbox + status badge */
+        .check {
+            display:inline-flex; align-items:center; gap:6px; padding:3px 10px;
+            border-radius:6px; font-size:11px; font-weight:700;
+            text-transform:uppercase; letter-spacing:0.5px;
+        }
+        .check.done {
+            background:rgba(34,197,94,0.15); color:var(--green);
+            border:1px solid rgba(34,197,94,0.3);
+        }
+        .check.todo {
+            background:rgba(255,255,255,0.05); color:var(--text-muted);
+            border:1px solid var(--border);
+        }
+        .check.inprogress {
+            background:rgba(245,158,11,0.15); color:var(--orange);
+            border:1px solid rgba(245,158,11,0.3);
+        }
+        .check.blocked {
+            background:rgba(239,68,68,0.15); color:var(--red);
+            border:1px solid rgba(239,68,68,0.3);
+        }
+        .check.done::before    { content:'✓'; font-weight:800; }
+        .check.todo::before    { content:'☐'; }
+        .check.inprogress::before { content:'◐'; }
+        .check.blocked::before { content:'✕'; font-weight:800; }
+
+        /* Agent badge */
+        .agent {
+            display:inline-flex; align-items:center; gap:6px; padding:4px 12px;
+            border-radius:6px; font-size:11px; font-weight:600; text-transform:uppercase;
+            letter-spacing:0.5px;
+        }
+        .agent.buff    { background:rgba(28,203,212,0.15); color:var(--primary); border:1px solid rgba(28,203,212,0.25); }
+        .agent.bash    { background:rgba(34,197,94,0.15); color:var(--green); border:1px solid rgba(34,197,94,0.25); }
+        .agent.web     { background:rgba(59,130,246,0.15); color:var(--blue); border:1px solid rgba(59,130,246,0.25); }
+        .agent.file    { background:rgba(167,139,250,0.15); color:var(--purple); border:1px solid rgba(167,139,250,0.25); }
+        .agent.review  { background:rgba(245,158,11,0.15); color:var(--orange); border:1px solid rgba(245,158,11,0.25); }
+        .agent.browser { background:rgba(236,72,153,0.15); color:var(--pink); border:1px solid rgba(236,72,153,0.25); }
+        .agent.think   { background:rgba(239,68,68,0.15); color:var(--red); border:1px solid rgba(239,68,68,0.25); }
+        .agent::before { font-size:13px; }
+        .agent.buff::before    { content:'🤖'; }
+        .agent.bash::before    { content:'⌨'; }
+        .agent.web::before     { content:'🌐'; }
+        .agent.file::before    { content:'📁'; }
+        .agent.review::before  { content:'🔍'; }
+        .agent.browser::before { content:'🖥'; }
+        .agent.think::before   { content:'🧠'; }
+        .agent.file   { display:inline-flex; }
+
+        .meta-chip {
+            display:inline-flex; align-items:center; gap:4px; padding:3px 9px;
+            border-radius:5px; font-size:10px; font-weight:600; text-transform:uppercase;
+            letter-spacing:0.5px;
+            background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--text-muted);
+        }
+        .meta-chip.premium-yes {
+            background:rgba(255,193,7,0.15); border-color:rgba(255,193,7,0.35); color:#fcd34d;
+        }
+        .meta-chip.crit {
+            background:rgba(239,68,68,0.15); border-color:rgba(239,68,68,0.35); color:var(--red);
+        }
+        .meta-chip.max-mode {
+            background:rgba(239,68,68,0.15); border-color:rgba(239,68,68,0.35); color:var(--red);
+        }
+
+        .step p { font-size:13px; color:var(--text-muted); line-height:1.6; margin-top:6px; }
+        .step p code { background:rgba(28,203,212,0.10); padding:1px 6px; border-radius:4px; font-size:11px; color:var(--primary); }
+
+        /* Prompt box */
+        .prompt-box {
+            margin-top:10px; padding:12px 16px; border-radius:8px;
+            background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06);
+            font-family:'Courier New',monospace; font-size:12px; color:var(--green);
+            line-height:1.6; overflow-x:auto; white-space:pre-wrap;
+        }
+        .prompt-box .comment { color:var(--text-muted); }
+
+        /* Inline label */
+        .step dl { margin-top:8px; }
+        .step dl div { display:flex; gap:12px; padding:3px 0; font-size:12px; }
+        .step dl dt { color:var(--primary); font-weight:600; flex:0 0 90px; }
+        .step dl dd { color:var(--text-muted); flex:1; }
+
+        /* Premium table */
+        .premium-table { width:100%; border-collapse:collapse; margin:14px 0; font-size:13px; }
+        .premium-table th { background:rgba(245,158,11,0.10); color:var(--orange); padding:8px 12px; text-align:left; border-bottom:1px solid var(--border); }
+        .premium-table td { padding:8px 12px; border-bottom:1px solid rgba(255,255,255,0.03); color:var(--text-muted); }
+        .premium-table tr:hover td { background:rgba(255,255,255,0.02); }
+        .premium-table .crit { color:var(--red); font-weight:700; }
+
+        /* Cheat-sheet grid */
+        .cheat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; }
+        .cheat-item {
+            padding:14px 16px; border-radius:10px; background:rgba(255,255,255,0.02);
+            border:1px solid rgba(255,255,255,0.05); font-size:12px; color:var(--text-muted); line-height:1.5;
+        }
+        .cheat-item strong { color:var(--primary); display:block; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+
+        /* Code block */
+        pre.code-block {
+            background:#000; border:1px solid var(--border); border-radius:10px;
+            padding:14px 16px; font-family:'Courier New',monospace; font-size:12px;
+            color:var(--green); overflow-x:auto; line-height:1.5; margin-top:10px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align:center; padding:40px 20px; margin-top:60px;
+            border-top:1px solid var(--border); color:var(--text-muted); font-size:13px;
+        }
+        .footer a { color:var(--primary); text-decoration:none; }
+
+        /* Responsive */
+        @media(max-width:768px) {
+            .hero h1 { font-size:2rem; }
+            .container { padding:0 16px; }
+            .card { padding:20px; }
+            .stats-bar { gap:12px; }
+            .stat { min-width:90px; padding:10px 14px; }
+            .stat .num { font-size:1.4rem; }
+        }
+
+        ::-webkit-scrollbar { width:8px; }
+        ::-webkit-scrollbar-track { background:var(--bg); }
+        ::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+        ::-webkit-scrollbar-thumb:hover { background:var(--primary-dark); }
+        html { scroll-behavior:smooth; }
+    </style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+    <div class="hero-badge">📋 Master Build Todo</div>
+    <h1>SportStream</h1>
+    <p class="sub">Live trackers for every phase, step, and agent on our Sportzfy-clone path. Tick as we ship; the post-commit hook auto-pushes every change to <strong style="color:var(--primary)">learngermanbd/sportstream</strong>.</p>
+    <div class="meta">
+        <div class="meta-item">🎯 <strong>9 Phases · 75+ Steps</strong></div>
+        <div class="meta-item">🤖 <strong>7 Agent Types</strong></div>
+        <div class="meta-item">🛡️ <strong>20+ Security Layers</strong></div>
+        <div class="meta-item">📱 <strong>Android 6 → 16</strong></div>
+        <div class="meta-item">⏱ <strong>~4 days ETA</strong></div>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- Stats -->
+    <div class="stats-bar">
+        <div class="stat"><div class="num">9</div><div class="label">Phases</div></div>
+        <div class="stat"><div class="num">75+</div><div class="label">Steps</div></div>
+        <div class="stat"><div class="num">1</div><div class="label">Step Done</div></div>
+        <div class="stat"><div class="num">5</div><div class="label">Premium Slot</div></div>
+        <div class="stat"><div class="num">85%</div><div class="label">Build Left</div></div>
+    </div>
+
+    <!-- Status legend -->
+    <section class="section">
+        <div class="card">
+            <h3 style="color:#fff;margin-bottom:14px;font-size:16px;">Status Legend</h3>
+            <div class="legend-row">
+                <div class="legend-box"><span class="check done">Done</span> Step shipped, auto-pushed.</div>
+                <div class="legend-box"><span class="check inprogress">In Progress</span> Currently being executed.</div>
+                <div class="legend-box"><span class="check todo">Todo</span> Not started — work to be done.</div>
+                <div class="legend-box"><span class="check blocked">Blocked</span> Hit a stopper; documented inline above the step.</div>
+            </div>
+            <div style="margin-top:14px;color:var(--text-muted);font-size:13px;">
+                Raw syntax: <code style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;color:var(--text)">[x]</code>
+                <code style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;color:var(--text);margin-left:6px;">[-]</code>
+                <code style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;color:var(--text);margin-left:6px;">[ ]</code>
+                <code style="background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;color:var(--text);margin-left:6px;">[!]</code>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hand-off loop -->
+    <section class="section">
+        <div class="card">
+            <h3 style="color:#fff;margin-bottom:14px;font-size:16px;">🔁 Hand-off Loop (paste after every prompt)</h3>
+            <ol style="margin:8px 0 0 20px;color:var(--text-muted);font-size:13px;line-height:1.8;">
+                <li>Open <code>sportzfy_build_plan.html</code>, locate the <code>#phaseN</code> anchor for the step.</li>
+                <li>Open a fresh Codebuff chat. Paste the verbatim <strong>Prompt</strong> from the plan.</li>
+                <li>Always append: <code>Done when: …</code> and <code>Next agent: …</code> (copied from each step).</li>
+                <li>Validate agent output against <strong>Done when</strong>.</li>
+                <li>Tick this file's checkbox → commit → hook auto-pushes to <code>learngermanbd/sportstream:main</code>.</li>
+            </ol>
+        </div>
+    </section>
+
+    <!-- TOC -->
+    <nav class="toc">
+        <a href="#phase0">Phase 0 ✓</a>
+        <a href="#phase1">Phase 1</a>
+        <a href="#phase2">Phase 2</a>
+        <a href="#phase3">Phase 3</a>
+        <a href="#phase4">Phase 4</a>
+        <a href="#phase5">Phase 5</a>
+        <a href="#phase6">Phase 6</a>
+        <a href="#phase7">Phase 7</a>
+        <a href="#phase8">Phase 8</a>
+        <a href="#phase9">Phase 9</a>
+        <a href="#premium">💎 Premium</a>
+        <a href="#cheat-sheet">Cheat-Sheet</a>
+        <a href="#self-check">Self-Check</a>
+    </nav>
+
+    <!-- ============================================================
+         PHASE 0 — Environment & Setup
+         ============================================================ -->
+    <section class="phase" id="phase0">
+        <div class="phase-header">
+            <div class="phase-num p0">✓</div>
+            <div>
+                <div class="phase-title">Phase 0 — Environment &amp; Setup</div>
+                <div class="phase-subtitle">Done — JDK 17 · Android SDK 35 · Gradle 9.5.1 · Node 24 · npm 11 · git + post-commit hook wired</div>
+            </div>
+        </div>
+
+        <div class="step done">
+            <div class="step-header">
+                <span class="step-num green">STEP 0</span>
+                <span class="agent bash">Basher</span>
+                <span class="check done">Done</span>
+            </div>
+            <h4>Survey dev environment + persist env vars + accept SDK licenses + auto-push hook</h4>
+            <dl>
+                <div><dt>Java</dt><dd>Temurin JDK 17.0.19 (matches Android target)</dd></div>
+                <div><dt>Android</dt><dd>SDK 35 · build-tools 35.0.0 · platform-tools (adb) · API 23 → 35 supported</dd></div>
+                <div><dt>Gradle</dt><dd>System 9.5.1 + project wrapper 8.11.1</dd></div>
+                <div><dt>Node</dt><dd>24.17.0 · npm 11.13.0 (for Phase 8 backend)</dd></div>
+                <div><dt>Env</dt><dd><code>ANDROID_HOME=C:\Android\android-sdk</code> · <code>JAVA_HOME</code> → Temurin (both persisted via <code>setx</code>)</dd></div>
+                <div><dt>Licenses</dt><dd>7 license files under <code>C:\Android\android-sdk\licenses\</code> (canonical SHA1 hashes)</dd></div>
+                <div><dt>Auto-push</dt><dd><code>.git/hooks/post-commit</code> runs <code>git push origin main</code> on every commit (executable, network-error safe)</dd></div>
+                <div><dt>Optional</dt><dd>🔶 <code>firebase-tools</code> CLI install deferred — backend uses <code>firebase-admin</code> SDK directly. Re-attempt when npm cache is repaired.</dd></div>
+            </dl>
+            <p style="margin-top:8px;">Done when: <code>./gradlew --version</code> works · SDK licenses accepted · git auto-push verified via empty commit · repo HEAD on <code>learngermanbd/sportstream:main</code>.</p>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         PHASE 1 — Project Setup & Foundation
+         ============================================================ -->
+    <section class="phase" id="phase1">
+        <div class="phase-header">
+            <div class="phase-num p1">1</div>
+            <div>
+                <div class="phase-title">Phase 1 — Project Setup &amp; Foundation</div>
+                <div class="phase-subtitle">Est: 2–3 hours · Section: <code>#phase1</code> in sportzfy_build_plan.html</div>
+            </div>
+        </div>
+
+        <!-- 1.1 DONE -->
+        <div class="step done">
+            <div class="step-header">
+                <span class="step-num green">STEP 1.1</span>
+                <span class="agent buff">Buff</span>
+                <span class="meta-chip">DEFAULT</span>
+                <span class="check done">Done</span>
+            </div>
+            <h4>Create Android project structure</h4>
+            <p>Done when: ✓ <code>com.sportstream.app</code> project scaffolded with full package tree (<code>ui/{activities,fragments,adapters}</code>, <code>data/{models,viewmodels,repository,local,remote}</code>, <code>utils</code>, <code>services</code>). AGP 8.7.3 · Kotlin 2.0.21 · Gradle wrapper 8.11.1 · JDK 17 · compileSdk 35 · minSdk 23. <code>AndroidManifest.xml</code> has launcher <code>&lt;activity android:exported="true"&gt;</code> for API 31+. Validated via <code>./gradlew projects --no-daemon</code> (exit 0). Fragments kept as plain Kotlin classes (no Fragment superclass yet) to avoid compile failure before Step 1.2 lands androidx.fragment. Launcher <code>SplashActivity</code> registered with intent-filter.</p>
+            <div class="prompt-box"><span class="comment">// Next-agent prompt for Step 1.2:</span>
+Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>sportzfy_build_plan.html</code> to <code>app/build.gradle.kts</code>: Media3, OkHttp+logging, Room runtime+ktx+kapt, Firebase BoM → firebase-messaging only, Sentry, Lottie, Material 3, navigation-fragment-ktx+navigation-ui-ktx, lifecycle viewmodel-ktx+livedata-ktx, datastore-preferences, Glide 4.16, kotlinx-coroutines-android. Enable <code>buildFeatures.viewBinding = true</code> and apply the <code>google-services</code> plugin.</div>
+            <p><strong>Next:</strong> Step 1.2 (Buff — dependencies).</p>
+        </div>
+
+        <!-- 1.2 TODO -->
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num blue">STEP 1.2</span>
+                <span class="agent buff">Buff</span>
+                <span class="meta-chip">DEFAULT</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Add all dependencies</h4>
+            <p>Done when: <code>app/build.gradle.kts</code> includes Media3 (player+ui+session+datasource-okhttp), OkHttp+logging, Room (runtime+ktx+kapt), Firebase BoM → <code>firebase-messaging</code> only, Sentry, Lottie, Material 3, navigation-fragment-ktx + navigation-ui-ktx, lifecycle viewmodel-ktx + livedata-ktx, datastore-preferences, Glide 4.16, kotlinx-coroutines-android. <code>./gradlew :app:dependencies --configuration default --no-daemon</code> lists every library above.</p>
+            <p><strong>Next:</strong> Step 1.3 (Basher — run <code>./gradlew build --dry-run</code>).</p>
+        </div>
+
+        <!-- 1.3 TODO -->
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num blue">STEP 1.3</span>
+                <span class="agent bash">Basher</span>
+                <span class="meta-chip">DEFAULT</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Sync &amp; verify build</h4>
+            <p>Done when: <code>./gradlew build --dry-run</code> exits 0 and prints resolved task graph (includes <code>processDebugResources</code>, <code>compileDebugKotlin</code>, <code>assembleDebug</code>).</p>
+            <p><strong>Next:</strong> Step 1.4 (Buff).</p>
+        </div>
+
+        <!-- 1.4 TODO -->
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num blue">STEP 1.4</span>
+                <span class="agent buff">Buff</span>
+                <span class="meta-chip">DEFAULT</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>FCM + Sentry + API config setup</h4>
+            <p>Done when: <code>SportStreamApp.kt</code> initializes <code>FirebaseMessaging</code> + <code>Sentry</code>; placeholder <code>google-services.json</code> added; <code>RemoteConfigHelper.kt</code> fetches <code>GET /api/config</code>; <code>AndroidManifest.xml</code> registers the Application class and permissions <code>INTERNET / ACCESS_NETWORK_STATE / POST_NOTIFICATIONS / WAKE_LOCK</code>.</p>
+            <p><strong>Next:</strong> Step 1.5 (Buff).</p>
+        </div>
+
+        <!-- 1.5 TODO -->
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num blue">STEP 1.5</span>
+                <span class="agent buff">Buff</span>
+                <span class="meta-chip">DEFAULT</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Design system &amp; theme</h4>
+            <p>Done when: <code>colors.xml</code> (primary <code>#1CCBD4</code>, bg <code>#0A0F1A</code>, card <code>#121A27</code>), <code>themes.xml</code> (Material 3 dark, NoActionBar), <code>styles.xml</code> (glass card, bottom nav, player overlay), <code>bg_glass_card.xml</code>, <code>bg_splash.xml</code>, <code>bg_player_controls.xml</code>, Poppins font.</p>
+            <p><strong>Next:</strong> Step 1.6 (Code Reviewer) + run <code>./gradlew assembleDebug</code> (Basher) in parallel.</p>
+        </div>
+
+        <!-- 1.6 TODO -->
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num blue">STEP 1.6</span>
+                <span class="agent review">Code Reviewer</span>
+                <span class="meta-chip">DEFAULT</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Review foundation</h4>
+            <p>Done when: reviewer returns clean feedback OR all flagged issues fixed.</p>
+            <p><strong>Next:</strong> Phase 1 complete. Move to Phase 2 step 2.1.</p>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         PHASE 2 — Core Architecture & Data Layer
+         ============================================================ -->
+    <section class="phase" id="phase2">
+        <div class="phase-header">
+            <div class="phase-num p2">2</div>
+            <div>
+                <div class="phase-title">Phase 2 — Core Architecture &amp; Data Layer</div>
+                <div class="phase-subtitle">Est: 3–4 hours · Section: <code>#phase2</code></div>
+            </div>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 2.1</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Create data models</h4>
+            <p>Done when: <code>Event</code>, <code>Team</code>, <code>Channel</code>, <code>Highlight</code>, <code>Category</code>, <code>StreamLink</code>, <code>Playlist</code> (Room <code>@Entity</code>), <code>Banner</code>, <code>ApiResponse</code> all defined with <code>@SerializedName</code>.</p>
+            <p><strong>Next:</strong> Step 2.2 — "Models at <code>data/models/</code> — build OkHttp <code>ApiClient</code> + <code>ApiService</code> + <code>RemoteDataSource</code>".</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 2.2</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Build API service</h4>
+            <p>Done when: <code>ApiClient</code> (30 s timeouts, logging only in debug, OkHttp cache), <code>ApiService</code> interface with suspend <code>getAppData/getEvents/getChannels/getHighlights</code>, <code>RemoteDataSource</code> returning <code>Result&lt;T&gt;</code>.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 2.3</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Room database setup</h4>
+            <p>Done when: <code>AppDatabase</code> (v1), <code>FavoriteDao</code>, <code>PlaylistDao</code>, <code>Converters</code> (<code>List&lt;String&gt;</code> ↔ JSON), <code>LocalDataSource</code>.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 2.4</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Repository layer</h4>
+            <p>Done when: <code>MainRepository</code>, <code>FavoritesRepository</code>, <code>PlaylistRepository</code> (Dispatchers.IO, error-safe).</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 2.5</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>ViewModels</h4>
+            <p>Done when: <code>MainViewModel</code>, <code>HomeViewModel</code>, <code>CategoriesViewModel</code>, <code>HighlightsViewModel</code>, <code>PlayerViewModel</code>, sealed <code>UiState&lt;T&gt;</code>.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 2.6</span>
+                <span class="agent think">Thinker</span>
+                <span class="meta-chip max-mode">MAX</span>
+                <span class="meta-chip premium-yes">💎 Premium</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Architecture review</h4>
+            <p>Done when: clean review + all fixes applied. Reviews data flow API→Repo→VM→UI, coroutine scopes, Room TypeConverters, StateFlow patterns; applies anti-pattern fixes.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 2.7</span>
+                <span class="agent bash">Basher</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Build verification</h4>
+            <p>Done when: <code>./gradlew assembleDebug</code> exits 0.</p>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         PHASE 3 — UI Screens
+         ============================================================ -->
+    <section class="phase" id="phase3">
+        <div class="phase-header">
+            <div class="phase-num p3">3</div>
+            <div>
+                <div class="phase-title">Phase 3 — UI Screens (Home, Categories, Highlights)</div>
+                <div class="phase-subtitle">Est: 4–5 hours · Section: <code>#phase3</code> · multimodal MiMo 2.5 can attach screenshots</div>
+            </div>
+        </div>
+
+        <div class="step done">
+            <div class="step-header">
+                <span class="step-num green">STEP 3.0</span>
+                <span class="agent bash">Basher</span>
+                <span class="check done">Done</span>
+            </div>
+            <h4>UI reference assets pre-flight</h4>
+            <p>✓ <code>sportstream/ui-reference/screenshots/</code> extracted (17 JPGs, 11 MB, gitignored) · ✓ <code>ui-demo-video.mp4</code> (6 MB) confirmed. Attach JPGs by absolute path: <code>sportstream/ui-reference/screenshots/Screenshot_2026-06-18-00-14-49-053_app.blaze.spofficial.jpg</code>.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num pink">STEP 3.1</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Splash screen</h4>
+            <p>Done when: <code>activity_splash.xml</code> + <code>SplashActivity.kt</code> with ConstraintLayout, glass logo card (180 dp, rounded 28 dp), Lottie loading bar, network error card, version text; navigate to Main after 2 s.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num pink">STEP 3.2</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Main activity &amp; navigation</h4>
+            <p>Done when: DrawerLayout + BottomNav (Home/Categories/Highlights) + <code>nav_graph.xml</code> + drawer menu (Network Stream, Playlists, Floating Player, Video Quality, Notice, Join Us, Share, Update, Exit) + Toolbar with search.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num pink">STEP 3.3</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Home fragment</h4>
+            <p>Done when: SwipeRefresh + auto-scroll banners + LIVE Events list with VS team logo layout + animated LIVE badge + EventAdapter with DiffUtil.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num pink">STEP 3.4</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Categories fragment</h4>
+            <p>Done when: ChipGroup category filters + GridLayoutManager(3 cols) channel cards + CategoryAdapter.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num pink">STEP 3.5</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Highlights fragment</h4>
+            <p>Done when: 16:9 thumbnail cards with play overlay + duration + HighlightAdapter.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num pink">STEP 3.6</span>
+                <span class="agent review">Code Reviewer</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>UI review</h4>
+            <p>DiffUtil, ViewBinding, Glide placeholders, click listeners, navigation, SwipeRefresh.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num pink">STEP 3.7</span>
+                <span class="agent browser">Browser</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Visual verification</h4>
+            <p>Emulator screenshots of Splash, Home, Categories, Highlights, Drawer, BottomNav.</p>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         PHASE 4 — Video Player
+         ============================================================ -->
+    <section class="phase" id="phase4">
+        <div class="phase-header">
+            <div class="phase-num p4">4</div>
+            <div>
+                <div class="phase-title">Phase 4 — Video Player</div>
+                <div class="phase-subtitle">Est: 4–5 hours · Section: <code>#phase4</code> · Media3 + ExoPlayer + custom gestures</div>
+            </div>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num orange">STEP 4.1</span>
+                <span class="agent web">Web Researcher</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Research Media3 APIs</h4>
+            <p>Player controller, PiP, subtitles (SRT/VTT/ASS), HLS/DASH, foreground service.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num orange">STEP 4.2</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Player activity &amp; layout</h4>
+            <p>Top bar (back, title marquee, lock, PiP, resize, settings) + links bar + center rewind/play/forward + bottom seek bar + volume + fullscreen.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num orange">STEP 4.3</span>
+                <span class="agent think">Thinker</span>
+                <span class="meta-chip max-mode">MAX</span>
+                <span class="meta-chip premium-yes">💎 Premium</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Swipe gestures</h4>
+            <p>Done when: gestures behave cleanly, no gesture conflicts. Horizontal seek, left brightness, right volume, single-tap toggle, double-tap skip; visual feedback overlays.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num orange">STEP 4.4</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Screen lock &amp; PiP</h4>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num orange">STEP 4.5</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Subtitle &amp; quality selection</h4>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num orange">STEP 4.6</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Floating player service</h4>
+            <p><code>FOREGROUND_SERVICE_MEDIA_PLAYBACK</code> on API 34+, <code>SYSTEM_ALERT_WINDOW</code>, draggable overlay. Then <code>./gradlew assembleDebug</code>.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num orange">STEP 4.7</span>
+                <span class="agent review">Code Reviewer</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Player review</h4>
+            <p>ExoPlayer lifecycle, PiP API 26+, no memory leaks, subtitle render, foreground notification.</p>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         PHASE 5 — Extra Features
+         ============================================================ -->
+    <section class="phase" id="phase5">
+        <div class="phase-header">
+            <div class="phase-num p5">5</div>
+            <div>
+                <div class="phase-title">Phase 5 — Extra Features</div>
+                <div class="phase-subtitle">Est: 3–4 hours · Favorites, Playlists, Push, Search</div>
+            </div>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num green">STEP 5.1</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Favorites system</h4>
+            <p>Swipe-to-delete + undo, heart toggle animation.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num green">STEP 5.2</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Playlist management</h4>
+            <p>CRUD + FAB + add-to-playlist from player.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num green">STEP 5.3</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Network stream player</h4>
+            <p>URL dialog + format selector + recent URLs in DataStore.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num green">STEP 5.4</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Push notifications</h4>
+            <p><code>MessagingService</code> + <code>NotificationHelper</code> API 33+ <code>POST_NOTIFICATIONS</code> + <code>RemoteConfigHelper</code> fetches <code>/api/config</code>.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num green">STEP 5.5</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Drawer menu actions</h4>
+            <p>All 9 menu items wired.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num green">STEP 5.6</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Search functionality</h4>
+            <p>Debounced Flow 300 ms, recent searches in DataStore.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num green">STEP 5.7</span>
+                <span class="agent review">Code Reviewer</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Feature review</h4>
+            <p>All CRUD + search + notifications.</p>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         PHASE 6 — Polish, Ads & Launch
+         ============================================================ -->
+    <section class="phase" id="phase6">
+        <div class="phase-header">
+            <div class="phase-num p6">6</div>
+            <div>
+                <div class="phase-title">Phase 6 — Polish, Ads &amp; Launch</div>
+                <div class="phase-subtitle">Est: 3–4 hours · AdMob, auto-update, animations, ProGuard</div>
+            </div>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num red">STEP 6.1</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Ad integration</h4>
+            <p>AdMob banner + interstitial (≤ 1 / 5 min), GDPR consent, test IDs.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num red">STEP 6.2</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Auto-update system</h4>
+            <p>Force + optional update, DownloadManager, FileProvider, <code>REQUEST_INSTALL_PACKAGES</code> on API 26+.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num red">STEP 6.3</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Animations &amp; transitions</h4>
+            <p>Splash, shared element, staggered list, PiP/Lock transitions.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num red">STEP 6.4</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Error handling &amp; edge cases</h4>
+            <p>Network, player, global crash handler.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num red">STEP 6.5</span>
+                <span class="agent bash">Basher</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>ProGuard &amp; release build</h4>
+            <p><code>./gradlew assembleRelease</code>. Confirm APK ≤ 30 MB.</p>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         PHASE 7 — Security & Protection
+         ============================================================ -->
+    <section class="phase" id="phase7">
+        <div class="phase-header">
+            <div class="phase-num p7">7</div>
+            <div>
+                <div class="phase-title">Phase 7 — Security &amp; Protection</div>
+                <div class="phase-subtitle">Est: 4–5 hours · 20-layer defense. Three <strong style="color:var(--red)">CRITICAL</strong> layers + final review go through Thinker (PREMIUM).</div>
+            </div>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num cyan">STEP 7.1</span>
+                <span class="agent web">Web Researcher</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Research Android security</h4>
+            <p>R8, Keystore, EncryptedSharedPreferences, Network Security Config, Play Integrity, NDK, RootBeer, Frida/Xposed.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num red">STEP 7.2</span>
+                <span class="agent buff">Buff</span>
+                <span class="meta-chip crit">💎 CRITICAL</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>String encryption</h4>
+            <p>AES-256-GCM via Android Keystore, build-time encryptor, Gradle task.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num red">STEP 7.3</span>
+                <span class="agent buff">Buff</span>
+                <span class="meta-chip crit">💎 CRITICAL</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>ProGuard/R8 obfuscation</h4>
+            <p>R8 full mode, CJK rename dictionary, control-flow obfuscation.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num cyan">STEP 7.4</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Native library protection (NDK)</h4>
+            <p>C/C++ <code>libsportstream_security.so</code> with <code>nativeDecrypt</code>, <code>nativeVerifySignature</code>, <code>nativeCheckRoot</code>, etc. Build on Linux/macOS if Windows NDK unavailable.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num red">STEP 7.5</span>
+                <span class="agent buff">Buff</span>
+                <span class="meta-chip crit">💎 CRITICAL</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>APK integrity &amp; anti-tampering</h4>
+            <p>Signing cert hash, file SHA-256 compare, repackage detection, gradual degradation.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num cyan">STEP 7.6</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Root &amp; emulator detection</h4>
+            <p>RootBeer + manual checks, Frida/Xposed/Substrate detection in <code>/proc/self/maps</code>.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num red">STEP 7.7</span>
+                <span class="agent buff">Buff</span>
+                <span class="meta-chip crit">💎 CRITICAL</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>SSL pinning &amp; network security</h4>
+            <p><code>res/xml/network_security_config.xml</code> + <code>CertificatePinner</code> + request signing.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num cyan">STEP 7.8</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Secure key storage &amp; data</h4>
+            <p>Keystore + EncryptedSharedPreferences + SQLCipher + <code>char[]</code> secrets + FLAG_SECURE.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num cyan">STEP 7.9</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Anti-debugging &amp; runtime protection</h4>
+            <p><code>Debug.isDebuggerConnected</code>, TracerPid, ptrace self-trace, honey pots.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num cyan">STEP 7.10</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Play Integrity API</h4>
+            <p><code>com.google.android.play:integrity</code>, server-side token verification.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num cyan">STEP 7.11</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>WebView &amp; deep-link hardening</h4>
+            <p>Disable JS where unused, <code>intent://</code> blocks, deep-link allowlist.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num red">STEP 7.12</span>
+                <span class="agent think">Thinker</span>
+                <span class="meta-chip max-mode">MAX</span>
+                <span class="meta-chip premium-yes">💎 Premium</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Security architecture review</h4>
+            <p>Done when: STRIDE report + checklist all green. STRIDE across 12 attack surfaces; verify full security checklist.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num cyan">STEP 7.13</span>
+                <span class="agent bash">Basher</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Security build &amp; verify</h4>
+            <p><code>./gradlew clean assembleRelease</code>, decompile with jadx, verify obfuscation, test on rooted + emulator.</p>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         PHASE 8 — Admin Panel
+         ============================================================ -->
+    <section class="phase" id="phase8">
+        <div class="phase-header">
+            <div class="phase-num p8">8</div>
+            <div>
+                <div class="phase-title">Phase 8 — Admin Panel (Web + Android + Backend)</div>
+                <div class="phase-subtitle">Est: 8–10 hours · Node.js + Express + Prisma + Supabase + 2 Android apps</div>
+            </div>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 8.1</span>
+                <span class="agent web">Web Researcher</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Research admin panel tech stack</h4>
+            <p>Compare standalone HTML vs Next.js vs Ktor.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 8.2</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Backend API: database &amp; models</h4>
+            <p>Prisma + Supabase Postgres: <code>Admin</code>, <code>Event</code>, <code>Channel</code>, <code>Highlight</code>, <code>Category</code>, <code>Banner</code>, <code>StreamLink</code>, <code>AppConfig</code>, <code>Notification</code>, <code>AnalyticsEvent</code> + seed.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 8.3</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Backend API: auth + routes</h4>
+            <p>bcrypt + JWT (15 min access / 7 day refresh) + middleware (helmet, cors, rateLimit, rbac, Zod, multer).</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 8.4</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Web admin: login + layout</h4>
+            <p>Login page + dark-theme sidebar + top bar + nav, <code>admin/auth.js</code> + <code>admin/api.js</code>.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 8.5</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Web admin: dashboard</h4>
+            <p>4 stat cards + Chart.js line + doughnut + bar.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 8.6</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Web admin: events manager</h4>
+            <p>Data table + filters + pagination + bulk select + event form (stream links + team logos).</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 8.7</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Web admin: channels + highlights</h4>
+            <p>Grid/list + form + bulk ops + drag reorder.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 8.8</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Web admin: notifications + config</h4>
+            <p>Composer + targeting + history + templates + AppConfig editor + admin users CRUD.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 8.9</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Web admin: analytics</h4>
+            <p>Date-range + line/area/bar/pie/heatmap + CSV export.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 8.10</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Mobile: admin API integration</h4>
+            <p>ApiService → admin endpoints + analytics POST batching.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 8.11</span>
+                <span class="agent review">Code Reviewer</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Admin panel review</h4>
+            <p>Auth, RBAC, file validation, CORS, responsive frontend, API contract.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 8.12</span>
+                <span class="agent bash">Basher</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Admin panel build &amp; deploy</h4>
+            <p>npm build + Prisma migrate + deploy docs.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 8.13</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Android admin app: project + login</h4>
+            <p>New project <code>com.sportstream.admin</code>, Compose + Material 3, JWT in EncryptedSharedPrefs, biometric (API 23-28+).</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 8.14</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Admin app: events + channels</h4>
+            <p>Filter chips, FAB, swipe, multi-select grid for channels, form for events with stream links.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 8.15</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Admin app: config + notifications + analytics</h4>
+            <p>Config sections, FCM composer with scheduling, MPAndroidChart analytics.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 8.16</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Android 6 → 17 compat layer (both apps)</h4>
+            <p>VersionCompatHelper, PermissionManager (API 23-35), NotificationCompatHelper, UI compat.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 8.17</span>
+                <span class="agent think">Thinker</span>
+                <span class="meta-chip max-mode">MAX</span>
+                <span class="meta-chip premium-yes">💎 Premium</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Admin system review (all 3 platforms)</h4>
+            <p>Done when: review clean + all fixes applied. Verify web + Android admin + REST API consistency, RBAC, cross-platform sync.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num purple">STEP 8.18</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>FCM notification targeting &amp; scheduling</h4>
+            <p>Topic-based + token-based targeting + <code>node-cron</code> scheduler + delivery logging.</p>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         PHASE 9 — Testing & QA
+         ============================================================ -->
+    <section class="phase" id="phase9">
+        <div class="phase-header">
+            <div class="phase-num p9">9</div>
+            <div>
+                <div class="phase-title">Phase 9 — Testing &amp; QA</div>
+                <div class="phase-subtitle">Est: 3–4 hours · Unit + UI + Security + Final AAB</div>
+            </div>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num pink">STEP 9.1</span>
+                <span class="agent buff">Buff</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Unit tests</h4>
+            <p>Repository, ViewModel, utility tests. <code>./gradlew test</code>.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num pink">STEP 9.2</span>
+                <span class="agent browser">Browser</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>UI testing on emulator</h4>
+            <p>Full user journey + rotation + back/foreground + offline.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num pink">STEP 9.3</span>
+                <span class="agent browser">Browser</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Security penetration testing</h4>
+            <p>Obfuscation verify, SSL pinning, root + emulator.</p>
+        </div>
+
+        <div class="step todo">
+            <div class="step-header">
+                <span class="step-num pink">STEP 9.4</span>
+                <span class="agent bash">Basher</span>
+                <span class="check todo">Todo</span>
+            </div>
+            <h4>Final build &amp; APK</h4>
+            <p><code>./gradlew clean assembleRelease</code>, lint, signed AAB.</p>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         PREMIUM BUDGET
+         ============================================================ -->
+    <section class="section" id="premium">
+        <div class="card">
+            <h3 style="color:#fff;margin-bottom:6px;font-size:18px;">💎 Premium Session Budget</h3>
+            <p style="color:var(--text-muted);font-size:13px;margin-bottom:14px;">5/season — confirm before using MAX mode. Reserved for architecture, gestures, security, cross-platform review.</p>
+            <table class="premium-table">
+                <thead>
+                    <tr><th>Step</th><th>Why</th><th>Reserved?</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td class="crit">2.6</td><td>Architecture review</td><td>☐</td></tr>
+                    <tr><td class="crit">4.3</td><td>Swipe gesture logic</td><td>☐</td></tr>
+                    <tr><td class="crit">7.12</td><td>STRIDE security audit (CRITICAL)</td><td>☐</td></tr>
+                    <tr><td class="crit">8.17</td><td>Cross-platform admin review</td><td>☐</td></tr>
+                    <tr><td>5/season</td><td>Free slot</td><td>☐</td></tr>
+                </tbody>
+            </table>
+            <p style="margin-top:8px;color:var(--text-muted);font-size:12px;">If 5 are used, fall back to Mini Max M3 (Buff) + Web/Docs researchers — most steps still complete.</p>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         APP IDENTITY CHEAT-SHEET
+         ============================================================ -->
+    <section class="section" id="cheat-sheet">
+        <div class="section-header"><div class="section-title">📌 App Identity Cheat-Sheet</div></div>
+        <div class="cheat-grid">
+            <div class="cheat-item"><strong>com.sportstream.app</strong>User Android app — cyan <code>#1CCBD4</code>, dark glassmorphism, XML + ViewBinding, API 23 → 35.</div>
+            <div class="cheat-item"><strong>com.sportstream.admin</strong>Admin Android app — orange <code>#F59E0B</code>, Jetpack Compose, private APK.</div>
+            <div class="cheat-item"><strong>Backend</strong>Node.js + Express + Prisma + Supabase Postgres → Railway <code>$5/mo</code> for prod.</div>
+            <div class="cheat-item"><strong>Firebase only</strong>FCM via <code>firebase-admin</code> SDK — no Crashlytics / Remote Config / Auth.</div>
+            <div class="cheat-item"><strong>Distribution</strong>APK sideload (no Play Store initially).</div>
+            <div class="cheat-item"><strong>Min SDK</strong>23 · Target SDK 35 · Branch <code>main</code> · Remote <code>learngermanbd/sportstream</code>.</div>
+            <div class="cheat-item"><strong>Remote config endpoint</strong><code>GET /api/config</code> → <code>{apiBaseUrl, updateUrl, telegramLink, noticeText, maintenanceMode, minAppVersion, featureFlags}</code>.</div>
+            <div class="cheat-item"><strong>App-side ingest</strong>Every request carries <code>X-App-Version</code>; backend <code>versionCheck</code> middleware returns HTTP <strong>426</strong> if version &lt; <code>minAppVersion</code>, blocking the entire app until the user updates.</div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         SELF-CHECK
+         ============================================================ -->
+    <section class="section" id="self-check">
+        <div class="section-header"><div class="section-title">✅ Self-Check at every checkpoint</div></div>
+        <div class="card">
+            <p style="color:var(--text-muted);font-size:13px;margin-bottom:10px;">Run these three commands after every step.</p>
+            <pre class="code-block">cd sportstream
+./gradlew assembleDebug 2>&1 | tail -20    # Basher
+git ls-remote origin main                  # confirm push went through
+grep -E "^\s*-\s*\[ \]" TODO.html | head -5  # next 5 unchecked steps</pre>
+            <p style="color:var(--text-muted);font-size:12px;margin-top:10px;">If a step becomes <code>[!]</code> (blocked), write the blocker inline above the step with the date and the agent that hit it.</p>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>📋 <strong>SportStream</strong> — Master Build Todo · auto-pushed to <a href="https://github.com/learngermanbd/sportstream">learngermanbd/sportstream</a></p>
+        <p style="margin-top:8px;font-size:11px;">Machine-readable Markdown index for downstream agents: <a href="TODO.md">TODO.md</a></p>
+    </footer>
+
+</div><!-- /container -->
+
+</body>
+</html>
