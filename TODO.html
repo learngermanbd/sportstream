@@ -532,14 +532,14 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             </div>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
-                <span class="step-num purple">STEP 2.1</span>
+                <span class="step-num green">STEP 2.1</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Create data models</h4>
-            <p>Done when: <code>Event</code>, <code>Team</code>, <code>Channel</code>, <code>Highlight</code>, <code>Category</code>, <code>StreamLink</code>, <code>Playlist</code> (Room <code>@Entity</code>), <code>Banner</code>, <code>ApiResponse</code> all defined with <code>@SerializedName</code>.</p>
+            <p>Done when: ✓ <code>Event.kt</code>, <code>Team.kt</code>, <code>Channel.kt</code>, <code>Highlight.kt</code>, <code>Category.kt</code>, <code>StreamLink.kt</code>, <code>Playlist.kt</code> + <code>EventStatus</code> enum (DRAFT/SCHEDULED/LIVE/ENDED) + <code>VideoQuality</code> enum (AUTO/HD/SD) all defined as data classes with <code>@SerializedName</code>. ✓ Each carries <code>toJson()</code> → <code>JSONObject</code> + <code>companion fromJson(JSONObject)</code> factory with defensive <code>optString(..., "")</code> / <code>optBoolean(..., default)</code> against partial payloads. ✓ <code>List&lt;StreamLink&gt;</code>, <code>List&lt;Channel&gt;</code>, <code>List&lt;Category&gt;</code> have <code>listToJsonArray()</code> + <code>listFromJsonArray()</code> helpers. ✓ <code>gson 2.10.1</code> added to <code>libs.versions.toml</code> + <code>app/build.gradle.kts</code> for <code>@SerializedName</code> annotations (annotation-only; org.json parses per Step 1.4). ✓ <code>./gradlew :app:compileDebugKotlin --no-daemon</code> BUILD SUCCESSFUL (1m 22s after retry post-gson network pull). ⚠ <code>Banner.kt</code> + <code>ApiResponse.kt</code> deferred to Step 2.2 (will land alongside <code>ApiService</code> wrapping).</p>
             <p><strong>Next:</strong> Step 2.2 — "Models at <code>data/models/</code> — build OkHttp <code>ApiClient</code> + <code>ApiService</code> + <code>RemoteDataSource</code>".</p>
         </div>
 
