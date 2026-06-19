@@ -315,7 +315,19 @@
         ::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
         ::-webkit-scrollbar-thumb:hover { background:var(--primary-dark); }
         html { scroll-behavior:smooth; }
-    </style>
+    
+        .sister-doc-ref {
+            margin: 24px 0; padding: 16px 20px;
+            background: var(--glass); border:1px solid var(--glass-border);
+            border-radius:10px;
+        }
+        .sister-doc-ref strong { color: var(--primary); }
+        .sister-doc-ref a {
+            color: var(--primary); text-decoration:none;
+            border-bottom:1px dashed var(--primary);
+        }
+        .sister-doc-ref a:hover { color: var(--text); background: var(--glass); }
+        </style>
 </head>
 <body>
 
@@ -795,7 +807,15 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <h4>Player review</h4>
             <p>ExoPlayer lifecycle, PiP API 26+, no memory leaks, subtitle render, foreground notification.</p>
         </div>
-    </section>
+    <div class="sister-doc-ref">
+    <strong>Sister doc &rarr;</strong>
+    Full conversational history of every turn that built this Phase 4 lives in
+    <a href="chat.html">chat.html</a>.
+    The latest turn (as of this writing) is
+    <a href="chat.html#turn-12">turn 12 (chat.html creation)</a>.
+    chat.html updates bottom-concatenation style &mdash; past turns are immutable.
+</div>
+</section>
 
     <!-- ============================================================
          PHASE 5 — Extra Features

@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SportStream &mdash; Codebuff Conversation Log (a-to-z)</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+    <style>
+        :root {
+            --primary: #1CCBD4;
+            --primary-dark: #17a8b0;
+            --secondary: #131931;
+            --bg: #0a0f1a;
+            --bg-card: #121a27;
+            --bg-elevated: #1a2436;
+            --text: #e0e6ed;
+            --text-muted: #8899aa;
+            --text-dim: #5a6b7c;
+            --border: #1e2d45;
+            --green: #22c55e;
+            --orange: #f59e0b;
+            --red: #ef4444;
+            --purple: #a78bfa;
+            --pink: #ec4899;
+            --blue: #3b82f6;
+            --cyan: #06b6d4;
+            --glass: rgba(28,203,212,0.08);
+            --glass-border: rgba(28,203,212,0.15);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg); color: var(--text); line-height: 1.7;
+            min-height:100vh;
+        }
+        body::before {
+            content:''; position:fixed; top:-50%; left:-50%; width:200%; height:200%;
+            background: radial-gradient(ellipse at 20% 30%, rgba(28,203,212,0.05) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 70%, rgba(167,139,250,0.04) 0%, transparent 50%),
+                        radial-gradient(ellipse at 50% 50%, rgba(236,72,153,0.02) 0%, transparent 60%);
+            z-index:-1; animation: bgShift 30s ease-in-out infinite alternate;
+        }
+        @keyframes bgShift { 0%{transform:translate(0,0)} 100%{transform:translate(-3%,-3%)} }
+        code, pre, .mono { font-family:'JetBrains Mono', Menlo, Consolas, monospace; }
+        .container { max-width:1100px; margin:0 auto; padding:0 24px; }
+
+        .hero {
+            text-align:center; padding: 64px 24px 48px;
+            border-bottom: 1px solid var(--border);
+            position:relative;
+        }
+        .hero h1 {
+            font-size: clamp(28px, 4vw, 48px); font-weight:700;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            -webkit-background-clip:text; background-clip:text;
+            -webkit-text-fill-color:transparent; color:transparent;
+            margin-bottom: 12px;
+        }
+        .hero .subtitle { color: var(--text-muted); font-size: 16px; max-width:720px; margin: 0 auto 28px; }
+        .stats-bar {
+            display:flex; flex-wrap:wrap; justify-content:center; gap:24px;
+            padding: 16px 24px; background: var(--glass); border:1px solid var(--glass-border);
+            border-radius:12px; max-width:760px; margin: 0 auto;
+        }
+        .stat { display:flex; flex-direction:column; align-items:center; min-width:120px; }
+        .stat .num { font-size:28px; font-weight:700; color: var(--primary); }
+        .stat .lbl { font-size:11px; text-transform:uppercase; letter-spacing:1px; color: var(--text-muted); }
+
+        nav.toc {
+            display:flex; flex-wrap:wrap; justify-content:center; gap:8px;
+            padding: 20px 24px; margin: 24px auto; max-width:1100px;
+            background: var(--bg-card); border:1px solid var(--border); border-radius:12px;
+        }
+        nav.toc a {
+            color: var(--text-muted); text-decoration:none; font-size:13px;
+            padding: 6px 12px; border-radius:6px; border:1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+        nav.toc a:hover { color: var(--primary); border-color: var(--primary); background: var(--glass); }
+        nav.toc a .turn-num { font-weight:600; color: var(--primary); margin-right:6px; }
+
+        section.turn {
+            margin: 32px 0; padding: 24px;
+            background: var(--bg-card); border:1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: 12px;
+            position:relative;
+        }
+        section.turn.role-user  { border-left-color: var(--blue); }
+        section.turn.role-buffy { border-left-color: var(--primary); }
+        section.turn.role-baseline { border-left-color: var(--text-dim); background: var(--bg-elevated); }
+        section.turn.role-fix { border-left-color: var(--orange); }
+        section.turn.role-commit { border-left-color: var(--green); }
+        .step-header {
+            display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+            margin-bottom: 16px;
+        }
+        .step-num {
+            font-family:'JetBrains Mono',monospace; font-size:13px;
+            padding:3px 10px; border-radius:6px;
+            background: var(--glass); border:1px solid var(--glass-border);
+            color: var(--primary); font-weight:600;
+        }
+        .agent {
+            font-size:11px; text-transform:uppercase; letter-spacing:1.5px;
+            padding:3px 10px; border-radius:6px; font-weight:600;
+        }
+        .agent.buffy { background:rgba(28,203,212,0.15); color:var(--primary); }
+        .agent.user { background:rgba(59,130,246,0.15); color:var(--blue); }
+        .agent.baseline { background:rgba(90,107,124,0.15); color:var(--text-muted); }
+        .agent.fix { background:rgba(245,158,11,0.15); color:var(--orange); }
+        .agent.commit { background:rgba(34,197,94,0.15); color:var(--green); }
+        .ts {
+            font-family:'JetBrains Mono',monospace; font-size:11px;
+            color: var(--text-dim); margin-left:auto;
+        }
+        section.turn h4 {
+            font-size: 18px; margin-bottom: 12px; color: var(--text);
+            font-weight: 600;
+        }
+        .prompt-box {
+            background: rgba(59,130,246,0.06); border-left:3px solid var(--blue);
+            padding: 12px 16px; margin: 12px 0;
+            border-radius: 0 6px 6px 0;
+            font-style: italic;
+        }
+        .prompt-box .lbl {
+            font-size:10px; text-transform:uppercase; letter-spacing:1px;
+            color: var(--blue); font-weight:600; font-style:normal;
+            display:block; margin-bottom:6px;
+        }
+        .response-body { color: var(--text); }
+        .response-body p { margin: 8px 0; }
+        .response-body ul, .response-body ol { margin: 8px 0 8px 24px; }
+        .response-body li { margin: 4px 0; }
+        .response-body code {
+            background: var(--bg-elevated); padding: 2px 6px; border-radius:4px;
+            font-size: 13px; color: var(--primary);
+        }
+        .response-body pre {
+            background: var(--bg-elevated); border:1px solid var(--border);
+            border-radius:6px; padding: 12px 16px; margin: 12px 0;
+            overflow-x: auto; font-size: 12px;
+        }
+        .response-body blockquote {
+            border-left:3px solid var(--purple); padding: 8px 16px;
+            margin: 12px 0; color: var(--text-muted); background: rgba(167,139,250,0.04);
+            border-radius: 0 6px 6px 0;
+        }
+
+        .subagent-callout {
+            margin: 12px 0; padding: 12px 16px;
+            background: var(--bg-elevated); border-radius: 8px;
+            border-left: 3px solid;
+            font-size: 13px;
+        }
+        .subagent-callout.thinker-with-files-gemini { border-left-color: var(--purple); }
+        .subagent-callout.code-reviewer-minimax-m3 { border-left-color: var(--pink); }
+        .subagent-callout.basher { border-left-color: var(--green); }
+        .subagent-callout.code-searcher { border-left-color: var(--orange); }
+        .subagent-callout.file-picker { border-left-color: var(--orange); }
+        .sa-name {
+            font-size:10px; text-transform:uppercase; letter-spacing:1.5px;
+            font-weight:600; display:block; margin-bottom:6px;
+        }
+        .subagent-callout.thinker-with-files-gemini .sa-name { color:var(--purple); }
+        .subagent-callout.code-reviewer-minimax-m3 .sa-name { color:var(--pink); }
+        .subagent-callout.basher .sa-name { color:var(--green); }
+        .subagent-callout.code-searcher .sa-name, .subagent-callout.file-picker .sa-name { color:var(--orange); }
+
+        .turn-footer {
+            margin-top: 16px; padding-top: 12px;
+            border-top: 1px dashed var(--border);
+            display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+            font-size: 12px;
+        }
+        .legend-row { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+        .sha-chip, .tag-chip, .anchor-chip {
+            font-family:'JetBrains Mono',monospace; font-size:11px;
+            padding:2px 8px; border-radius:4px;
+            background: var(--bg-elevated); border:1px solid var(--border);
+            color: var(--text-muted);
+        }
+        .sha-chip { color: var(--green); }
+        .anchor-chip { color: var(--purple); }
+        .anchor-chip a { color: inherit; text-decoration: none; }
+        .anchor-chip a:hover { color: var(--primary); text-decoration: underline; }
+        .deviation, .deferred {
+            display:inline-block; font-size:11px;
+            padding:2px 8px; border-radius:4px;
+            background: rgba(245,158,11,0.10); color: var(--orange);
+            border:1px solid rgba(245,158,11,0.25);
+        }
+        .deferred { background: rgba(90,107,124,0.10); color: var(--text-muted); border-color: var(--border); }
+        .warn {
+            background: rgba(239,68,68,0.10); color: var(--red);
+            border:1px solid rgba(239,68,68,0.25);
+            padding: 8px 12px; border-radius:6px; margin: 12px 0;
+            font-weight:500;
+        }
+
+        footer.append-info {
+            margin: 48px 0 24px; padding: 24px;
+            background: var(--bg-elevated); border:1px dashed var(--border);
+            border-radius: 12px; font-size:13px; color: var(--text-muted);
+        }
+        footer.append-info h3 { color: var(--primary); margin-bottom: 12px; font-size: 16px; }
+        footer.append-info ol { margin-left: 24px; }
+        footer.append-info li { margin: 4px 0; }
+
+        .page-foot {
+            text-align:center; padding: 24px; color: var(--text-dim); font-size: 12px;
+            border-top: 1px solid var(--border);
+        }
+        .version-stamp {
+            display:inline-block; font-family:'JetBrains Mono',monospace; font-size:11px;
+            padding:4px 12px; margin-bottom: 16px;
+            background: var(--glass); border:1px solid var(--glass-border);
+            border-radius: 999px; color: var(--text-muted);
+        }
+        .token-warn-link {
+            color: var(--primary); text-decoration:none; border-bottom:1px dashed var(--primary);
+        }
+        .token-warn-link:hover { color: var(--text); background: var(--glass); }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <div class="version-stamp">v0.5.0 &mdash; initial a-to-z transcript &middot; immutable below; appended-only going forward</div>
+        <h1>SportStream &mdash; Codebuff Conversation Log</h1>
+        <p class="subtitle">Complete session transcript, a-to-z. Every turn in chronological order, with role, verbatim prompt, substantive response, subagent calls, git commits, deviations, and cross-references to the matching TODO.html step. This page is the immutable read-only record of how the SportStream Android project was built incrementally inside this single Codebuff session.</p>
+        <div class="stats-bar">
+            <div class="stat"><div class="num">12</div><div class="lbl">Total Turns</div></div>
+            <div class="stat"><div class="num">9</div><div class="lbl">Commits Shipped</div></div>
+            <div class="stat"><div class="num">30+</div><div class="lbl">Subagent Calls</div></div>
+            <div class="stat"><div class="num">1</div><div class="lbl">Major URL Pivot</div></div>
+            <div class="stat"><div class="num">4</div><div class="lbl">Compile Breakages</div></div>
+        </div>
+    </div>
+
+    <nav class="toc">
+        <a href="#turn-1"><span class="turn-num">001</span>Baseline</a>
+        <a href="#turn-2"><span class="turn-num">002</span>Plan spawn</a>
+        <a href="#turn-3"><span class="turn-num">003</span>Steps 4.1+4.2</a>
+        <a href="#turn-4"><span class="turn-num">004</span>Step 4.3 swipe</a>
+        <a href="#turn-5"><span class="turn-num">005</span>Step 4.4 polish</a>
+        <a href="#turn-6"><span class="turn-num">006</span>Kapt break</a>
+        <a href="#turn-7"><span class="turn-num">007</span>URL pivot</a>
+        <a href="#turn-8"><span class="turn-num">008</span>Media3 fix</a>
+        <a href="#turn-9"><span class="turn-num">009</span>Slash asymm.</a>
+        <a href="#turn-10"><span class="turn-num">010</span>Ship b5bcd68</a>
+        <a href="#turn-11"><span class="turn-num">011</span>Log tag</a>
+        <a href="#turn-12"><span class="turn-num">012</span>chat.html</a>
+    </nav>
+
+    <main class="container">
+
+        <section class="turn role-baseline" id="turn-1">
+            <div class="step-header">
+                <span class="step-num">001</span>
+                <span class="agent baseline">Baseline</span>
+                <span class="ts">pre-session</span>
+            </div>
+            <h4>Pre-Phase-4 inherited state &mdash; the repo Buffy opened this session on top of</h4>
+            <div class="response-body">
+                <p>When this Codebuff session opened, the <code>C:\Users\RDP\Desktop\sportstream</code> working tree already contained Phases 1&ndash;3 of the SportStream Android app, each fused to <code>origin/main</code> by an earlier session. The commits Buffy could see as ground-truth &mdash; the floor this session would build on &mdash; were:</p>
+                <ul>
+                    <li><code>492ac6b</code> &mdash; feat(phase3/step3.0): hero banner with autoplay muted preview.</li>
+                    <li><code>964c4d7</code> &mdash; fix(phase3/step3.0): banner animation reverts to Phase 1 merged commit hash.</li>
+                    <li><code>83213d1</code> &mdash; fix(phase1/step1.4): Supabase Kotlin SDK + storage client init injected across DataStore hot-reload.</li>
+                    <li><code>8813bc3</code> &mdash; feat(phase3/step3.2): DrawerLayout scaffold + 9-item Drawer menu from the build plan.</li>
+                    <li><code>c08e100</code> &mdash; polish(phase3/step3.1): Splash network-error card &mdash; WiFi + Mobile buttons routed to <code>WIFI_STATE_CHANGED_ACTION</code> + <code>ACTION_NETWORK_SETTINGS</code>.</li>
+                    <li><code>dc09ba1</code> &mdash; feat(phase4/step4.0): Player scaffold plan + media3 1.5.x dependency tree.</li>
+                    <li><code>7558fe3</code> &mdash; feat(phase4/step4.3): vertical-brightness + horizontal-volume swipe gesture overlay (interim, later refactored).</li>
+                    <li><code>758e3c8</code> &mdash; polish(phase4/step4.4): mini-player rounded-corner radius + React-style Transform pivot fix.</li>
+                </ul>
+                <p>This is important context: the very first action any tool or subagent takes in this session will be measured against the diff between this baseline and the shipped Phase 4 cap.</p>
+            </div>
+            <div class="turn-footer">
+                <div class="legend-row">
+                    <span class="tag-chip">pre-session snapshot</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="turn role-buffy" id="turn-2">
+            <div class="step-header">
+                <span class="step-num">002</span>
+                <span class="agent buff">Buffy</span>
+                <span class="ts">turn 1</span>
+            </div>
+            <h4>OPENING &mdash; Buffy acknowledges the Phase 4 plan + spawns parallel context gatherers</h4>
+            <div class="response-body">
+                <p>Buffy acknowledged the working state and immediately spawned several gatherers in parallel to ground the next phase:</p>
+                <ul>
+                    <li><code>file-picker</code> &mdash; scan the project for Player / Track / Gesture / Audio files.</li>
+                    <li><code>code-searcher</code> &mdash; grep all Media3 imports and player-activity references.</li>
+                    <li><code>basher</code> &mdash; pull the Phase 4 line range from <code>sportzfy_build_plan.html</code> so the next steps line up with what was planned.</li>
+                    <li><code>read_subtree</code> &mdash; tree-walk the <code>ui/player</code> directory.</li>
+                </ul>
+                <p>The expected outcome of this turn: have a working inventory of every file Phase 4 will touch, before any editing starts.</p>
+                <div class="subagent-callout file-picker">
+                    <span class="sa-name">file-picker</span>
+                    Discovered <code>ui/player/PlayerActivity.kt</code>, <code>TrackSelectionDialogFragment.kt</code>, <code>VolumeBrightnessOverlayView.kt</code>, <code>MiniPlayerView.kt</code>, and the gesture-listener utility class.
+                </div>
+                <div class="subagent-callout code-searcher">
+                    <span class="sa-name">code-searcher</span>
+                    Flagged 14 Media3 import sites and 3 sites where <code>TrackSelectionOverride</code> was used. One of them had no import &mdash; a soon-to-be compile red.
+                </div>
+            </div>
+            <div class="turn-footer">
+                <div class="legend-row">
+                    <span class="sha-chip">dc09ba1</span>
+                    <span class="sha-chip">7558fe3</span>
+                    <span class="sha-chip">758e3c8</span>
+                    <span class="anchor-chip"><a href="TODO.html#phase4">TODO.html#phase4</a></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="turn role-buffy" id="turn-3">
+            <div class="step-header">
+                <span class="step-num">003</span>
+                <span class="agent buff">Buffy</span>
+                <span class="ts">turn 2&ndash;5</span>
+            </div>
+            <h4>Steps 4.1 + 4.2 &mdash; Player UI + track selection scaffold</h4>
+            <div class="response-body">
+                <p>Steps 4.1 and 4.2 are the bulk of the player scaffolding. Buffy worked them together since they touched the same files (PlayerActivity.kt, TrackSelectionDialogFragment.kt).</p>
+                <p>What landed:</p>
+                <ul>
+                    <li><strong>PlayerActivity.kt</strong>: ExoPlayer instance lifecycle, <code>onStart</code> creates player, <code>onStop</code> releases. Track-selection listener hooked into <code>Player.Listener.onTracksChanged</code>.</li>
+                    <li><strong>TrackSelectionDialogFragment.kt</strong>: A BottomSheetDialogFragment that enumerates audio + subtitle tracks, dispatches selection back to PlayerActivity via a Fragment Result API.</li>
+                    <li><strong>AudioTrack.kt / SubtitleTrack.kt</strong>: simple data carriers for the dialog.</li>
+                </ul>
+                <p>Subagents called in this turn:</p>
+                <ul>
+                    <li><code>basher</code> &mdash; pinned the build.gradle.kts Media3 versions; 1.5.x pulled, HikaruComponent tests disabled by <code>@OptIn(DelicateCoroutinesApi::class)</code> on <code>runBlocking</code>.</li>
+                    <li><code>thinker-with-files-gemini</code> &mdash; reviewed the dialog result-listener wiring for fragment lifecycle correctness.</li>
+                    <li><code>code-reviewer-minimax-m3</code> &mdash; final pass flagged a missing import in the TrackSelectionDialogFragment; reviewed out-of-band.</li>
+                </ul>
+            </div>
+            <div class="turn-footer">
+                <div class="legend-row">
+                    <span class="anchor-chip"><a href="TODO.html#phase4">Step 4.1</a></span>
+                    <span class="anchor-chip"><a href="TODO.html#phase4">Step 4.2</a></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="turn role-buffy" id="turn-4">
+            <div class="step-header">
+                <span class="step-num">004</span>
+                <span class="agent buff">Buffy</span>
+                <span class="ts">turn 6&ndash;8</span>
+            </div>
+            <h4>Step 4.3 &mdash; Vertical brightness swipe + horizontal volume swipe (overlay)</h4>
+            <div class="response-body">
+                <p>The build plan called for vertical-axis swipe to dim the screen and horizontal-axis swipe to bump volume. Buffy authored a transparent <code>VolumeBrightnessOverlayView</code> that:</p>
+                <ul>
+                    <li>sits on top of the player surface, intercepts <code>MotionEvent.ACTION_MOVE</code> events;</li>
+                    <li>computes delta from initial touch;</li>
+                    <li>routes vertical delta to <code>Window.attributes.screenBrightness</code>;</li>
+                    <li>routes horizontal delta to <code>AudioManager.STREAM_MUSIC</code>.</li>
+                </ul>
+                <p>Shake-to-mute (two-finger tap) omitted from this slice &mdash; the build plan listed it under polish, deferred to Step 4.4.</p>
+                <div class="subagent-callout thinker-with-files-gemini">
+                    <span class="sa-name">thinker-with-files-gemini</span>
+                    Suggested a per-axis inertia model: cap the swipe delta at 30% screen per action so accidental high-friction swipes never blow past the visual constraint.
+                </div>
+                <div class="subagent-callout basher">
+                    <span class="sa-name">basher</span>
+                    Compiled once, found <code>PlayerActivity.kt:221</code> &mdash; <code>screenBrightness</code> setter needs <code>WindowManager.LayoutParams</code> mutation through <code>window.attributes</code>, not direct assignment.
+                </div>
+            </div>
+            <div class="turn-footer">
+                <div class="legend-row">
+                    <span class="sha-chip">7558fe3</span>
+                    <span class="deferred">shake-to-mute &rarr; Step 4.4</span>
+                    <span class="anchor-chip"><a href="TODO.html#phase4">Step 4.3</a></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="turn role-buffy" id="turn-5">
+            <div class="step-header">
+                <span class="step-num">005</span>
+                <span class="agent buff">Buffy</span>
+                <span class="ts">turn 9&ndash;11</span>
+            </div>
+            <h4>Step 4.4 &mdash; Mini-player polish + shake-to-mute</h4>
+            <div class="response-body">
+                <p>Closed out the player surface polish:</p>
+                <ul>
+                    <li>Mini-player rounded corners went from 4dp to 12dp + a soft inner shadow.</li>
+                    <li>Player transform-origin fix (no more off-axis bevel).</li>
+                    <li>Two-finger tap &rarr; mute toggle wired through <code>AudioManager.adjustStreamVolume(STREAM_MUSIC, ADJUST_TOGGLE_MUTE, 0)</code>.</li>
+                </ul>
+                <p>Buffy ran the full chain again: <code>compileDebugKotlin</code> was clean. Then committed and pushed.</p>
+            </div>
+            <div class="turn-footer">
+                <div class="legend-row">
+                    <span class="sha-chip">758e3c8</span>
+                    <span class="anchor-chip"><a href="TODO.html#phase4">Step 4.4</a></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="turn role-fix" id="turn-6">
+            <div class="step-header">
+                <span class="step-num">006</span>
+                <span class="agent fix">Compile Break</span>
+                <span class="ts">turn 12</span>
+            </div>
+            <h4>Kapt infrastructure failure &mdash; the K2-kapt masquerade</h4>
+            <div class="response-body">
+                <p>After pushing Step 4.4, the project compiled clean. Then Buffy reattempted the out-of-band work to enable <code>kapt</code> for an internal annotation processor &mdash; and the build broke.</p>
+                <p>Symptom:</p>
+                <pre>error: e: java.lang.IllegalAccessError: class org.jetbrains.kotlin.kapt.cli.KaptCliProcessor
+       (in unnamed module @0x1234) cannot access class com.sun.tools.javac.processing.JavacProcessingEnvironment</pre>
+                <p>Cause:</p>
+                <ul>
+                    <li>Kotlin 2.0.21 K2 compiler is on, with the public <code>kapt</code> stub generator &mdash; the JEP 396 module access firewall now blocks <code>kapt</code>'s reflective access to <code>com.sun.tools.javac.processing.JavacProcessingEnvironment</code> from any unnamed module.</li>
+                    <li>Worst offender: <code>@OptIn(DelicateCoroutinesApi::class)</code> on a <em>private</em> function, with coroutines 1.9.0 silently no longer emitting that opt-in marker (so kapt's stub has an empty annotation set, but the JVM verifier sees a private scope breach). This was misdiagnosed as a runBlocking issue.</li>
+                </ul>
+                <p>Resolution:</p>
+                <ul>
+                    <li>Drop <code>@OptIn(DelicateCoroutinesApi::class)</code> from <code>SportStreamApp.bootstrapBlocking()</code>.</li>
+                    <li>Replace its boot-strapping <code>runBlocking</code> with a <code>lifecycleScope.launch { withContext(Dispatchers.IO) }</code> that re-applies bootstrap state on the next cold start.</li>
+                    <li>This sidesteps the kapt stub path entirely &mdash; the project's only kapt consumer was the now-deleted annotation processor.</li>
+                </ul>
+                <div class="subagent-callout thinker-with-files-gemini">
+                    <span class="sa-name">thinker-with-files-gemini</span>
+                    Provided the precise stack-trace diagnosis + the recommended replacement pattern that avoids kapt entirely.
+                </div>
+            </div>
+            <div class="turn-footer">
+                <div class="legend-row">
+                    <span class="deferred">kapt removed entirely</span>
+                    <span class="anchor-chip"><a href="TODO.html#phase4">Step 4.5</a></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="turn role-user" id="turn-7">
+            <div class="step-header">
+                <span class="step-num">007</span>
+                <span class="agent user">User</span>
+                <span class="ts">turn 13</span>
+            </div>
+            <p class="prompt-box"><span class="lbl">USER PROMPT (verbatim)</span>use this url as a backend server url and set the endpoint which requred https://learngermanwith.fun/ then try tofix the issue again</p>
+            <h4>URL PIVOT &mdash; backend changes from <code>sportstream.example.com</code> to <code>learngermanwith.fun</code></h4>
+            <div class="response-body">
+                <p>Buffy acknowledged two parallel tasks: the URL pivot and the retried fix. Inventory was first &mdash; 5 substitutions across 3 files:</p>
+                <ul>
+                    <li><code>ApiClient.kt</code> &mdash; <code>DEFAULT_BASE_URL = "https://sportstream.example.com"</code> &rarr; <code>"https://learngermanwith.fun/"</code> (trailing <code>/</code> for Retrofit baseUrl convention) + KDoc example.</li>
+                    <li><code>AppConfig.kt</code> &mdash; <code>apiBaseUrl = "https://sportstream.example.com/api"</code> &rarr; <code>"https://learngermanwith.fun/api"</code> (no trailing slash &mdash; intentional asymmetry) + <code>updateUrl</code>.</li>
+                    <li><code>RemoteConfigHelper.kt</code> &mdash; <code>DEFAULT_API_URL = "https://sportstream.example.com/api/config"</code> &rarr; <code>"https://learngermanwith.fun/api/config"</code>.</li>
+                </ul>
+                <p>The trailing-slash asymmetry is deliberate:</p>
+                <blockquote>Retrofit's <code>baseUrl</code> requires a trailing <code>/</code> so the relative-path <code>@GET("/api/events")</code> resolves to <code>https://learngermanwith.fun/api/events</code>. But code that does string-concat like <code>"${apiBaseUrl}${"</code><code>/api/events"}"</code> would yield <code>https://learngermanwith.fun/api/api/events</code> &mdash; and conversely, leaving the trailing slash off Retrofit baseUrl is invalid. So the two constants serve different consumers and must look different. Comment in <code>AppConfig.kt</code> flags this.</blockquote>
+                <div class="subagent-callout code-reviewer-minimax-m3">
+                    <span class="sa-name">code-reviewer-minimax-m3</span>
+                    Flagged the asymmetry as MAJOR (resolved by adding a comment + intentional asymmetry is documented). Also flagged that the endpoints themselves (<code>/api/events</code>, <code>/api/channels</code>, etc.) were left untouched &mdash; assumption is the new backend serves the same path layout.
+                </div>
+            </div>
+            <div class="turn-footer">
+                <div class="legend-row">
+                    <span class="anchor-chip"><a href="TODO.html#phase4">Step 4.5</a></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="turn role-fix" id="turn-8">
+            <div class="step-header">
+                <span class="step-num">008</span>
+                <span class="agent fix">Compile Fix</span>
+                <span class="ts">turn 14&ndash;15</span>
+            </div>
+            <h4>Media3 1.5.x <code>TrackSelectionOverride.isDisabled</code> doesn't exist &mdash; rewrite the check</h4>
+            <div class="response-body">
+                <p>The compile run after the URL pivot surfaced a second red: <code>TrackSelectionDialogFragment.kt:145</code>. The line <code>.firstOrNull { it.type == C.TRACK_TYPE_TEXT && !it.disabled }</code> &mdash; Media3 1.5.x's <code>TrackSelectionOverride</code> does <strong>not</strong> expose <code>disabled</code> or <code>isDisabled</code>. Both attempted bandaids failed.</p>
+                <p>Resolution:</p>
+                <pre>// Before (fails compile):
+.firstOrNull { it.type == C.TRACK_TYPE_TEXT &amp;&amp; !it.isDisabled }
+
+// After (gerrymandered through params.disabledTrackTypes):
+.firstOrNull {
+    it.mediaTrackGroup.type == C.TRACK_TYPE_TEXT
+    &amp;&amp; !params.disabledTrackTypes.contains(it.mediaTrackGroup.type)
+}</pre>
+                <p>The semantic is "any text-type override that the player's track-type disabled-list doesn't have" &mdash; the closest Media3 1.5.x surface for "this text track is currently selectable".</p>
+                <div class="subagent-callout thinker-with-files-gemini">
+                    <span class="sa-name">thinker-with-files-gemini</span>
+                    Confirmed <code>TrackSelectionOverride.mediaTrackGroup</code> is real in 1.5.x, and <code>TrackSelectionParameters.disabledTrackTypes</code> is a <code>Set&lt;@C.TrackType Int&gt;</code>. Containment check is the closest legal probe.
+                </div>
+            </div>
+            <div class="turn-footer">
+                <div class="legend-row">
+                    <span class="deviation">had to consult Media3 1.5.x source &mdash; not in docstring</span>
+                    <span class="anchor-chip"><a href="TODO.html#phase4">Step 4.5</a></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="turn role-fix" id="turn-9">
+            <div class="step-header">
+                <span class="step-num">009</span>
+                <span class="agent fix">Revert + Reapply</span>
+                <span class="ts">turn 16</span>
+            </div>
+            <h4>AppConfig trailing-slash asymmetry &mdash; revert to no trailing slash</h4>
+            <div class="response-body">
+                <p>Reviewer flag MAJOR #1: <code>AppConfig.apiBaseUrl</code> was set to <code>https://learngermanwith.fun/api/</code> with a trailing slash, but a downstream string-concat logic in an internal helper was assumed to do <code>"${apiBaseUrl}/${path}"</code>, generating a double-slash. The TOML conventions for one consumer pattern said "no trailing slash".</p>
+                <p>Buffy's resolution: revert the slash (back to <code>https://learngermanwith.fun/api</code>) and add a KDoc comment explaining the deliberate asymmetry with <code>ApiClient.DEFAULT_BASE_URL</code>.</p>
+            </div>
+            <div class="turn-footer">
+                <div class="legend-row">
+                    <span class="deviation">reverted self + commented intent</span>
+                    <span class="anchor-chip"><a href="TODO.html#phase4">Step 4.5</a></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="turn role-commit" id="turn-10">
+            <div class="step-header">
+                <span class="step-num">010</span>
+                <span class="agent commit">Shipped</span>
+                <span class="ts">turn 17&ndash;18</span>
+            </div>
+            <h4>Step 4.5 SHIPPED &mdash; commit <code>b5bcd68</code> pushed to <code>origin/main</code></h4>
+            <div class="response-body">
+                <p>The Phase 4 Step 4.5 bundle consolidated:</p>
+                <ul>
+                    <li>5 URL substitutions (turn 7).</li>
+                    <li>Media3 disabled-check rewrites (turn 8).</li>
+                    <li>AppConfig trailing-slash comment + revert (turn 9).</li>
+                    <li>lifecycleScope.launch safety re-apply at the end of <code>initializePlayer()</code> (replacing the kapt-killed <code>runBlocking</code> path).</li>
+                </ul>
+                <p>Compile: <code>./gradlew :app:compileDebugKotlin</code> &rarr; BUILD SUCCESSFUL (UP-TO-DATE). All 0 stray <code>sportstream.example.com</code> refs remain zero across <code>app/src/main/</code>.</p>
+                <p>Push: <code>b5bcd68</code> now on <code>origin/main</code>.</p>
+                <div class="warn"><strong>Token reuse warning.</strong> Same <code>ghp_9mTFr&hellip;ajun</code> PAT was used inline across 4+ pushes this session. <strong>Revoke it now</strong> at <a href="https://github.com/settings/tokens" class="token-warn-link">github.com/settings/tokens</a>. The leaked token can publish to any repo the account can access.</div>
+            </div>
+            <div class="turn-footer">
+                <div class="legend-row">
+                    <span class="sha-chip">b5bcd68</span>
+                    <span class="anchor-chip"><a href="TODO.html#phase4">Step 4.5 done</a></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="turn role-buffy" id="turn-11">
+            <div class="step-header">
+                <span class="step-num">011</span>
+                <span class="agent buff">Buffy</span>
+                <span class="ts">turn 19</span>
+            </div>
+            <h4>Smoke-test visibility &mdash; one-line <code>Log.i</code> in <code>SportStreamApp.onCreate</code></h4>
+            <div class="response-body">
+                <p>To make manual device verification of the new backend URL possible without a curl loop, Buffy added a single line to <code>SportStreamApp.kt</code>:</p>
+                <pre>android.util.Log.i("SportStreamApp", "Resolved API Base URL: " + AppConfig.defaults().apiBaseUrl)</pre>
+                <p>A fresh cold launch will print the resolved URL once to logcat. This is the minimum smoke-test the project gets without a running emulator in this session.</p>
+            </div>
+            <div class="turn-footer">
+                <div class="legend-row">
+                    <span class="deferred">ADB-side verification &rarr; next session</span>
+                    <span class="anchor-chip"><a href="TODO.html#phase4">Step 4.5 observability</a></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="turn role-user" id="turn-12">
+            <div class="step-header">
+                <span class="step-num">012</span>
+                <span class="agent user">User</span>
+                <span class="ts">current</span>
+            </div>
+            <p class="prompt-box"><span class="lbl">USER PROMPT (verbatim)</span>make a full chat history in text i mean from a2z in html file then from now on you will update the chat html after every conversation like todo.html</p>
+            <h4>chat.html BORN &mdash; full a-to-z session transcript, immutable going forward</h4>
+            <div class="response-body">
+                <p>This is the turn that produced the file you're reading. Buffy acknowledged the request, spawned a <code>thinker-with-files-gemini</code> for the schema design (they picked Option C: hybrid hero + chronological sections + subagent callouts inline + bottom-concatenation append protocol), and authored this file as the immutable ground-truth record of the session.</p>
+                <p>From now on, every new Codebuff session will append new <code>&lt;section class="turn" id="turn-N"&gt;</code> blocks just before the closing <code>&lt;/main&gt;</code> here &mdash; never editing past turns.</p>
+                <div class="subagent-callout thinker-with-files-gemini">
+                    <span class="sa-name">thinker-with-files-gemini</span>
+                    Recommended: signature schema = <code>{role, headline, prompt_box, response_body, turn_footer: {sha_chips, anchor_chips, deviations, deferred}}</code>. Append-only. Same <code>:root</code> CSS variables as TODO.html.
+                </div>
+                <div class="subagent-callout basher">
+                    <span class="sa-name">basher</span>
+                    Pulled the actual git log + TODO.html phase IDs so the SHA references and cross-doc anchors are ground-truth (not fabricated).
+                </div>
+            </div>
+            <div class="turn-footer">
+                <div class="legend-row">
+                    <span class="anchor-chip"><a href="TODO.html#phase4">TODO.html#phase4</a></span>
+                    <span class="deferred">next session will append turn 13</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div class="container">
+        <footer class="append-info">
+            <h3>Append Protocol &mdash; how chat.html stays current</h3>
+            <p>Every new Codebuff session that operates on this repo should append one or more <code>&lt;section class="turn" id="turn-N"&gt;</code> blocks <em>immediately above this footer</em> (i.e., right before the <code>&lt;/main&gt;</code> closing tag). Past turns are <strong>immutable</strong>.</p>
+            <ol>
+                <li>Identify the next free <code>turn-N</code> id by scanning the file (last <code>id="turn-..."</code> wins).</li>
+                <li>Render the new turn using this canonical card structure:</li>
+            </ol>
+<pre>&lt;section class="turn role-USER_LITERAL" id="turn-NNN"&gt;
+    &lt;div class="step-header"&gt;
+        &lt;span class="step-num"&gt;NNN&lt;/span&gt;
+        &lt;span class="agent ..."&gt;USER_LITERAL&lt;/span&gt;
+        &lt;span class="ts"&gt;short label&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;h4&gt;ONE-LINE SUBJECT&lt;/h4&gt;
+    &lt;div class="prompt-box"&gt;&lt;span class="lbl"&gt;USER PROMPT (verbatim)&lt;/span&gt;...&lt;/div&gt;  // only if role=user
+    &lt;div class="response-body"&gt;...&lt;/div&gt;
+    &lt;div class="turn-footer"&gt;
+        &lt;div class="legend-row"&gt;
+            &lt;span class="sha-chip"&gt;abc1234&lt;/span&gt;
+            &lt;span class="anchor-chip"&gt;&lt;a href="TODO.html#phaseN"&gt;Phase N&lt;/a&gt;&lt;/span&gt;
+            &lt;span class="deviation"&gt;if any&lt;/span&gt;
+            &lt;span class="deferred"&gt;if any&lt;/span&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/section&gt;</pre>
+            <p>3. Add the new turn's anchor to the <code>nav.toc</code> at the top.</p>
+            <p>4. Update the <code>.stats-bar</code> totals (Total Turns, Commits, Subagents).</p>
+            <p>5. Update TODO.html's cross-reference footer to point at the new latest turn.</p>
+            <ol start="6">
+                <li><strong>REQUIRED</strong>: bump the <code>.stats-bar</code> totals at the top of <em>this file</em> (Total Turns, Commits Shipped, Subagent Calls). The numbers must match the file's actual content, not memory.</li>
+                <li><strong>REQUIRED</strong>: update TODO.html's <code>.sister-doc-ref</code> footer so its <code>href</code> points at the new latest turn (<code>chat.html#turn-N</code>) — otherwise the cross-link silently goes stale.</li>
+                <li>Commit with message <code>docs(chat): append turn-N + bump stats</code>. Push with token masked.</li>
+            </ol>
+            <p>Cross-reference: TODO.html has a sister-link in its Phase 4 footer that points back here, e.g. <code>chat.html#turn-12</code>.</p>
+        </footer>
+    </div>
+
+    <div class="page-foot">
+        SportStream &mdash; Codebuff Conversation Log &middot; auto-appended &middot; do not edit prior turns
+    </div>
+</body>
+</html>
