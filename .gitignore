@@ -36,3 +36,7 @@ crashlytics/
 *.tmp
 *.bak
 *.orig
+
+# Decompiled APK files (removed from repo)
+resources/
+sources/
