@@ -86,4 +86,7 @@ dependencies {
 
     // ── Coroutines — async primitives (Phase 2 ViewModels) ──
     implementation(libs.kotlinx.coroutines.android)
+
+    // ── Gson — @SerializedName annotations on Phase 2 data models (parse via org.json for now) ──
+    implementation(libs.gson)
 }
