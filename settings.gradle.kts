@@ -14,3 +14,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "SportStream"
 include(":app")
+include(":admin")
