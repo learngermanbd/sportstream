@@ -21,6 +21,7 @@ android {
 
     buildFeatures {
         viewBinding = true   // Step 1.2 — enables type-safe view binding across all UI screens
+        buildConfig = true   // Step 2.2 — opt in to AGP-generated BuildConfig (DEBUG, VERSION_NAME, APPLICATION_ID)
     }
 
     buildTypes {

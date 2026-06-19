@@ -38,5 +38,9 @@ data class Category(
 
         fun listFromJsonArray(arr: JSONArray): List<Category> =
             (0 until arr.length()).map { i -> fromJson(arr.optJSONObject(i) ?: JSONObject()) }
+
+        /** String overload added in Step 2.2 — delegates to the JSONArray version above. */
+        fun listFromJsonArray(rawJson: String): List<Category> =
+            listFromJsonArray(JSONArray(rawJson))
     }
 }

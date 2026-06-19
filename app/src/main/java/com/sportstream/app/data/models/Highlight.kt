@@ -1,6 +1,7 @@
 package com.sportstream.app.data.models
 
 import com.google.gson.annotations.SerializedName
+import org.json.JSONArray
 import org.json.JSONObject
 
 /**
@@ -39,5 +40,13 @@ data class Highlight(
             duration     = json.optInt("duration", 0),
             views        = json.optInt("views", 0)
         )
+
+        /** Mirror of the [Channel.listFromJsonArray] helper. */
+        fun listFromJsonArray(rawJson: String): List<Highlight> {
+            val arr = JSONArray(rawJson)
+            return (0 until arr.length()).map { i ->
+                fromJson(arr.optJSONObject(i) ?: JSONObject())
+            }
+        }
     }
 }

@@ -33,5 +33,13 @@ data class Playlist(
             createdAt = json.optLong("createdAt", 0L),
             ownerId   = json.optString("ownerId", "")
         )
+
+        /** Mirror of the [StreamLink.listFromJsonArray] helper. */
+        fun listFromJsonArray(rawJson: String): List<Playlist> {
+            val arr = JSONArray(rawJson)
+            return (0 until arr.length()).map { i ->
+                fromJson(arr.optJSONObject(i) ?: JSONObject())
+            }
+        }
     }
 }

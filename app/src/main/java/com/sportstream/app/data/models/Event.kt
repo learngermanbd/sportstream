@@ -57,5 +57,13 @@ data class Event(
                 .getOrDefault(EventStatus.DRAFT),
             thumbnailUrl = json.optString("thumbnailUrl", "").takeIf { it.isNotEmpty() }
         )
+
+        /** Mirror of the [StreamLink.listFromJsonArray] helper. */
+        fun listFromJsonArray(rawJson: String): List<Event> {
+            val arr = JSONArray(rawJson)
+            return (0 until arr.length()).map { i ->
+                fromJson(arr.optJSONObject(i) ?: JSONObject())
+            }
+        }
     }
 }
