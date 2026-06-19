@@ -343,7 +343,7 @@
     <!-- Stats -->
     <div class="stats-bar">
         <div class="stat"><div class="num">9</div><div class="label">Phases</div></div>
-        <div class="stat"><div class="num">70+</div><div class="label">Steps</div></div>
+        <div class="stat"><div class="num">85+</div><div class="label">Steps</div></div>
         <div class="stat"><div class="num">20+</div><div class="label">Security Layers</div></div>
         <div class="stat"><div class="num">~4d</div><div class="label">Est. Time</div></div>
         <div class="stat"><div class="num">6-17</div><div class="label">Android API</div></div>
@@ -1012,12 +1012,14 @@ Package: com.sportstream.app
 Min SDK: 23 (Android 6.0 Marshmallow), Target SDK: 35 (Android 16)
 Use Gradle Kotlin DSL (build.gradle.kts)
 Set up the following package structure:
-- activities/ (SplashActivity, MainActivity, PlayerActivity)
-- fragments/ (HomeFragment, CategoriesFragment, HighlightsFragment)
-- adapters/ (EventAdapter, ChannelAdapter, HighlightAdapter)
-- models/ (Event, Channel, Highlight, Category)
-- viewmodels/
-- repository/
+- ui/activities/ (SplashActivity, MainActivity, PlayerActivity)
+- ui/fragments/ (HomeFragment, CategoriesFragment, HighlightsFragment)
+- ui/adapters/ (EventAdapter, ChannelAdapter, HighlightAdapter)
+- data/models/ (Event, Channel, Highlight, Category)
+- data/viewmodels/
+- data/repository/
+- data/local/ (Room database)
+- data/remote/ (API service)
 - utils/
 - services/
 Create all files with basic skeleton code.</div>
@@ -1048,7 +1050,7 @@ Add the following dependencies to build.gradle.kts (app level):
 - com.github.bumptech.glide:glide (image loading)
 - org.jetbrains.kotlinx:kotlinx-coroutines-android
 Enable ViewBinding and DataBinding in build.gradle.kts
-Apply Google Services plugin and Crashlytics plugin.</div>
+Apply Google Services plugin (for FCM only). Do NOT add Crashlytics plugin.</div>
             </div>
 
             <!-- Step 1.3 -->
@@ -2983,10 +2985,10 @@ Build and verify the security-hardened app:
                 </div>
             </div>
 
-            <!-- Step 8.1 -->
+            <!-- Step 9.1 -->
             <div class="step orange">
                 <div class="step-header">
-                    <span class="step-num orange">Step 8.1</span>
+                    <span class="step-num orange">Step 9.1</span>
                     <span class="agent web">Researcher</span>
                     <h4>Research Admin Panel Tech Stack</h4>
                 </div>
@@ -3009,10 +3011,10 @@ For each option, research:
 Recommend the best option for a solo developer building a sports streaming app admin panel. Provide code examples.</div>
             </div>
 
-            <!-- Step 8.2 -->
+            <!-- Step 9.2 -->
             <div class="step orange">
                 <div class="step-header">
-                    <span class="step-num orange">Step 8.2</span>
+                    <span class="step-num orange">Step 9.2</span>
                     <span class="agent buff">Buff</span>
                     <h4>Backend API — Database & Models</h4>
                 </div>
@@ -3072,10 +3074,10 @@ Create a backend API for the sports streaming app admin panel using Node.js + Ex
 3. Seed script with sample data for testing</div>
             </div>
 
-            <!-- Step 8.3 -->
+            <!-- Step 9.3 -->
             <div class="step orange">
                 <div class="step-header">
-                    <span class="step-num orange">Step 8.3</span>
+                    <span class="step-num orange">Step 9.3</span>
                     <span class="agent buff">Buff</span>
                     <h4>Backend API — Auth & Routes</h4>
                 </div>
@@ -3154,10 +3156,10 @@ Create all API routes for the admin backend:
     - CORS config (allow admin panel origin)</div>
             </div>
 
-            <!-- Step 8.4 -->
+            <!-- Step 9.4 -->
             <div class="step orange">
                 <div class="step-header">
-                    <span class="step-num orange">Step 8.4</span>
+                    <span class="step-num orange">Step 9.4</span>
                     <span class="agent buff">Buff</span>
                     <h4>Admin Panel — Login & Layout</h4>
                 </div>
@@ -3216,10 +3218,10 @@ Create the admin panel web frontend (HTML + CSS + JavaScript, no framework):
    - Loading state management</div>
             </div>
 
-            <!-- Step 8.5 -->
+            <!-- Step 9.5 -->
             <div class="step orange">
                 <div class="step-header">
-                    <span class="step-num orange">Step 8.5</span>
+                    <span class="step-num orange">Step 9.5</span>
                     <span class="agent buff">Buff</span>
                     <h4>Admin Panel — Dashboard Page</h4>
                 </div>
@@ -3259,10 +3261,10 @@ Create the admin dashboard page:
 3. Add Chart.js CDN to admin/index.html</div>
             </div>
 
-            <!-- Step 8.6 -->
+            <!-- Step 9.6 -->
             <div class="step orange">
                 <div class="step-header">
-                    <span class="step-num orange">Step 8.6</span>
+                    <span class="step-num orange">Step 9.6</span>
                     <span class="agent buff">Buff</span>
                     <h4>Admin Panel — Events Manager</h4>
                 </div>
@@ -3306,10 +3308,10 @@ Create the Events management page:
    - Status toggle with confirmation</div>
             </div>
 
-            <!-- Step 8.7 -->
+            <!-- Step 9.7 -->
             <div class="step orange">
                 <div class="step-header">
-                    <span class="step-num orange">Step 8.7</span>
+                    <span class="step-num orange">Step 9.7</span>
                     <span class="agent buff">Buff</span>
                     <h4>Admin Panel — Channels & Highlights</h4>
                 </div>
@@ -3355,10 +3357,10 @@ Create Channels and Highlights management pages:
    - admin/js/toast.js (success/error/warning notifications)</div>
             </div>
 
-            <!-- Step 8.8 -->
+            <!-- Step 9.8 -->
             <div class="step orange">
                 <div class="step-header">
-                    <span class="step-num orange">Step 8.8</span>
+                    <span class="step-num orange">Step 9.8</span>
                     <span class="agent buff">Buff</span>
                     <h4>Admin Panel — Notifications & Config</h4>
                 </div>
@@ -3407,10 +3409,10 @@ Create Notifications and App Config pages:
      * VIEWER: Read-only access</div>
             </div>
 
-            <!-- Step 8.9 -->
+            <!-- Step 9.9 -->
             <div class="step orange">
                 <div class="step-header">
-                    <span class="step-num orange">Step 8.9</span>
+                    <span class="step-num orange">Step 9.9</span>
                     <span class="agent buff">Buff</span>
                     <h4>Admin Panel — Analytics Page</h4>
                 </div>
@@ -3457,10 +3459,10 @@ Create the Analytics page:
    - Animation configuration</div>
             </div>
 
-            <!-- Step 8.10 -->
+            <!-- Step 9.10 -->
             <div class="step orange">
                 <div class="step-header">
-                    <span class="step-num orange">Step 8.10</span>
+                    <span class="step-num orange">Step 9.10</span>
                     <span class="agent buff">Buff</span>
                     <h4>Mobile App — Admin API Integration</h4>
                 </div>
@@ -3499,10 +3501,10 @@ Update the Android app to use the admin panel API:
 5. Update RemoteConfigHelper to fetch from admin API config endpoint instead of Firebase Remote Config</div>
             </div>
 
-            <!-- Step 8.11 -->
+            <!-- Step 9.11 -->
             <div class="step orange">
                 <div class="step-header">
-                    <span class="step-num orange">Step 8.11</span>
+                    <span class="step-num orange">Step 9.11</span>
                     <span class="agent review">Reviewer</span>
                     <h4>Admin Panel Review</h4>
                 </div>
@@ -3542,10 +3544,10 @@ Review the entire admin panel implementation:
 Fix all issues found.</div>
             </div>
 
-            <!-- Step 8.12 -->
+            <!-- Step 9.12 -->
             <div class="step orange">
                 <div class="step-header">
-                    <span class="step-num orange">Step 8.12</span>
+                    <span class="step-num orange">Step 9.12</span>
                     <span class="agent bash">Basher</span>
                     <h4>Admin Panel Build & Deploy</h4>
                 </div>
@@ -3583,10 +3585,10 @@ Build and prepare admin panel for deployment:
     </section>
 
     
-            <!-- Step 8.13 - In-App Admin Login -->
+            <!-- Step 9.13 - In-App Admin Login -->
             <div class="step orange">
                 <div class="step-header">
-                    <span class="step-num orange">Step 8.13</span>
+                    <span class="step-num orange">Step 9.13</span>
                     <span class="agent buff">Buff</span>
                     <h4>Separate Android Admin App — Project Setup &amp; Login</h4>
                 </div>
@@ -3629,10 +3631,10 @@ Create a SEPARATE Android admin app (not part of the user app):
    - Glassmorphism cards, Material 3 components</div>
             </div>
 
-            <!-- Step 8.14 - In-App Events/Channels -->
+            <!-- Step 9.14 - In-App Events/Channels -->
             <div class="step orange">
                 <div class="step-header">
-                    <span class="step-num orange">Step 8.14</span>
+                    <span class="step-num orange">Step 9.14</span>
                     <span class="agent buff">Buff</span>
                     <h4>Admin App &mdash; Events &amp; Channels Screens</h4>
                 </div>
@@ -3683,10 +3685,10 @@ Build events and channels management in the separate admin app:
    - ViewBinding throughout, API 23+ compatible</div>
             </div>
 
-            <!-- Step 8.15 - In-App Config & Notifications -->
+            <!-- Step 9.15 - In-App Config & Notifications -->
             <div class="step orange">
                 <div class="step-header">
-                    <span class="step-num orange">Step 8.15</span>
+                    <span class="step-num orange">Step 9.15</span>
                     <span class="agent buff">Buff</span>
                     <h4>Admin App &mdash; Config, Notifications &amp; Analytics</h4>
                 </div>
@@ -3734,10 +3736,10 @@ Build remaining screens in the separate admin app:
    - Drag-to-reorder</div>
             </div>
 
-            <!-- Step 8.16 - Android Version Compat -->
+            <!-- Step 9.16 - Android Version Compat -->
             <div class="step orange">
                 <div class="step-header">
-                    <span class="step-num orange">Step 8.16</span>
+                    <span class="step-num orange">Step 9.16</span>
                     <span class="agent buff">Buff</span>
                     <h4>Android 6 &rarr; 16/17 Compat Layer (Both Apps)</h4>
                 </div>
@@ -3785,10 +3787,10 @@ Create a shared compatibility module used by BOTH the user app and admin app:
    - Verify graceful degradation on each</div>
             </div>
 
-            <!-- Step 8.17 - Dual Platform Review -->
+            <!-- Step 9.17 - Dual Platform Review -->
             <div class="step orange">
                 <div class="step-header">
-                    <span class="step-num orange">Step 8.17</span>
+                    <span class="step-num orange">Step 9.17</span>
                     <span class="agent review">Reviewer</span>
                     <h4>Admin System Review (All 3 Platforms)</h4>
                 </div>
@@ -3812,10 +3814,10 @@ Fix all issues found.</div>
 
 
     
-            <!-- Step 8.18 - Notification Targeting -->
+            <!-- Step 9.18 - Notification Targeting -->
             <div class="step orange">
                 <div class="step-header">
-                    <span class="step-num orange">Step 8.18</span>
+                    <span class="step-num orange">Step 9.18</span>
                     <span class="agent buff">Buff</span>
                     <h4>FCM Notification Targeting &amp; Scheduling System</h4>
                 </div>
