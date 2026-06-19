@@ -467,17 +467,17 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p><strong>Next:</strong> Step 1.3 (Basher — run <code>./gradlew build --dry-run</code>).</p>
         </div>
 
-        <!-- 1.3 TODO -->
-        <div class="step todo">
+        <!-- 1.3 DONE -->
+        <div class="step done">
             <div class="step-header">
-                <span class="step-num blue">STEP 1.3</span>
+                <span class="step-num green">STEP 1.3</span>
                 <span class="agent bash">Basher</span>
                 <span class="meta-chip">DEFAULT</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Sync &amp; verify build</h4>
-            <p>Done when: <code>./gradlew build --dry-run</code> exits 0 and prints resolved task graph (includes <code>processDebugResources</code>, <code>compileDebugKotlin</code>, <code>assembleDebug</code>).</p>
-            <p><strong>Next:</strong> Step 1.4 (Buff).</p>
+            <p>Done when: ✓ <code>./gradlew build --dry-run --no-daemon --console=plain</code> exit 0 (BUILD SUCCESSFUL). ✓ Resolved task graph includes <code>processDebugResources</code>, <code>compileDebugKotlin</code>, <code>compileDebugJavaWithJavac</code>, <code>kaptDebugKotlin</code>, <code>assembleDebug</code>, <code>lintDebug</code>. ✓ No plugin/version conflicts at task-graph resolution time. (Actual resource + Kotlin + kapt processing runs in Step 1.6's <code>./gradlew assembleDebug</code>.)</p>
+            <p><strong>Next:</strong> Step 1.4 (Buff — FCM + Sentry + <code>/api/config</code> initialization).</p>
         </div>
 
         <!-- 1.4 TODO -->
