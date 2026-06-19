@@ -93,13 +93,4 @@ dependencies {
 
     // ── SwipeRefreshLayout — Home tab pull-to-refresh host (Phase 3 · Step 3.3) ──
     implementation(libs.swiperefreshlayout)
-
-    // ── Supabase — Kotlin SDK for storage (Phase 1 · Step 1.4 retro-fix).
-    //   Plan Step 1.4 prompt box: "Initialize Supabase client for storage".
-    //   supabase-core provides createSupabaseClient(...) + the KMP runtime;
-    //   supabase-storage-ktx installs the Storage module so callers can
-    //   access admin-uploaded assets via supabase.storage.from(BUCKET).
-    //   kotlin-serialization-json is transitive (pulled in by supabase-core).
-    implementation(libs.supabase.core)
-    implementation(libs.supabase.storage.ktx)
 }
