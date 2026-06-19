@@ -18,15 +18,15 @@ import com.sportstream.app.SportStreamApp
 import com.sportstream.app.databinding.FragmentCategoriesBinding
 import com.sportstream.app.ui.adapters.CategoryAdapter
 import com.sportstream.app.ui.common.UiState
-import com.sportstream.app.ui.viewmodels.CategoriesViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 /**
- * Phase 3 · Step 3.4 \u2014 Categories fragment.
+ * Phase 3 \u00b7 Step 3.4 \u2014 Categories fragment.
  *
  * Filter-by-chip + 3-col grid of [com.sportstream.app.data.models.Channel]
- * cards. Pipe-managed via the existing Step 2.5 [CategoriesViewModel]:
+ * cards. Pipe-managed via the existing Step 2.5
+ * [com.sportstream.app.ui.viewmodels.CategoriesViewModel]:
  *
  *   1. On `onViewCreated` the fragment calls `vm.refresh()` to drive the
  *      initial repo fetch (categories + channels).
@@ -34,8 +34,7 @@ import kotlinx.coroutines.launch
  *      transitions:
  *        - Success -> rebuild the ChipGroup from `snapshot.categories`
  *          (preserving the current selection, if still in the list),
- *          set currentSelectionVisibleChip, and re-bind the RecyclerView
- *          to `snapshot.visibleChannels`.
+ *          then re-bind the RecyclerView to `snapshot.visibleChannels`.
  *        - Loading -> show progress + empty-state off.
  *        - Error   -> empty-state on, message set.
  *        - Idle     -> reset overlays, empty-state mirrors itemCount.
@@ -53,19 +52,21 @@ class CategoriesFragment : Fragment() {
     private val binding get() = _binding!!
 
     /**
-     * Fragment-scoped CategoriesViewModel. We use raw `ViewModelProvider`
+     * Fragment-scoped [CategoriesViewModel]. Raw `ViewModelProvider`
      * (not the `by viewModels { ... }` Kotlin DSL) to avoid adding
      * `androidx.fragment:fragment-ktx` for this single call site, mirroring
      * the pattern established by HomeFragment and MainActivity.
      */
-    private val vm: CategoriesViewModel by lazy {
+    private val vm: com.sportstream.app.ui.viewmodels.CategoriesViewModel by lazy {
         val app = requireActivity().application as SportStreamApp
         val factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                CategoriesViewModel(app.repository.mainRepository) as T
+                com.sportstream.app.ui.viewmodels.CategoriesViewModel(
+                    app.repository.mainRepository
+                ) as T
         }
-        ViewModelProvider(this, factory)[CategoriesViewModel::class.java]
+        ViewModelProvider(this, factory)[com.sportstream.app.ui.viewmodels.CategoriesViewModel::class.java]
     }
 
     private lateinit var adapter: CategoryAdapter
@@ -82,7 +83,7 @@ class CategoriesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = CategoryAdapter(onClick = { channel ->
+        adapter = CategoryAdapter(onClick = { _channel ->
             // Step 4.2 wires the PlayerActivity intent here. For now this
             // is a no-op so taps don't crash.
         })
@@ -138,13 +139,21 @@ class CategoriesFragment : Fragment() {
      * the listener while we mutate the chips, then re-attach once so
      * the rebuild doesn't fire a synthetic selectCategory(...) per chip.
      */
-    private fun applySnapshot(snap: com.sportstream.app.ui.viewmodels.CategoriesSnapshot) {
+    private fun applySnapshot(
+        snap: com.sportstream.app.ui.viewmodels.CategoriesSnapshot
+    ) {
         // 1) Rebuild the chip group.
         binding.categoryChips.removeAllViews()
         binding.categoryChips.setOnCheckedStateChangeListener(null)
 
         // First chip \u2014 the special "All" filter (id = null).
+        // Generate an explicit View id so ChipGroup.setOnCheckedStateChangeListener
+        // can route the tap back to this specific chip via findViewById.
+        // (View.NO_ID default was the original bug \u2014 the listener's
+        // `rawId == View.NO_ID -> null` guard then short-circuited every
+        // tap to "All".)
         val allChip = Chip(requireContext()).apply {
+            id = View.generateViewId()
             text = getString(R.string.fragment_categories_chip_all)
             isCheckable = true
             tag = ALL_CHIP_TAG
@@ -152,9 +161,12 @@ class CategoriesFragment : Fragment() {
         }
         binding.categoryChips.addView(allChip)
 
-        // One chip per Category returned by the API.
+        // One chip per Category returned by the API. Each gets a fresh
+        // generateViewId() so the ChipGroup's checkedId callback identifies
+        // it uniquely even when two Categories happen to share a string id.
         snap.categories.forEach { category ->
             val chip = Chip(requireContext()).apply {
+                id = View.generateViewId()
                 text = category.name
                 isCheckable = true
                 tag = category.id
@@ -163,15 +175,22 @@ class CategoriesFragment : Fragment() {
             binding.categoryChips.addView(chip)
         }
 
-        // Re-attach the listener once so subsequent taps fire selectCategory.
+        // Re-attach the listener once so subsequent taps fire
+        // selectCategory. The listener assumes chips have explicit view
+        // ids (set above) so a tap routes via findViewById to the right
+        // Chip, then we read its tag (Category.id, or ALL_CHIP_TAG for
+        // the "All" sentinel). Chips work end-to-end without relying on
+        // `View.NO_ID` heuristics or the VM coincidentally failing to
+        // look up unknown ids.
         binding.categoryChips.setOnCheckedStateChangeListener { group, checkedIds ->
-            // Single-selection ChipGroup guarantees at most one checked id.
             val rawId = checkedIds.firstOrNull()
-            val resolvedId: String? = when {
-                rawId == null -> null                       // toggled off -> null
-                rawId == View.NO_ID -> null                 // safety net
-                else -> group.findViewById<Chip>(rawId)?.tag as? String
-            }
+                ?: return@setOnCheckedStateChangeListener
+            val chip = group.findViewById<Chip>(rawId)
+                ?: return@setOnCheckedStateChangeListener
+            // The "All" chip carries a sentinel tag; map it to null
+            // explicitly rather than relying on the VM coincidentally
+            // treating unknown ids as "no filter".
+            val resolvedId = (chip.tag as? String)?.takeUnless { it == ALL_CHIP_TAG }
             vm.selectCategory(resolvedId)
         }
 
