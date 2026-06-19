@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Phase 3 · Step 3.2 — Navigation graph for the post-splash Main screen.
+    Hosts the 4 bottom-nav destinations (Home / Live / Favorites / Settings).
+    Destination IDs MUST match menu item IDs in res/menu/bottom_nav_menu.xml —
+    that is what makes BottomNavigationView.setupWithNavController() resolve
+    taps without any manual navController.navigate(...) wiring.
+    Deep-link / action graphs land in Steps 3.x–5.x as the Live / Player /
+    Settings screens actually route to other screens.
+-->
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.sportstream.app.ui.fragments.HomeFragment"
+        android:label="@string/main_nav_home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/liveFragment"
+        android:name="com.sportstream.app.ui.fragments.LiveFragment"
+        android:label="@string/main_nav_live"
+        tools:layout="@layout/fragment_live" />
+
+    <fragment
+        android:id="@+id/favoritesFragment"
+        android:name="com.sportstream.app.ui.fragments.FavoritesFragment"
+        android:label="@string/main_nav_favorites"
+        tools:layout="@layout/fragment_favorites" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.sportstream.app.ui.fragments.SettingsFragment"
+        android:label="@string/main_nav_settings"
+        tools:layout="@layout/fragment_settings" />
+
+</navigation>

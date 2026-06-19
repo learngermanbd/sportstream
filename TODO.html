@@ -644,14 +644,15 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p><strong>Next:</strong> Step 3.2 — DrawerLayout + BottomNav + Navigation Component (Home / Categories / Highlights).</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num pink">STEP 3.2</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
-            <h4>Main activity &amp; navigation</h4>
-            <p>Done when: DrawerLayout + BottomNav (Home/Categories/Highlights) + <code>nav_graph.xml</code> + drawer menu (Network Stream, Playlists, Floating Player, Video Quality, Notice, Join Us, Share, Update, Exit) + Toolbar with search.</p>
+            <h4>Main activity scaffold + bottom nav + initial repo fetch</h4>
+            <p>Done when: ✓ Replaced <code>activity_main.xml</code> with a <code>ConstraintLayout</code> that hosts a <code>FragmentContainerView</code> (<code>@+id/navHostFragment</code>, <code>NavHostFragment</code>) + a Material 3 <code>BottomNavigationView</code> (<code>@+id/bottomNav</code>) styled with the <code>SportStream.BottomNav</code> style that Step 1.5 stashed in styles.xml. ✓ 4 destinations wired by user-request: <strong>Home / Live / Favorites / Settings</strong> (originally TODO.html asked for Home/Categories/Highlights; expanded to 4 tabs to align with the user-side product spec). ✓ <code>res/navigation/main_nav_graph.xml</code> declares all 4 fragments with IDs matching the menu so <code>setupWithNavController()</code> resolves tab taps without manual <code>navigate(...)</code> calls. ✓ <code>res/menu/bottom_nav_menu.xml</code> reuses platform drawables for the icons (<code>ic_menu_view</code> / <code>ic_media_play</code> / <code>btn_star_big_on</code> / <code>ic_menu_preferences</code>) — no new vector drawables ship in this step. ✓ One placeholder Fragment per tab (HomeFragment / LiveFragment / FavoritesFragment / SettingsFragment) inflating a ConstraintLayout title + subtitle; ViewBinding-managed with null-safe <code>_binding</code> reset in <code>onDestroyView()</code>. ✓ <code>MainActivity.kt</code> inflates <code>ActivityMainBinding</code> via ViewBinding, resolves <code>NavController</code> from the <code>NavHostFragment</code>, calls <code>bottomNav.setupWithNavController(navController)</code>, <strong>triggers the initial repository fetch via <code>mainVm.load()</code></strong> (which internally goes through <code>StateViewModel.launch</code> — hops to <code>Dispatchers.Default</code> + <code>viewModelScope</code>, catches <code>Throwable</code>, re-throws <code>CancellationException</code>), and observes <code>mainVm.state</code> in <code>repeatOnLifecycle(STARTED)</code> so future Error → Snackbar and Loading → progress hooks attach with one statement. ⏭ <strong>Drawer menu (Network Stream, Playlists, Floating Player, Video Quality, Notice, Join Us, Share, Update, Exit)</strong> + <strong>Toolbar + search</strong> deliberately deferred to Step 5.5 / 5.6 — they layer a DrawerLayout + Toolbar on top of this root, they don't replace the bottom nav.</p>
+            <p><strong>Next:</strong> Step 3.3 — Home fragment with SwipeRefresh + auto-scroll banners + LIVE Events list (VS team-logo row, animated LIVE badge) + EventAdapter with DiffUtil + HomeViewModel.</p>
         </div>
 
         <div class="step todo">

@@ -1,61 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Phase 3 · Step 3.2 — MainActivity layout (replaces Step 3.1 placeholder).
+    Hosts a NavHostFragment + a Material 3 BottomNavigationView styled with
+    @style/SportStream.BottomNav (defined in styles.xml since Step 1.5).
+    The DrawerLayout + Toolbar + Search scaffold lands in Steps 5.5 / 5.6
+    and will be wrapped around this root.
+-->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_splash">
+    android:background="@drawable/bg_splash"
+    android:fitsSystemWindows="true">
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/poppins_regular"
-        android:letterSpacing="0.20"
-        android:text="@string/main_title"
-        android:textColor="@color/primary"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@id/subtitle"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+    <!-- NavHostFragment hosts res/navigation/main_nav_graph.xml (4 destinations). -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/navHostFragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:defaultNavHost="true"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed" />
-
-    <TextView
-        android:id="@+id/subtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="14dp"
-        android:fontFamily="@font/poppins_regular"
-        android:letterSpacing="0.04"
-        android:text="@string/main_subtitle"
-        android:textColor="@color/text_muted"
-        android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@id/phaseBadge"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNav"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:navGraph="@navigation/main_nav_graph" />
 
-    <TextView
-        android:id="@+id/phaseBadge"
-        android:layout_width="wrap_content"
+    <!-- Bottom navigation. Style gives it glass-primary active indicator
+         + text_muted item icon/text tint + card_bg background. -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
+        style="@style/SportStream.BottomNav"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:alpha="0.7"
-        android:background="@drawable/bg_glass_card"
-        android:fontFamily="@font/poppins_regular"
-        android:letterSpacing="0.10"
-        android:paddingStart="14dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="14dp"
-        android:paddingBottom="8dp"
-        android:text="@string/main_phase_badge"
-        android:textColor="@color/primary"
-        android:textSize="11sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/subtitle" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,8 +6,27 @@
     <string name="splash_error_title">NETWORK ERROR</string>
     <string name="splash_retry">RETRY</string>
     <string name="splash_version_template">v%1$s</string>
-    <!-- Main placeholder (Step 3.1) -->
+    <!-- Main placeholder (Step 3.1) — kept for backwards compat with any
+         code reference; superseded by the tab labels below. -->
     <string name="main_title">SPORTS STREAMING</string>
     <string name="main_subtitle">Welcome — Phase 3 · Step 3.2 next</string>
     <string name="main_phase_badge">PHASE 3 · STEP 3.2 INCOMING</string>
+
+    <!-- Main bottom nav tabs (Step 3.2). These MUST be the same identifiers
+         used by res/menu/bottom_nav_menu.xml `android:title` attributes —
+         AAPT validates the @string/main_nav_* refs at compile time. -->
+    <string name="main_nav_home">HOME</string>
+    <string name="main_nav_live">LIVE</string>
+    <string name="main_nav_favorites">FAVORITES</string>
+    <string name="main_nav_settings">SETTINGS</string>
+
+    <!-- Tab placeholder content (Step 3.2 — replaced in Steps 3.3, 5.1, 5.5). -->
+    <string name="fragment_home_title">HOME</string>
+    <string name="fragment_home_subtitle">Step 3.3 incoming</string>
+    <string name="fragment_live_title">LIVE</string>
+    <string name="fragment_live_subtitle">Step 3.3 incoming</string>
+    <string name="fragment_favorites_title">FAVORITES</string>
+    <string name="fragment_favorites_subtitle">Step 5.1 incoming</string>
+    <string name="fragment_settings_title">SETTINGS</string>
+    <string name="fragment_settings_subtitle">Step 5.5 incoming</string>
 </resources>
