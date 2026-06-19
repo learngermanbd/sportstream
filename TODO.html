@@ -480,17 +480,17 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p><strong>Next:</strong> Step 1.4 (Buff — FCM + Sentry + <code>/api/config</code> initialization).</p>
         </div>
 
-        <!-- 1.4 TODO -->
-        <div class="step todo">
+        <!-- 1.4 DONE -->
+        <div class="step done">
             <div class="step-header">
-                <span class="step-num blue">STEP 1.4</span>
+                <span class="step-num green">STEP 1.4</span>
                 <span class="agent buff">Buff</span>
                 <span class="meta-chip">DEFAULT</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>FCM + Sentry + API config setup</h4>
-            <p>Done when: <code>SportStreamApp.kt</code> initializes <code>FirebaseMessaging</code> + <code>Sentry</code>; placeholder <code>google-services.json</code> added; <code>RemoteConfigHelper.kt</code> fetches <code>GET /api/config</code>; <code>AndroidManifest.xml</code> registers the Application class and permissions <code>INTERNET / ACCESS_NETWORK_STATE / POST_NOTIFICATIONS / WAKE_LOCK</code>.</p>
-            <p><strong>Next:</strong> Step 1.5 (Buff).</p>
+            <p>Done when: ✓ <code>SportStreamApp.kt</code> initializes <code>Sentry</code> FIRST then <code>FirebaseMessaging</code>. ✓ Shared <code>OkHttpClient</code> (lazy 30 s timeouts) + <code>Context.remoteConfigDataStore</code> extension exposed for callers. ✓ <code>RemoteConfigHelper.kt</code> persists <code>AppConfig</code> via DataStore (offline fallback). ✓ 30-min refresh window. ✓ <code>AndroidManifest.xml</code> declares <code>INTERNET / ACCESS_NETWORK_STATE / POST_NOTIFICATIONS / WAKE_LOCK</code>. ✓ placeholder <code>google-services.json</code> api_key swapped to <code>AIzaSyXXXXXXXXXXXXXXXXXXXXXXXX</code>. ✓ <code>./gradlew compileDebugKotlin --no-daemon</code> BUILD SUCCESSFUL (1m 59s after extracting Step 1.1's truncated PlayerActivity.kt comment + adding <code>suspend</code> to <code>returnCacheOrDefaults</code>).</p>
+            <p><strong>Next:</strong> Step 1.5 (Buff — design system &amp; theme: colors.xml / themes.xml / styles.xml / glass drawables / Poppins font).</p>
         </div>
 
         <!-- 1.5 TODO -->
