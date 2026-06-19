@@ -82,6 +82,21 @@ class MainActivity : AppCompatActivity() {
             v.updatePadding(bottom = sysBars.bottom)
             insets
         }
+        // Status-bar / display-cutout passthrough: NavHostFragment gets the
+        // top system-bar inset as padding so HomeFragment / LiveFragment /
+        // FavoritesFragment / SettingsFragment content sits below the status
+        // bar / notch instead of beneath it. We combine systemBars() with
+        // displayCutout() so the camera-notch on devices like the Pixel Pro
+        // is honored as well. Both listeners set on different Views sit
+        // side-by-side (no consumption at our level), each padding only its
+        // own View.
+        ViewCompat.setOnApplyWindowInsetsListener(binding.navHostFragment) { v, insets ->
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            v.updatePadding(top = bars.top)
+            insets
+        }
 
         // BottomNav <-> NavController wiring. Tab swaps are handled by
         // setupWithNavController() — no manual navController.navigate(...)
