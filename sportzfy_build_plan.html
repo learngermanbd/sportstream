@@ -1,0 +1,3426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sportzfy Clone — Full Build Plan with Codebuff Agents</title>
+    <style>
+        :root {
+            --primary: #1CCBD4;
+            --primary-dark: #17a8b0;
+            --secondary: #131931;
+            --bg: #0a0f1a;
+            --bg-card: #121a27;
+            --text: #e0e6ed;
+            --text-muted: #8899aa;
+            --border: #1e2d45;
+            --green: #22c55e;
+            --orange: #f59e0b;
+            --red: #ef4444;
+            --purple: #a78bfa;
+            --pink: #ec4899;
+            --blue: #3b82f6;
+            --glass: rgba(28,203,212,0.08);
+            --glass-border: rgba(28,203,212,0.15);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg); color: var(--text); line-height: 1.7;
+        }
+        body::before {
+            content:''; position:fixed; top:-50%; left:-50%; width:200%; height:200%;
+            background: radial-gradient(ellipse at 20% 30%, rgba(28,203,212,0.04) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 70%, rgba(167,139,250,0.03) 0%, transparent 50%);
+            z-index:-1; animation: bgShift 25s ease-in-out infinite alternate;
+        }
+        @keyframes bgShift { 0%{transform:translate(0,0)} 100%{transform:translate(-3%,-3%)} }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+        .container { max-width:1200px; margin:0 auto; padding:0 24px; }
+
+        /* Hero */
+        .hero {
+            text-align:center; padding:60px 20px 50px; position:relative;
+        }
+        .hero::after {
+            content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+            width:80%; max-width:600px; height:1px;
+            background:linear-gradient(90deg,transparent,var(--primary),transparent);
+        }
+        .hero-badge {
+            display:inline-block; background:var(--glass); border:1px solid var(--glass-border);
+            padding:6px 18px; border-radius:50px; font-size:13px; color:var(--primary);
+            letter-spacing:1px; text-transform:uppercase; margin-bottom:16px;
+        }
+        .hero h1 {
+            font-size:3rem; font-weight:800;
+            background:linear-gradient(135deg,var(--primary),var(--purple));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+            margin-bottom:10px;
+        }
+        .hero .sub { font-size:1.1rem; color:var(--text-muted); max-width:700px; margin:0 auto; }
+        .hero .meta {
+            display:inline-flex; gap:20px; margin-top:20px; flex-wrap:wrap; justify-content:center;
+        }
+        .hero .meta-item {
+            padding:6px 14px; border-radius:8px; font-size:13px; color:var(--text-muted);
+            background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+        }
+        .hero .meta-item strong { color:var(--primary); }
+
+        /* Stats Bar */
+        .stats-bar {
+            display:flex; justify-content:center; gap:30px; flex-wrap:wrap;
+            padding:30px 0; margin:20px 0;
+        }
+        .stat {
+            text-align:center; padding:16px 24px; border-radius:12px;
+            background:var(--bg-card); border:1px solid var(--border); min-width:140px;
+        }
+        .stat .num {
+            font-size:2rem; font-weight:800;
+            background:linear-gradient(135deg,var(--primary),var(--purple));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+        }
+        .stat .label { font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; }
+
+        /* TOC */
+        .toc {
+            display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:30px 0;
+        }
+        .toc a {
+            padding:6px 14px; border-radius:8px; background:var(--glass);
+            border:1px solid var(--glass-border); color:var(--text-muted); text-decoration:none;
+            font-size:12px; transition:all 0.2s;
+        }
+        .toc a:hover { background:rgba(28,203,212,0.15); color:var(--primary); border-color:var(--primary); }
+
+        /* Section */
+        .section { margin:50px 0; }
+        .section-header {
+            display:flex; align-items:center; gap:14px; margin-bottom:24px;
+        }
+        .section-icon {
+            width:44px; height:44px; border-radius:12px;
+            display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;
+        }
+        .section-icon.blue { background:rgba(59,130,246,0.15); }
+        .section-icon.green { background:rgba(34,197,94,0.15); }
+        .section-icon.orange { background:rgba(245,158,11,0.15); }
+        .section-icon.purple { background:rgba(167,139,250,0.15); }
+        .section-icon.red { background:rgba(239,68,68,0.15); }
+        .section-icon.pink { background:rgba(236,72,153,0.15); }
+        .section-title { font-size:1.5rem; font-weight:700; color:#fff; }
+        .section-desc { color:var(--text-muted); font-size:13px; margin-top:2px; }
+
+        /* Cards */
+        .card {
+            background:var(--bg-card); border:1px solid var(--border); border-radius:16px;
+            padding:28px; transition:all 0.3s; position:relative; overflow:hidden;
+        }
+        .card::before {
+            content:''; position:absolute; top:0; left:0; right:0; height:2px;
+            background:linear-gradient(90deg,var(--primary),var(--purple));
+            opacity:0; transition:opacity 0.3s;
+        }
+        .card:hover { border-color:var(--glass-border); transform:translateY(-2px); box-shadow:0 8px 32px rgba(0,0,0,0.3); }
+        .card:hover::before { opacity:1; }
+
+        .grid-2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); gap:20px; }
+        .grid-3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; }
+
+        /* Phase */
+        .phase { margin-bottom:40px; }
+        .phase-header {
+            display:flex; align-items:center; gap:14px; margin-bottom:20px;
+            padding-bottom:14px; border-bottom:1px solid var(--border);
+        }
+        .phase-num {
+            width:48px; height:48px; border-radius:14px; display:flex; align-items:center;
+            justify-content:center; font-size:20px; font-weight:800; flex-shrink:0;
+            border:2px solid;
+        }
+        .phase-num.p1 { background:rgba(59,130,246,0.12); border-color:var(--blue); color:var(--blue); }
+        .phase-num.p2 { background:rgba(167,139,250,0.12); border-color:var(--purple); color:var(--purple); }
+        .phase-num.p3 { background:rgba(236,72,153,0.12); border-color:var(--pink); color:var(--pink); }
+        .phase-num.p4 { background:rgba(245,158,11,0.12); border-color:var(--orange); color:var(--orange); }
+        .phase-num.p5 { background:rgba(34,197,94,0.12); border-color:var(--green); color:var(--green); }
+        .phase-num.p6 { background:rgba(239,68,68,0.12); border-color:var(--red); color:var(--red); }
+        .phase-num.p7 { background:rgba(28,203,212,0.12); border-color:var(--primary); color:var(--primary); }
+        .phase-title { font-size:1.2rem; font-weight:700; color:#fff; }
+        .phase-subtitle { font-size:13px; color:var(--text-muted); }
+
+        /* Step Card */
+        .step {
+            padding:20px; border-radius:12px; background:rgba(255,255,255,0.02);
+            border:1px solid rgba(255,255,255,0.04); margin-bottom:14px;
+            transition:all 0.2s; position:relative; padding-left:24px;
+        }
+        .step::before {
+            content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+            border-radius:3px;
+        }
+        .step.blue::before { background:var(--blue); }
+        .step.purple::before { background:var(--purple); }
+        .step.pink::before { background:var(--pink); }
+        .step.orange::before { background:var(--orange); }
+        .step.green::before { background:var(--green); }
+        .step.red::before { background:var(--red); }
+        .step.gray::before { background:#6b7280; }
+        .step:hover { background:rgba(255,255,255,0.04); border-color:rgba(255,255,255,0.08); transform:translateX(4px); }
+
+        /* Security specific */
+        .sec-card {
+            background:linear-gradient(135deg, rgba(239,68,68,0.06), rgba(239,68,68,0.02));
+            border:1px solid rgba(239,68,68,0.15); border-radius:12px;
+            padding:20px; margin-bottom:14px; transition:all 0.2s;
+        }
+        .sec-card:hover { border-color:rgba(239,68,68,0.3); transform:translateX(4px); }
+        .sec-card .sec-header { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+        .sec-card .sec-icon { font-size:20px; }
+        .sec-card h4 { font-size:15px; font-weight:600; color:#fff; }
+        .sec-card p { font-size:13px; color:var(--text-muted); line-height:1.6; }
+        .sec-level {
+            display:inline-flex; align-items:center; gap:4px;
+            padding:2px 8px; border-radius:4px; font-size:10px;
+            font-weight:700; text-transform:uppercase; letter-spacing:0.5px;
+        }
+        .sec-level.critical { background:rgba(239,68,68,0.2); color:var(--red); }
+        .sec-level.high { background:rgba(245,158,11,0.2); color:var(--orange); }
+        .sec-level.medium { background:rgba(59,130,246,0.2); color:var(--blue); }
+        .sec-level.bonus { background:rgba(167,139,250,0.2); color:var(--purple); }
+
+        .security-matrix {
+            display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin:20px 0;
+        }
+        .security-matrix-item {
+            padding:20px; border-radius:12px;
+            background:rgba(239,68,68,0.04); border:1px solid rgba(239,68,68,0.1);
+            transition:all 0.2s;
+        }
+        .security-matrix-item:hover {
+            border-color:rgba(239,68,68,0.25); transform:translateY(-2px);
+            box-shadow:0 4px 16px rgba(239,68,68,0.1);
+        }
+        .security-matrix-item .icon { font-size:28px; margin-bottom:8px; }
+        .security-matrix-item h4 { font-size:14px; font-weight:700; color:#fff; margin-bottom:4px; }
+        .security-matrix-item p { font-size:12px; color:var(--text-muted); line-height:1.5; }
+
+        .step-header {
+            display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap;
+        }
+        .step-num {
+            font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px;
+            text-transform:uppercase; letter-spacing:0.5px;
+        }
+        .step-num.blue { background:rgba(59,130,246,0.2); color:var(--blue); }
+        .step-num.purple { background:rgba(167,139,250,0.2); color:var(--purple); }
+        .step-num.pink { background:rgba(236,72,153,0.2); color:var(--pink); }
+        .step-num.orange { background:rgba(245,158,11,0.2); color:var(--orange); }
+        .step-num.green { background:rgba(34,197,94,0.2); color:var(--green); }
+        .step-num.red { background:rgba(239,68,68,0.2); color:var(--red); }
+
+        .step h4 { font-size:15px; font-weight:600; color:#fff; }
+        .step p { font-size:13px; color:var(--text-muted); line-height:1.6; margin-top:6px; }
+
+        /* Agent Badge */
+        .agent {
+            display:inline-flex; align-items:center; gap:6px; padding:4px 12px;
+            border-radius:6px; font-size:11px; font-weight:600; text-transform:uppercase;
+            letter-spacing:0.5px;
+        }
+        .agent.buff { background:rgba(28,203,212,0.15); color:var(--primary); border:1px solid rgba(28,203,212,0.25); }
+        .agent.bash { background:rgba(34,197,94,0.15); color:var(--green); border:1px solid rgba(34,197,94,0.25); }
+        .agent.web { background:rgba(59,130,246,0.15); color:var(--blue); border:1px solid rgba(59,130,246,0.25); }
+        .agent.file { background:rgba(167,139,250,0.15); color:var(--purple); border:1px solid rgba(167,139,250,0.25); }
+        .agent.review { background:rgba(245,158,11,0.15); color:var(--orange); border:1px solid rgba(245,158,11,0.25); }
+        .agent.browser { background:rgba(236,72,153,0.15); color:var(--pink); border:1px solid rgba(236,72,153,0.25); }
+        .agent.think { background:rgba(239,68,68,0.15); color:var(--red); border:1px solid rgba(239,68,68,0.25); }
+
+        .agent::before { font-size:13px; }
+        .agent.buff::before { content:'🤖'; }
+        .agent.bash::before { content:'⌨️'; }
+        .agent.web::before { content:'🌐'; }
+        .agent.file::before { content:'📁'; }
+        .agent.review::before { content:'🔍'; }
+        .agent.browser::before { content:'🖥️'; }
+        .agent.think::before { content:'🧠'; }
+
+        /* Prompt Box */
+        .prompt-box {
+            margin-top:10px; padding:12px 16px; border-radius:8px;
+            background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06);
+            font-family:'Courier New',monospace; font-size:12px; color:var(--green);
+            line-height:1.6; overflow-x:auto; white-space:pre-wrap;
+        }
+        .prompt-box .comment { color:var(--text-muted); }
+        .prompt-box .cmd { color:var(--primary); }
+
+        /* Dependency Arrow */
+        .dep-arrow {
+            display:flex; align-items:center; gap:8px; padding:8px 0;
+            font-size:12px; color:var(--text-muted);
+        }
+        .dep-arrow .line {
+            flex:1; height:1px; background:linear-gradient(90deg,var(--border),transparent);
+        }
+
+        /* Checklist */
+        .checklist { list-style:none; }
+        .checklist li {
+            display:flex; align-items:flex-start; gap:10px; padding:8px 0;
+            font-size:14px; color:var(--text-muted); border-bottom:1px solid rgba(255,255,255,0.03);
+        }
+        .checklist li:last-child { border-bottom:none; }
+        .checklist .box {
+            width:18px; height:18px; border-radius:4px; flex-shrink:0; margin-top:2px;
+            border:2px solid var(--border); display:flex; align-items:center; justify-content:center;
+            font-size:10px;
+        }
+
+        /* Timeline */
+        .timeline { position:relative; padding-left:32px; }
+        .timeline::before {
+            content:''; position:absolute; left:12px; top:0; bottom:0; width:2px;
+            background:linear-gradient(180deg,var(--primary),var(--purple),var(--pink),var(--orange),var(--green));
+        }
+        .timeline-item {
+            position:relative; padding:12px 0 24px;
+        }
+        .timeline-item::before {
+            content:''; position:absolute; left:-26px; top:16px;
+            width:12px; height:12px; border-radius:50%;
+            border:2px solid var(--primary); background:var(--bg);
+        }
+        .timeline-item .time { font-size:12px; color:var(--primary); font-weight:600; margin-bottom:4px; }
+        .timeline-item .desc { font-size:14px; color:var(--text-muted); }
+
+        /* Footer */
+        .footer {
+            text-align:center; padding:40px 20px; margin-top:60px;
+            border-top:1px solid var(--border); color:var(--text-muted); font-size:13px;
+        }
+
+        /* Responsive */
+        @media(max-width:768px) {
+            .hero h1 { font-size:2rem; }
+            .grid-2, .grid-3 { grid-template-columns:1fr; }
+            .container { padding:0 16px; }
+            .card { padding:20px; }
+            .stats-bar { gap:12px; }
+            .stat { min-width:100px; padding:12px 16px; }
+            .stat .num { font-size:1.5rem; }
+        }
+
+        ::-webkit-scrollbar { width:8px; }
+        ::-webkit-scrollbar-track { background:var(--bg); }
+        ::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+        ::-webkit-scrollbar-thumb:hover { background:var(--primary-dark); }
+        html { scroll-behavior:smooth; }
+    </style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+    <div class="hero-badge">📋 Complete Build Plan</div>
+    <h1>Sportzfy Clone</h1>
+    <p class="sub">A step-by-step blueprint to build a live sports streaming app using <strong style="color:var(--primary)">Codebuff</strong> and its specialized AI agents. Every step includes the exact agent, prompt, and expected output.</p>
+    <div class="meta">
+        <div class="meta-item">🎯 <strong>9 Phases</strong></div>
+        <div class="meta-item">📝 <strong>80+ Steps</strong></div>
+        <div class="meta-item">🤖 <strong>7 Agent Types</strong></div>
+        <div class="meta-item">🛡️ <strong>20+ Security Layers</strong></div>
+        <div class="meta-item">📱 <strong>Android 6-17</strong></div>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- Stats -->
+    <div class="stats-bar">
+        <div class="stat"><div class="num">9</div><div class="label">Phases</div></div>
+        <div class="stat"><div class="num">70+</div><div class="label">Steps</div></div>
+        <div class="stat"><div class="num">20+</div><div class="label">Security Layers</div></div>
+        <div class="stat"><div class="num">~4d</div><div class="label">Est. Time</div></div>
+        <div class="stat"><div class="num">6-17</div><div class="label">Android API</div></div>
+    </div>
+
+    <!-- Agent Legend -->
+    <section class="section">
+        <div class="card">
+            <h3 style="color:#fff;margin-bottom:16px;font-size:15px;">🤖 Codebuff Agent Legend</h3>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                <span class="agent buff">Buff (Main AI)</span>
+                <span class="agent file">File Picker</span>
+                <span class="agent web">Web Researcher</span>
+                <span class="agent bash">Basher (Terminal)</span>
+                <span class="agent review">Code Reviewer</span>
+                <span class="agent browser">Browser Agent</span>
+                <span class="agent think">Thinker (Gemini)</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- TOC -->
+    <nav class="toc">
+        <a href="#phase1">Phase 1: Project Setup</a>
+        <a href="#phase2">Phase 2: Core Architecture</a>
+        <a href="#phase3">Phase 3: Home & Events</a>
+        <a href="#phase4">Phase 4: Video Player</a>
+        <a href="#phase5">Phase 5: Extra Features</a>
+        <a href="#phase6">Phase 6: Polish & Launch</a>
+        <a href="#phase7">Phase 7: Security & Protection</a>
+        <a href="#phase8">Phase 8: Admin Panel</a>
+        <a href="#phase9">Phase 9: Testing & QA</a>
+    </nav>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 1 -->
+    <!-- ============================================================ -->
+    <section class="section" id="phase1">
+        <div class="phase">
+            <div class="phase-header">
+                <div class="phase-num p1">1</div>
+                <div>
+                    <div class="phase-title">Project Setup & Foundation</div>
+                    <div class="phase-subtitle">Set up Android project, dependencies, Firebase, and base theme — Est. 2-3 hours</div>
+                </div>
+            </div>
+
+            <!-- Step 1.1 -->
+            <div class="step blue">
+                <div class="step-header">
+                    <span class="step-num blue">Step 1.1</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Create Android Project Structure</h4>
+                </div>
+                <p>Initialize a new Android project with Kotlin, Gradle, and the correct package structure matching the Sportzfy architecture.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create a new Android project with Kotlin for a sports streaming app called "SportStream". 
+Package: com.sportstream.app
+Min SDK: 23 (Android 6.0 Marshmallow), Target SDK: 35 (Android 16)
+Use Gradle Kotlin DSL (build.gradle.kts)
+Set up the following package structure:
+- activities/ (SplashActivity, MainActivity, PlayerActivity)
+- fragments/ (HomeFragment, CategoriesFragment, HighlightsFragment)
+- adapters/ (EventAdapter, ChannelAdapter, HighlightAdapter)
+- models/ (Event, Channel, Highlight, Category)
+- viewmodels/
+- repository/
+- utils/
+- services/
+Create all files with basic skeleton code.</div>
+            </div>
+
+            <!-- Step 1.2 -->
+            <div class="step blue">
+                <div class="step-header">
+                    <span class="step-num blue">Step 1.2</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Add All Dependencies</h4>
+                </div>
+                <p>Add Media3, OkHttp, Room, Firebase, Lottie, Material 3, and all required libraries to build.gradle.kts.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Add the following dependencies to build.gradle.kts (app level):
+- androidx.media3:media3-exoplayer (video player)
+- androidx.media3:media3-ui (player UI)
+- com.squareup.okhttp3:okhttp (networking)
+- androidx.room:room-runtime + room-ktx + room-compiler (database)
+- com.google.firebase:firebase-bom (Firebase BoM)
+- firebase-analytics, firebase-messaging, firebase-remote-config, firebase-crashlytics
+- com.airbnb.android:lottie (animations)
+- com.google.android.material:material (Material 3)
+- androidx.navigation:navigation-fragment-ktx + navigation-ui-ktx
+- androidx.lifecycle:lifecycle-viewmodel-ktx + livedata-ktx
+- androidx.datastore:datastore-preferences
+- com.github.bumptech.glide:glide (image loading)
+- org.jetbrains.kotlinx:kotlinx-coroutines-android
+Enable ViewBinding and DataBinding in build.gradle.kts
+Apply Google Services plugin and Crashlytics plugin.</div>
+            </div>
+
+            <!-- Step 1.3 -->
+            <div class="step blue">
+                <div class="step-header">
+                    <span class="step-num blue">Step 1.3</span>
+                    <span class="agent bash">Basher</span>
+                    <h4>Sync & Verify Build</h4>
+                </div>
+                <p>Run Gradle sync to ensure all dependencies resolve correctly.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Run: ./gradlew build --dry-run
+Verify all dependencies resolve without errors. Fix any version conflicts.</div>
+            </div>
+
+            <!-- Step 1.4 -->
+            <div class="step blue">
+                <div class="step-header">
+                    <span class="step-num blue">Step 1.4</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Firebase Setup</h4>
+                </div>
+                <p>Create google-services.json placeholder and initialize Firebase in the Application class.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+1. Create a placeholder google-services.json with dummy values (user will replace with real ones)
+2. Create SportStreamApp.kt extending Application class
+3. Initialize Firebase, set up Firebase Messaging token retrieval
+4. Create a RemoteConfigHelper.kt utility class to fetch remote config values
+5. Register the Application class in AndroidManifest.xml
+6. Add INTERNET, ACCESS_NETWORK_STATE, POST_NOTIFICATIONS, WAKE_LOCK permissions to manifest</div>
+            </div>
+
+            <!-- Step 1.5 -->
+            <div class="step blue">
+                <div class="step-header">
+                    <span class="step-num blue">Step 1.5</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Design System & Theme</h4>
+                </div>
+                <p>Create the dark glassmorphism theme with Material 3, colors, typography, and custom styles.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create the design system for a dark-themed sports streaming app:
+1. res/values/colors.xml - Define:
+   - primary: #1CCBD4 (cyan), secondary: #131931 (dark navy)
+   - card_background: #121A27, dark_bg: #0A0F1A
+   - glass_stroke: #33FFFFFF, accent colors
+2. res/values/themes.xml - Material 3 dark theme with:
+   - NoActionBar base theme
+   - Custom color scheme matching our palette
+   - Status bar color set to transparent/translucent
+3. res/values/styles.xml - Custom styles for:
+   - Glass-style cards (rounded corners, stroke, translucent bg)
+   - Bottom navigation styling
+   - Player controls styling
+4. res/values/strings.xml - App name "SportStream", tagline "Live sports, instant access"
+5. Create drawable resources:
+   - bg_glass_card.xml (gradient glass effect)
+   - bg_splash.xml (gradient background)
+   - bg_player_controls.xml (semi-transparent overlay)
+6. Add fonts: Poppins, Montserrat to res/font/</div>
+            </div>
+
+            <div class="step blue">
+                <div class="step-header">
+                    <span class="step-num blue">Step 1.6</span>
+                    <span class="agent review">Reviewer</span>
+                    <h4>Review Foundation</h4>
+                </div>
+                <p>Review all foundation files for correctness, proper imports, and consistency.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Review all the project setup files we just created. Check:
+- build.gradle.kts has all correct dependencies
+- AndroidManifest.xml has all required permissions and activity declarations
+- Theme colors and styles are consistent
+- Application class is properly registered
+- Package structure is correct
+Fix any issues found.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 2 -->
+    <!-- ============================================================ -->
+    <section class="section" id="phase2">
+        <div class="phase">
+            <div class="phase-header">
+                <div class="phase-num p2">2</div>
+                <div>
+                    <div class="phase-title">Core Architecture & Data Layer</div>
+                    <div class="phase-subtitle">Models, API, Repository, ViewModel, and Room database — Est. 3-4 hours</div>
+                </div>
+            </div>
+
+            <div class="step purple">
+                <div class="step-header">
+                    <span class="step-num purple">Step 2.1</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Create Data Models</h4>
+                </div>
+                <p>Define all data classes for the app's core entities.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create Kotlin data classes in models/ package:
+
+1. Event.kt:
+   - id: String, title: String, teamA: Team, teamB: Team
+   - date: String, time: String, isLive: Boolean
+   - category: String, streams: List&lt;StreamLink&gt;
+   
+2. Team.kt:
+   - name: String, logoUrl: String
+
+3. Channel.kt:
+   - id: String, name: String, logoUrl: String
+   - streamUrl: String, category: String, isFavorite: Boolean
+
+4. Highlight.kt:
+   - id: String, title: String, thumbnailUrl: String
+   - videoUrl: String, date: String, duration: String
+
+5. Category.kt:
+   - id: String, name: String, iconUrl: String
+
+6. StreamLink.kt:
+   - name: String, url: String, quality: String
+
+7. Playlist.kt (Room Entity):
+   - @PrimaryKey id: String, name: String, 
+   - channels: List&lt;String&gt; (TypeConverter for list), createdAt: Long
+
+8. ApiResponse.kt:
+   - events: List&lt;Event&gt;, channels: List&lt;Channel&gt;
+   - highlights: List&lt;Highlight&gt;, categories: List&lt;Category&gt;
+   - banners: List&lt;Banner&gt;, appVersion: String, updateUrl: String
+
+Use @SerializedName for JSON mapping. Add Room annotations for local entities.</div>
+            </div>
+
+            <div class="step purple">
+                <div class="step-header">
+                    <span class="step-num purple">Step 2.2</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Build API Service</h4>
+                </div>
+                <p>Create the Retrofit/OkHttp API service layer to fetch app data.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create the networking layer:
+
+1. ApiClient.kt - OkHttp singleton with:
+   - 30s timeouts, logging interceptor (debug only)
+   - Cache for offline support
+   
+2. ApiService.kt - Interface with:
+   - @GET suspend fun getAppData(): Response&lt;ApiResponse&gt;
+   - @GET suspend fun getEvents(): Response&lt;List&lt;Event&gt;&gt;
+   - @GET suspend fun getChannels(): Response&lt;List&lt;Channel&gt;&gt;
+   - @GET suspend fun getHighlights(): Response&lt;List&lt;Highlight&gt;&gt;
+
+3. RemoteDataSource.kt - Class wrapping ApiService
+   - Handles errors, returns Result&lt;T&gt; sealed class
+   
+4. Base URL should be configurable via Remote Config
+   - Default: "https://api.example.com/"</div>
+            </div>
+
+            <div class="step purple">
+                <div class="step-header">
+                    <span class="step-num purple">Step 2.3</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Room Database Setup</h4>
+                </div>
+                <p>Set up local database for favorites, playlists, and cache.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create the Room database layer:
+
+1. AppDatabase.kt - Room database with:
+   - entities: FavoriteChannel, Playlist, CachedEvent
+   - version 1, export schema false
+   
+2. FavoriteDao.kt:
+   - getAllFavorites(): Flow&lt;List&lt;FavoriteChannel&gt;&gt;
+   - insertFavorite(channel: FavoriteChannel)
+   - deleteFavorite(id: String)
+   - isFavorite(id: String): Flow&lt;Boolean&gt;
+
+3. PlaylistDao.kt:
+   - getAllPlaylists(): Flow&lt;List&lt;Playlist&gt;&gt;
+   - insertPlaylist(playlist: Playlist)
+   - deletePlaylist(id: String)
+   - updatePlaylist(playlist: Playlist)
+
+4. Converters.kt - TypeConverters for List&lt;String&gt; ↔ JSON
+
+5. LocalDataSource.kt - Wraps DAOs with coroutine dispatchers</div>
+            </div>
+
+            <div class="step purple">
+                <div class="step-header">
+                    <span class="step-num purple">Step 2.4</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Repository Layer</h4>
+                </div>
+                <p>Create repositories that combine remote and local data sources.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create repository classes:
+
+1. MainRepository.kt:
+   - getAppData(): Flow&lt;Result&lt;ApiResponse&gt;&gt; (fetch from API, cache locally)
+   - getEvents(): Flow&lt;Result&lt;List&lt;Event&gt;&gt;&gt;
+   - getChannels(category: String?): Flow&lt;Result&lt;List&lt;Channel&gt;&gt;&gt;
+   - getHighlights(): Flow&lt;Result&lt;List&lt;Highlight&gt;&gt;&gt;
+   
+2. FavoritesRepository.kt:
+   - getFavorites(): Flow&lt;List&lt;FavoriteChannel&gt;&gt;
+   - toggleFavorite(channel: Channel)
+   - isFavorite(channelId: String): Flow&lt;Boolean&gt;
+
+3. PlaylistRepository.kt:
+   - getPlaylists(): Flow&lt;List&lt;Playlist&gt;&gt;
+   - createPlaylist(name: String)
+   - addToPlaylist(playlistId: String, channelId: String)
+   - removeFromPlaylist(playlistId: String, channelId: String)
+   - deletePlaylist(playlistId: String)
+
+All repositories should use Dispatchers.IO and handle errors gracefully.</div>
+            </div>
+
+            <div class="step purple">
+                <div class="step-header">
+                    <span class="step-num purple">Step 2.5</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>ViewModels</h4>
+                </div>
+                <p>Create ViewModels for all major screens.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create ViewModels:
+
+1. MainViewModel.kt:
+   - appData: StateFlow&lt;UiState&lt;ApiResponse&gt;&gt;
+   - loadAppData()
+   
+2. HomeViewModel.kt:
+   - events: StateFlow&lt;UiState&lt;List&lt;Event&gt;&gt;&gt;
+   - liveEvents: StateFlow&lt;List&lt;Event&gt;&gt; (filtered)
+   - banners: StateFlow&lt;List&lt;Banner&gt;&gt;
+   - refreshEvents()
+
+3. CategoriesViewModel.kt:
+   - categories: StateFlow&lt;UiState&lt;List&lt;Category&gt;&gt;&gt;
+   - channels: StateFlow&lt;UiState&lt;List&lt;Channel&gt;&gt;&gt;
+   - selectedCategory: StateFlow&lt;String?&gt;
+   - filterByCategory(category: String?)
+
+4. HighlightsViewModel.kt:
+   - highlights: StateFlow&lt;UiState&lt;List&lt;Highlight&gt;&gt;&gt;
+   - refreshHighlights()
+
+5. PlayerViewModel.kt:
+   - currentStream: StateFlow&lt;StreamLink?&gt;
+   - availableStreams: StateFlow&lt;List&lt;StreamLink&gt;&gt;
+   - switchStream(index: Int)
+
+6. UiState.kt - Sealed class: Loading, Success(data), Error(message)
+
+Use viewModelScope with coroutine exception handler.</div>
+            </div>
+
+            <div class="step purple">
+                <div class="step-header">
+                    <span class="step-num purple">Step 2.6</span>
+                    <span class="agent think">Thinker</span>
+                    <h4>Architecture Review</h4>
+                </div>
+                <p>Deep review of the data flow architecture to ensure proper MVVM patterns.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Review the complete architecture we've built:
+- Check data flow: API → Repository → ViewModel → UI
+- Verify coroutine scope usage and cancellation
+- Ensure proper error handling at each layer
+- Check Room TypeConverters work correctly
+- Verify StateFlow/LiveData usage patterns
+Suggest improvements if any anti-patterns are found.</div>
+            </div>
+
+            <div class="step purple">
+                <div class="step-header">
+                    <span class="step-num purple">Step 2.7</span>
+                    <span class="agent bash">Basher</span>
+                    <h4>Build Verification</h4>
+                </div>
+                <p>Compile the project to verify all data layer code compiles correctly.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Run: ./gradlew assembleDebug
+Fix any compilation errors in the data layer.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 3 -->
+    <!-- ============================================================ -->
+    <section class="section" id="phase3">
+        <div class="phase">
+            <div class="phase-header">
+                <div class="phase-num p3">3</div>
+                <div>
+                    <div class="phase-title">UI Screens — Home, Categories, Highlights</div>
+                    <div class="phase-subtitle">Build all main screens with layouts, adapters, and navigation — Est. 4-5 hours</div>
+                </div>
+            </div>
+
+            <div class="step pink">
+                <div class="step-header">
+                    <span class="step-num pink">Step 3.1</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Splash Screen</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create SplashActivity with layout:
+
+1. activity_splash.xml:
+   - ConstraintLayout with dark gradient background
+   - App logo in a MaterialCardView (180dp, rounded 28dp, glass border)
+   - App name "SportStream" with Kelly Slab font
+   - Tagline "Live sports, instant access"
+   - Lottie loading animation bar
+   - Version text at bottom
+   - Network error card (hidden by default) with WiFi/Mobile/Retry buttons
+
+2. SplashActivity.kt:
+   - Check network connectivity on launch
+   - Show loading animation
+   - Fetch initial data from API (or Remote Config for API URL)
+   - Navigate to MainActivity after 2s delay or data load
+   - Show network error card if no internet
+   - Animate logo and text with fade-in/slide-up
+
+3. Add Lottie JSON file (loading animation) to res/raw/</div>
+            </div>
+
+            <div class="step pink">
+                <div class="step-header">
+                    <span class="step-num pink">Step 3.2</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Main Activity & Navigation</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create MainActivity with full navigation setup:
+
+1. activity_main.xml:
+   - DrawerLayout as root
+   - LinearLayout containing:
+     - Toolbar include (search icon, app logo)
+     - FragmentContainerView (main content)
+     - MaterialCardView wrapping BottomNavigationView
+       - Rounded corners (18dp), glass stroke, transparent bg
+       - 3 items: Home, Categories, Highlights
+   - NavigationView (drawer) with:
+     - Header layout with app logo and user info
+     - Menu items: Network Stream, Playlists, Floating Player,
+       Video Quality, Crash Log toggle, Notice, Join Us (Telegram),
+       Copyright, Share App, Email, Update, Exit
+
+2. MainActivity.kt:
+   - Set up Navigation Component with nav_graph.xml
+   - Connect BottomNav to NavController
+   - Handle drawer menu item clicks
+   - Implement search functionality in toolbar
+   - Handle back navigation properly
+
+3. res/navigation/nav_graph.xml:
+   - homeFragment (start), categoriesFragment, highlightsFragment
+   - playlistFragment, networkStreamFragment
+   - playerActivity (implicit via Intent)
+
+4. res/menu/menu_bottom_nav.xml (3 items)
+5. res/menu/menu_nav.xml (drawer items)</div>
+            </div>
+
+            <div class="step pink">
+                <div class="step-header">
+                    <span class="step-num pink">Step 3.3</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Home Fragment — Live Events</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create the Home screen with live events:
+
+1. fragment_home.xml:
+   - SwipeRefreshLayout wrapping content
+   - Banner RecyclerView (horizontal, auto-scroll) at top
+   - "Live Events" section header with animated LIVE dot
+   - Events RecyclerView (vertical list)
+   - Empty state with dissatisfied icon and "No Events" text
+
+2. item_event.xml:
+   - MaterialCardView (rounded 12dp, glass style)
+   - Header: category logo, event details (marquee), time, date, LIVE badge
+   - Body: Team A logo + name | VS | Team B logo + name
+   - Team logos are 45dp, names are bold white
+
+3. item_banner.xml:
+   - MaterialCardView with ImageView or WebView for banner content
+
+4. EventAdapter.kt:
+   - ListAdapter with DiffUtil
+   - Bind team logos with Glide
+   - Format date/time
+   - Show/hide LIVE badge with animation
+   - Click listener → open PlayerActivity with stream data
+
+5. BannerAdapter.kt:
+   - Auto-scrolling banner with ViewPager2 or RecyclerView
+   - 5-second interval, infinite loop
+
+6. HomeFragment.kt:
+   - Observe HomeViewModel
+   - Handle pull-to-refresh
+   - Handle "Events Updated" notification banner
+   - Navigate to PlayerActivity on event click
+
+7. layout_event_home.xml - Top container with current/live event highlight</div>
+            </div>
+
+            <div class="step pink">
+                <div class="step-header">
+                    <span class="step-num pink">Step 3.4</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Categories Fragment — Channel Grid</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create the Categories screen with channel grid:
+
+1. fragment_categories.xml:
+   - Top: HorizontalScrollView with ChipGroup for category filters
+   - "Choose" button with list icon
+   - SwipeRefreshLayout wrapping:
+     - RecyclerView (GridLayout, 3 columns)
+     - "Categories not available" text (hidden)
+
+2. item_category.xml:
+   - MaterialCardView (glass style, rounded 10dp)
+   - Category image in a FrameLayout with blob background (44dp)
+   - Category name below (bold, white, marquee, single line)
+
+3. CategoryAdapter.kt:
+   - GridLayoutManager adapter
+   - Load category images with Glide (placeholder for missing)
+   - Click → filter channels by category
+
+4. CategoriesFragment.kt:
+   - Populate ChipGroup dynamically from categories
+   - Single selection on chips
+   - Filter channels when chip selected
+   - Pull-to-refresh
+   - Handle "Categories Updated" banner</div>
+            </div>
+
+            <div class="step pink">
+                <div class="step-header">
+                    <span class="step-num pink">Step 3.5</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Highlights Fragment</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create the Highlights screen:
+
+1. fragment_highlights.xml:
+   - SwipeRefreshLayout with:
+     - "Highlights Updated" banner (hidden)
+     - RecyclerView (vertical list)
+     - "Highlights not available!" text (hidden)
+
+2. item_highlight.xml:
+   - MaterialCardView with:
+     - Thumbnail image (16:9 ratio, rounded corners)
+     - Play button overlay
+     - Title text (bold, white)
+     - Date and duration text
+     - Gradient overlay on thumbnail
+
+3. HighlightAdapter.kt:
+   - Load thumbnails with Glide (centerCrop)
+   - Format duration
+   - Click → open PlayerActivity with highlight video URL
+
+4. HighlightsFragment.kt:
+   - Observe HighlightsViewModel
+   - Pull-to-refresh
+   - Handle "Highlights Updated" banner
+   - Navigate to player on click</div>
+            </div>
+
+            <div class="step pink">
+                <div class="step-header">
+                    <span class="step-num pink">Step 3.6</span>
+                    <span class="agent review">Reviewer</span>
+                    <h4>UI Review</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Review all UI code created in Phase 3:
+- Check all adapters use DiffUtil correctly
+- Verify ViewBinding is used (no findViewById)
+- Check Glide image loading has proper placeholders and error images
+- Ensure all click listeners are properly set
+- Verify navigation between fragments works
+- Check that SwipeRefreshLayout refreshes data properly
+Fix any issues found.</div>
+            </div>
+
+            <div class="step pink">
+                <div class="step-header">
+                    <span class="step-num pink">Step 3.7</span>
+                    <span class="agent browser">Browser</span>
+                    <h4>Visual Verification</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Build and run the app on emulator. Take screenshots of:
+- Splash screen
+- Home screen with events
+- Categories screen with channel grid
+- Highlights screen
+- Navigation drawer
+- Bottom navigation tabs
+Verify all UI elements render correctly and match the design.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 4 -->
+    <!-- ============================================================ -->
+    <section class="section" id="phase4">
+        <div class="phase">
+            <div class="phase-header">
+                <div class="phase-num p4">4</div>
+                <div>
+                    <div class="phase-title">Video Player — The Core Feature</div>
+                    <div class="phase-subtitle">Build the advanced Media3 player with custom controls — Est. 4-5 hours</div>
+                </div>
+            </div>
+
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 4.1</span>
+                    <span class="agent web">Researcher</span>
+                    <h4>Research Media3 APIs</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Research the latest Media3 (ExoPlayer) documentation:
+- PlayerView custom controller layout
+- Custom player controls implementation
+- Picture-in-Picture support
+- Subtitle handling (SRT, VTT, ASS)
+- HLS (M3U8) and DASH (MPD) streaming
+- Multiple audio/video track selection
+- Foreground service for background playback
+Provide code examples for each feature.</div>
+            </div>
+
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 4.2</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Player Activity & Layout</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create PlayerActivity with custom controls:
+
+1. activity_player.xml:
+   - LinearLayout (vertical, black bg)
+   - RelativeLayout containing:
+     - PlayerView (match_parent, gone initially)
+     - ProgressBar (center, white, indeterminate)
+     - "Stream Link Updated" banner (center horizontal, gone)
+     - Swipe gesture overlay (center)
+   - FragmentContainerView for update fragment (gone)
+
+2. player_controller.xml (custom ExoPlayer controller):
+   TOP BAR:
+   - Back button (glass bg)
+   - Title text (glass bg bar, marquee, 14sp)
+   - Lock button, PiP button, Resize button, Settings button
+   
+   LINKS BAR:
+   - Refresh button (gone by default)
+   - Horizontal RecyclerView for stream source links
+   
+   CENTER:
+   - Rewind, Play/Pause, Fast Forward buttons (glass bg, 42dp)
+   
+   RIGHT SIDE:
+   - Share button
+   
+   BOTTOM BAR:
+   - Position text, SeekBar (DefaultTimeBar, 6dp height), Duration text
+   - Volume button
+   - Fullscreen button (gone, for non-landscape)
+
+3. PlayerActivity.kt:
+   - Initialize Media3 ExoPlayer
+   - Support HLS, DASH, Progressive streams
+   - Handle intent data (stream URL, title)
+   - Set up custom controller bindings
+   - Handle PiP mode (enter/exit)
+   - Handle orientation changes
+   - Stream link switching via RecyclerView</div>
+            </div>
+
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 4.3</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Swipe Gestures</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Implement swipe gestures for the video player:
+
+1. layout_swipe_gesture.xml:
+   - Overlay view for gesture detection
+   - Brightness/volume indicator (icon + progress bar, centered)
+
+2. SwipeGestureDetector.kt:
+   - Horizontal swipe: seek forward/backward (show time indicator)
+   - Left vertical swipe: adjust brightness (system brightness)
+   - Right vertical swipe: adjust volume (AudioManager)
+   - Single tap: toggle controls visibility
+   - Double tap: rewind/forward based on tap position
+   - Show visual feedback during gesture (percentage/text)
+
+3. Integrate with PlayerActivity:
+   - Attach GestureDetector to player view
+   - Show/hide gesture indicator overlay
+   - Apply brightness changes to window attributes</div>
+            </div>
+
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 4.4</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Screen Lock & PiP</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Implement screen lock and Picture-in-Picture:
+
+1. Screen Lock:
+   - Lock button toggles lock state
+   - When locked: hide all controls except unlock button
+   - Unlock button appears at end (visible, glass bg)
+   - Prevent back button when locked
+   - Dim screen slightly when locked
+
+2. Picture-in-Picture:
+   - Enter PiP mode button
+   - Handle onPictureInPictureModeChanged
+   - Update player controls visibility for PiP
+   - Support PiP resize (aspect ratio)
+   - Add RemoteActions for play/pause/next in PiP
+   - Register PiP in AndroidManifest (supportsPictureInPicture="true")
+
+3. layout_floating_player.xml:
+   - Simplified player view for floating mode
+   - Basic controls (play/pause, close)
+   - ProgressBar for loading state</div>
+            </div>
+
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 4.5</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Subtitle & Quality Selection</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Implement subtitle and video quality selection:
+
+1. Subtitle Support:
+   - Parse SRT, VTT, ASS/SSA subtitle formats
+   - Subtitle button in player controls
+   - TrackSelectionDialog for subtitle tracks
+   - Style subtitles (white text, black outline, bottom position)
+
+2. Video Quality:
+   - Settings button opens quality selector dialog
+   - Show available resolutions (Auto, 1080p, 720p, 480p, 360p)
+   - Remember quality preference (DataStore)
+   - Apply quality selection to ExoPlayer track selection
+
+3. track_selection_dialog.xml:
+   - BottomSheetDialog with radio buttons for tracks
+   - Sections: Video, Audio, Subtitles
+   - Current selection highlighted
+
+4. VideoQualityManager.kt:
+   - Manage quality preferences
+   - Apply track selection overrides to ExoPlayer
+   - "Auto" mode uses adaptive track selection</div>
+            </div>
+
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 4.6</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Floating Player Service</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create foreground service for floating/background playback:
+
+1. FloatingPlayerService.kt:
+   - Foreground service with media notification
+   - WindowManager overlay for floating window
+   - Draggable floating window with player
+   - Minimize/maximize controls
+   - Handle play/pause in notification
+   
+2. Notification setup:
+   - Media style notification
+   - Play/pause action
+   - Close action
+   - Show current stream title
+   
+3. AndroidManifest.xml:
+   - Register service with foregroundServiceType="mediaPlayback"
+   - Add FOREGROUND_SERVICE and FOREGROUND_SERVICE_MEDIA_PLAYBACK permissions
+   - Add SYSTEM_ALERT_WINDOW permission for overlay</div>
+            </div>
+
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 4.7</span>
+                    <span class="agent review">Reviewer</span>
+                    <h4>Player Review</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Review the entire video player implementation:
+- Check ExoPlayer lifecycle management (release on destroy)
+- Verify PiP mode works correctly on API 26+
+- Check memory leaks in player and service
+- Verify subtitle rendering
+- Test stream switching doesn't cause ANR
+- Check foreground service notification
+Fix any issues found.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 5 -->
+    <!-- ============================================================ -->
+    <section class="section" id="phase5">
+        <div class="phase">
+            <div class="phase-header">
+                <div class="phase-num p5">5</div>
+                <div>
+                    <div class="phase-title">Extra Features</div>
+                    <div class="phase-subtitle">Favorites, Playlists, Network Stream, Notifications — Est. 3-4 hours</div>
+                </div>
+            </div>
+
+            <div class="step green">
+                <div class="step-header">
+                    <span class="step-num green">Step 5.1</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Favorites System</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Implement the favorites feature:
+
+1. fragment_favourites.xml:
+   - SwipeRefreshLayout with RecyclerView
+   - Empty state: "No favorites yet" with heart icon
+   
+2. item_favorite.xml:
+   - Channel card with heart icon (filled = favorited)
+   - Long press to unfavorite
+   
+3. FavoritesFragment.kt:
+   - Observe FavoritesRepository.getFavorites()
+   - Handle swipe-to-remove with undo snackbar
+   - Click to play channel
+
+4. Add favorite toggle to:
+   - Channel cards in Categories (heart icon)
+   - Player screen (heart icon in controls)
+   - Long-press context menu on channels</div>
+            </div>
+
+            <div class="step green">
+                <div class="step-header">
+                    <span class="step-num green">Step 5.2</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Playlist Management</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Implement playlists:
+
+1. fragment_playlist.xml:
+   - CoordinatorLayout with:
+     - SwipeRefreshLayout + RecyclerView
+     - FAB for "Add Playlist" (bottom-right, above bottom nav)
+   - FragmentContainerView for playlist detail (hidden)
+
+2. item_playlist.xml:
+   - Card with playlist name, channel count, created date
+   - Click to expand and show channels
+   - Long press for edit/delete options
+
+3. dialog_add_playlist.xml:
+   - BottomSheetDialog with text input for name
+   - Create/Cancel buttons
+
+4. PlaylistFragment.kt:
+   - CRUD operations via PlaylistRepository
+   - FAB opens add dialog
+   - Swipe-to-delete with undo
+   - Click playlist → show channels in it
+   - Drag-to-reorder channels in playlist
+
+5. Add "Add to Playlist" option in channel long-press menu and player</div>
+            </div>
+
+            <div class="step green">
+                <div class="step-header">
+                    <span class="step-num green">Step 5.3</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Network Stream Player</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Implement network stream feature (play any URL):
+
+1. Network stream accessible from drawer menu
+2. Show a dialog or activity with:
+   - URL input field (with paste button)
+   - Format selector (Auto, HLS, DASH, Progressive)
+   - "Play" button
+   - Recent URLs list (stored in DataStore)
+3. Validate URL format before playing
+4. Open PlayerActivity with the entered URL
+5. Handle errors gracefully (invalid URL, connection failed)</div>
+            </div>
+
+            <div class="step green">
+                <div class="step-header">
+                    <span class="step-num green">Step 5.4</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Push Notifications</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Set up push notifications:
+
+1. SportStreamMessagingService.kt (extends FirebaseMessagingService):
+   - onNewToken: send token to server
+   - onMessageReceived: 
+     - Parse notification data (title, body, event_id, stream_url)
+     - Show notification with event details
+     - Tap → open PlayerActivity with stream URL
+   
+2. NotificationHelper.kt:
+   - Create notification channel "Live Events"
+   - Build notifications with:
+     - Large icon (event/team logo)
+     - BigTextStyle for long content
+     - Action button: "Watch Now"
+   - Handle notification permissions (API 33+)
+
+3. RemoteConfigHelper.kt:
+   - Fetch and cache remote config values
+   - API URL, Telegram link, update URL, notice text
+   - Minimum app version for force update</div>
+            </div>
+
+            <div class="step green">
+                <div class="step-header">
+                    <span class="step-num green">Step 5.5</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Drawer Menu Actions</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Implement all drawer menu item actions:
+
+1. Network Stream → open URL input dialog
+2. Playlists → navigate to playlist fragment
+3. Floating Player → toggle floating player service
+4. Video Quality → open quality settings dialog
+5. Crash Log → toggle crash logging (SwitchCompat)
+6. Notice → show notice dialog (from Remote Config)
+7. Join Us → open Telegram link in browser/custom tab
+8. Copyright → show copyright dialog
+9. Share App → share app link via Intent
+10. Email → open email intent with support email
+11. Update App → check for update, show update dialog
+12. Exit → finish all activities, exit app
+
+For each action, create the appropriate handler in MainActivity.</div>
+            </div>
+
+            <div class="step green">
+                <div class="step-header">
+                    <span class="step-num green">Step 5.6</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Search Functionality</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Implement search across all content:
+
+1. search_toolbar_menu.xml:
+   - SearchView in toolbar
+
+2. SearchFragment.kt or SearchActivity.kt:
+   - Search across events, channels, and highlights
+   - Real-time filtering as user types (debounce 300ms)
+   - Show results in categorized sections
+   - Click result → navigate to appropriate screen/player
+   - Recent searches stored and shown when search is empty
+
+3. SearchViewModel.kt:
+   - searchQuery: StateFlow&lt;String&gt;
+   - searchResults: StateFlow&lt;SearchResults&gt;
+   - Debounced search using Flow.debounce()</div>
+            </div>
+
+            <div class="step green">
+                <div class="step-header">
+                    <span class="step-num green">Step 5.7</span>
+                    <span class="agent review">Reviewer</span>
+                    <h4>Feature Review</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Review all features implemented in Phase 5:
+- Test favorites CRUD operations
+- Verify playlist creation and management
+- Check network stream URL validation
+- Verify notification channel creation
+- Check drawer menu all items work
+- Test search functionality
+Fix any bugs found.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 6 -->
+    <!-- ============================================================ -->
+    <section class="section" id="phase6">
+        <div class="phase">
+            <div class="phase-header">
+                <div class="phase-num p6">6</div>
+                <div>
+                    <div class="phase-title">Polish, Ads & Launch Prep</div>
+                    <div class="phase-subtitle">Ad integration, auto-update, animations, and performance — Est. 3-4 hours</div>
+                </div>
+            </div>
+
+            <div class="step red">
+                <div class="step-header">
+                    <span class="step-num red">Step 6.1</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Ad Integration</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Integrate Google AdMob ads:
+
+1. Add AdMob dependency and app ID to manifest
+2. fragment_ad.xml:
+   - Banner ad layout (can be included in other fragments)
+   - Interstitial ad trigger points
+
+3. AdManager.kt:
+   - Initialize MobileAds SDK
+   - Load banner ads (test IDs during development)
+   - Load interstitial ads (show between navigation)
+   - Handle ad load failures gracefully (don't crash)
+   - Respect user consent (GDPR if needed)
+
+4. Add banner ads to:
+   - Bottom of Home fragment (between events)
+   - Bottom of Categories fragment
+   - Between highlights
+
+5. Show interstitial ads:
+   - Before opening player (max once per 5 minutes)
+   - After returning from player</div>
+            </div>
+
+            <div class="step red">
+                <div class="step-header">
+                    <span class="step-num red">Step 6.2</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Auto-Update System</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Implement in-app update system:
+
+1. UpdateChecker.kt:
+   - Check app version against Remote Config / API
+   - Compare versionCode with server's latest version
+   - Support force update (blocking dialog) and optional update
+   
+2. dialog_update.xml:
+   - MaterialAlertDialog with:
+     - "Update Available" title
+     - Changelog text
+     - "Update Now" and "Later" buttons
+     - Force update: only "Update Now" (no dismiss)
+
+3. Download and install APK:
+   - Download APK from update URL using DownloadManager
+   - Show download progress notification
+   - Install using FileProvider + Intent
+   - Handle REQUEST_INSTALL_PACKAGES permission
+
+4. Check for updates:
+   - On app launch (SplashActivity)
+   - Periodically via WorkManager (daily)</div>
+            </div>
+
+            <div class="step red">
+                <div class="step-header">
+                    <span class="step-num red">Step 6.3</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Animations & Transitions</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Add animations and transitions:
+
+1. Splash screen:
+   - Logo fade-in + scale animation
+   - Text slide-up animation
+   - Loading bar animation (Lottie)
+
+2. Navigation transitions:
+   - Shared element transitions for event cards
+   - Fade transitions between fragments
+   - Slide animation for drawer
+
+3. List animations:
+   - Staggered item appearance in RecyclerView
+   - Item change animations with DiffUtil
+   - Swipe-to-dismiss with spring animation
+
+4. Player transitions:
+   - Enter/exit PiP with smooth scale animation
+   - Controls show/hide with fade animation
+   - Lock/unlock transition
+
+5. Micro-interactions:
+   - Favorite toggle heart animation
+   - LIVE badge pulse animation
+   - Pull-to-refresh custom animation
+   - Button press ripple effects (Material)</div>
+            </div>
+
+            <div class="step red">
+                <div class="step-header">
+                    <span class="step-num red">Step 6.4</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Error Handling & Edge Cases</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Implement comprehensive error handling:
+
+1. Network errors:
+   - No internet → show offline screen with retry
+   - Timeout → show error with retry
+   - Server error → show friendly message
+   - Cache data when offline
+
+2. Player errors:
+   - Stream unavailable → show error, offer alternative links
+   - Playback error → retry with exponential backoff
+   - Codec not supported → fallback to software decoder
+
+3. dialog_error.xml:
+   - MaterialAlertDialog with error icon
+   - Error title and message
+   - Retry button
+   - "Report" button (optional)
+
+4. Global exception handler:
+   - Catch uncaught exceptions
+   - Log to Crashlytics
+   - Show friendly crash dialog
+   - Offer to restart app</div>
+            </div>
+
+            <div class="step red">
+                <div class="step-header">
+                    <span class="step-num red">Step 6.5</span>
+                    <span class="agent bash">Basher</span>
+                    <h4>ProGuard & Release Build</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Configure release build:
+
+1. proguard-rules.pro:
+   - Keep rules for Room entities and DAOs
+   - Keep rules for Retrofit interfaces
+   - Keep rules for Firebase classes
+   - Keep rules for ExoPlayer/Media3
+   - Keep Serializable/Parcelable classes
+   - Optimize and shrink resources
+
+2. build.gradle.kts release config:
+   - Enable minification (minifyEnabled true)
+   - Enable resource shrinking
+   - Configure signing (placeholder keystore)
+   - Set versionCode and versionName
+
+3. Run: ./gradlew assembleRelease
+4. Verify APK size and functionality</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 7 - SECURITY -->
+    <!-- ============================================================ -->
+    <section class="section" id="phase7">
+        <div class="phase">
+            <div class="phase-header">
+                <div class="phase-num" style="background:rgba(239,68,68,0.12);border-color:var(--red);color:var(--red);">7</div>
+                <div>
+                    <div class="phase-title">🛡️ Security & Protection — The Fortress</div>
+                    <div class="phase-subtitle">Multi-layer security matching Sportzfy + advanced protections — Est. 4-5 hours</div>
+                </div>
+            </div>
+
+            <!-- Security Overview Card -->
+            <div class="card" style="border-color:rgba(239,68,68,0.2);margin-bottom:24px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                    <span style="font-size:32px;">🏰</span>
+                    <div>
+                        <h3 style="color:#fff;font-size:16px;">Security Architecture Overview</h3>
+                        <p style="color:var(--text-muted);font-size:13px;">8-layer defense model inspired by Sportzfy + 12 additional advanced protections</p>
+                    </div>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+                    <span class="sec-level critical">Critical</span>
+                    <span class="sec-level high">High</span>
+                    <span class="sec-level medium">Medium</span>
+                    <span class="sec-level bonus">Bonus</span>
+                </div>
+                <div class="security-matrix">
+                    <div class="security-matrix-item">
+                        <div class="icon">🔐</div>
+                        <h4>Layer 1: String Encryption</h4>
+                        <p>All sensitive strings (API URLs, keys, tokens) encrypted with AES-256 or XOR cipher, decrypted at runtime. Matches Sportzfy's C0000.m3() pattern.</p>
+                    </div>
+                    <div class="security-matrix-item">
+                        <div class="icon">🧬</div>
+                        <h4>Layer 2: Code Obfuscation</h4>
+                        <p>R8/ProGuard aggressive obfuscation, class renaming, string obfuscation, control flow flattening. All identifiers renamed to meaningless characters.</p>
+                    </div>
+                    <div class="security-matrix-item">
+                        <div class="icon">🛡️</div>
+                        <h4>Layer 3: Native Library Protection</h4>
+                        <p>Move critical logic to C/C++ NDK (.so library). Encrypted .so files in assets, decrypted and loaded at runtime. Matches Sportzfy's libabcd.so pattern.</p>
+                    </div>
+                    <div class="security-matrix-item">
+                        <div class="icon">📦</div>
+                        <h4>Layer 4: DEX Encryption</h4>
+                        <p>Encrypt secondary DEX files. Runtime decryption and loading via custom ClassLoader. Prevents static analysis of APK contents.</p>
+                    </div>
+                    <div class="security-matrix-item">
+                        <div class="icon">✅</div>
+                        <h4>Layer 5: Integrity Verification</h4>
+                        <p>APK signature verification, file hash checks, tamper detection. Verify package name, signing certificate at runtime. Matches Sportzfy's m7()/m8() methods.</p>
+                    </div>
+                    <div class="security-matrix-item">
+                        <div class="icon">🚫</div>
+                        <h4>Layer 6: Anti-Tampering</h4>
+                        <p>Detect modified APKs, repackaged apps, resource manipulation. Compare file checksums against embedded hashes. Exit if tampering detected.</p>
+                    </div>
+                    <div class="security-matrix-item">
+                        <div class="icon">🔍</div>
+                        <h4>Layer 7: Root & Emulator Detection</h4>
+                        <p>Detect rooted devices, Magisk, Xposed Framework, emulators. Block app on compromised environments. Multiple detection methods combined.</p>
+                    </div>
+                    <div class="security-matrix-item">
+                        <div class="icon">🔒</div>
+                        <h4>Layer 8: SSL Pinning</h4>
+                        <p>Certificate pinning on all API calls. Prevent man-in-the-middle attacks. Pin public key hashes with backup pins.</p>
+                    </div>
+                    <div class="security-matrix-item">
+                        <div class="icon">🕵️</div>
+                        <h4>Layer 9: Anti-Debugging</h4>
+                        <p>Detect debuggers (ptrace, JDWP). Check Debug.isDebuggerConnected(). Monitor /proc/self/status for TracerPid. Kill process if debugger attached.</p>
+                    </div>
+                    <div class="security-matrix-item">
+                        <div class="icon">🧠</div>
+                        <h4>Layer 10: Memory Protection</h4>
+                        <p>Zero out sensitive data after use. Avoid storing secrets in String objects (use char[]). Clear SharedPreferences values that contain tokens.</p>
+                    </div>
+                    <div class="security-matrix-item">
+                        <div class="icon">🔑</div>
+                        <h4>Layer 11: Secure Key Storage</h4>
+                        <p>Android Keystore for cryptographic keys. EncryptedSharedPreferences for sensitive data. Hardware-backed keys on supported devices.</p>
+                    </div>
+                    <div class="security-matrix-item">
+                        <div class="icon">📡</div>
+                        <h4>Layer 12: Network Security</h4>
+                        <p>HTTPS-only enforcement via Network Security Config. Disable cleartext traffic. Validate server certificates. Pin certificates in network config XML.</p>
+                    </div>
+                    <div class="security-matrix-item">
+                        <div class="icon">🎭</div>
+                        <h4>Layer 13: Reflection Hiding</h4>
+                        <p>Hide sensitive class/method names using reflection with encrypted strings. Runtime class resolution prevents static analysis. Matches Sportzfy's pattern.</p>
+                    </div>
+                    <div class="security-matrix-item">
+                        <div class="icon">⏰</div>
+                        <h4>Layer 14: Runtime Integrity</h4>
+                        <p>Periodic self-checks during runtime. Verify code hasn't been hooked (Frida, Xposed). Check for suspicious threads and libraries loaded in memory.</p>
+                    </div>
+                    <div class="security-matrix-item">
+                        <div class="icon">📱</div>
+                        <h4>Layer 15: Screenshot Prevention</h4>
+                        <p>FLAG_SECURE on sensitive screens (player, stream URLs). Prevent screen recording on rooted devices. Blur app in recent apps switcher.</p>
+                    </div>
+                    <div class="security-matrix-item">
+                        <div class="icon">🧱</div>
+                        <h4>Layer 16: WebView Hardening</h4>
+                        <p>Disable JavaScript in WebView unless needed. Prevent file access from WebView. Block intent:// scheme attacks. Validate all URLs before loading.</p>
+                    </div>
+                    <div class="security-matrix-item">
+                        <div class="icon">🗑️</div>
+                        <h4>Layer 17: Secure Data Wipe</h4>
+                        <p>Clear all sensitive data on logout. Secure delete of downloaded content. Clear WebView cache and cookies. Wipe DataStore preferences on security breach.</p>
+                    </div>
+                    <div class="security-matrix-item">
+                        <div class="icon">📊</div>
+                        <h4>Layer 18: Security Logging</h4>
+                        <p>Log security events (tamper attempts, root detection) to Crashlytics. Alert on suspicious patterns. Rate-limit security checks to avoid performance impact.</p>
+                    </div>
+                    <div class="security-matrix-item">
+                        <div class="icon">🔄</div>
+                        <h4>Layer 19: Code Virtualization</h4>
+                        <p>Move critical validation logic to native code. Use JNI for license checks and token validation. Native code is significantly harder to reverse engineer.</p>
+                    </div>
+                    <div class="security-matrix-item">
+                        <div class="icon">🌊</div>
+                        <h4>Layer 20: Honey Pot Traps</h4>
+                        <p>Embed fake API endpoints and dead code paths. Redirect crackers to decoy functionality. Monitor access to trap endpoints to detect reverse engineering attempts.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 7.1 -->
+            <div class="step red">
+                <div class="step-header">
+                    <span class="step-num red">Step 7.1</span>
+                    <span class="agent web">Researcher</span>
+                    <h4>Research Android Security Best Practices</h4>
+                </div>
+                <p>Research the latest Android security hardening techniques and libraries.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Research Android app security best practices for 2024/2025:
+1. R8/ProGuard advanced obfuscation techniques
+2. Android Keystore API for secure key storage
+3. EncryptedSharedPreferences usage
+4. Network Security Config certificate pinning
+5. SafetyNet/Play Integrity API for device attestation
+6. NDK/JNI for native code protection
+7. Root detection libraries (RootBeer)
+8. Anti-tampering techniques
+9. Frida/Xposed detection methods
+10. Android App Bundle security features
+Provide implementation code examples for each technique.</div>
+            </div>
+
+            <!-- Step 7.2 -->
+            <div class="step red">
+                <div class="step-header">
+                    <span class="step-num red">Step 7.2</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>String Encryption System</h4>
+                    <span class="sec-level critical">Critical</span>
+                </div>
+                <p>Implement encrypted string storage matching Sportzfy's XOR cipher approach but with stronger AES-256.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create a string encryption system for sensitive data:
+
+1. StringEncryptor.kt:
+   - AES-256-GCM encryption/decryption
+   - Key derived from Android Keystore (hardware-backed)
+   - encrypt(plaintext: String): String (Base64 encoded)
+   - decrypt(encrypted: String): String
+   - Key rotation support
+
+2. EncryptedConstants.kt:
+   - All API URLs encrypted at build time
+   - API keys, tokens encrypted
+   - Firebase config URLs encrypted
+   - Telegram links, update URLs encrypted
+   - Use build-time encryption script
+
+3. Build-time encryption script (Python/Kotlin):
+   - Reads strings from a config file
+   - Encrypts each string
+   - Generates Kotlin source file with encrypted constants
+   - Run as Gradle task before compilation
+
+4. RuntimeStringProvider.kt:
+   - Cache decrypted strings in memory
+   - Clear cache on app background
+   - Re-decrypt on demand
+   - Use char[] instead of String for secrets
+
+5. Integrate with OkHttp:
+   - Decrypt API URL only when making requests
+   - Decrypt auth tokens at request time
+   - Clear decrypted values after use</div>
+            </div>
+
+            <!-- Step 7.3 -->
+            <div class="step red">
+                <div class="step-header">
+                    <span class="step-num red">Step 7.3</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>ProGuard/R8 Advanced Obfuscation</h4>
+                    <span class="sec-level critical">Critical</span>
+                </div>
+                <p>Configure aggressive code obfuscation to match Sportzfy's level of protection.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Configure advanced R8/ProGuard obfuscation:
+
+1. proguard-rules.pro - Add aggressive rules:
+   -keepattributes !SourceFile,!LineNumberTable  (remove stack traces)
+   -renamesourcefileattribute ""  (empty source file name)
+   -optimizeaggressively
+   -dontwarn for all unused warnings
+   
+2. Add R8 full mode in gradle.properties:
+   android.enableR8.fullMode=true
+
+3. Create custom obfuscation dictionary:
+   - Use Unicode characters for class/method names
+   - Single-letter names for all local variables
+   - Confusing method names (like Sportzfy uses CJK characters)
+
+4. String obfuscation rules:
+   - Enable string encryption in R8
+   - Remove all string constants from bytecode
+
+5. Control flow obfuscation:
+   - Add opaque predicates
+   - Insert dead code paths
+   - Flatten control flow
+
+6. build.gradle.kts release config:
+   isMinifyEnabled = true
+   isShrinkResources = true
+   proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")</div>
+            </div>
+
+            <!-- Step 7.4 -->
+            <div class="step red">
+                <div class="step-header">
+                    <span class="step-num red">Step 7.4</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Native Library Protection (NDK)</h4>
+                    <span class="sec-level high">High</span>
+                </div>
+                <p>Move critical security checks to native C/C++ code, matching Sportzfy's libabcd.so approach.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create native security library using NDK:
+
+1. security-lib/CMakeLists.txt:
+   - Set up CMake for NDK build
+   - Include OpenSSL for crypto operations
+
+2. native_security.cpp:
+   - JNI functions for:
+     - nativeDecryptString(): Decrypt strings in native code
+     - nativeVerifySignature(): Verify APK signature
+     - nativeCheckRoot(): Root detection (check su, busybox, Magisk)
+     - nativeCheckDebugger(): ptrace-based debugger detection
+     - nativeCheckEmulator(): Check build properties, sensors
+     - nativeCheckHook(): Detect Frida, Xposed (check /proc/self/maps)
+     - nativeVerifyIntegrity(): File hash verification
+     - nativeGetApiKey(): Return API key from native code
+
+3. SecurityManager.kt (JNI wrapper):
+   - System.loadLibrary("sportstream_security")
+   - External declarations for all native functions
+   - Kotlin-friendly API wrapping native calls
+
+4. Compile as libsportstream_security.so:
+   - Build for arm64-v8a, armeabi-v7a, x86_64
+   - Strip debug symbols in release
+   - Obfuscate JNI function names
+
+5. Encrypted .so loading (like Sportzfy):
+   - Store encrypted .so in assets/
+   - Decrypt at runtime to app's private directory
+   - Load from decrypted path
+   - Delete decrypted file after loading</div>
+            </div>
+
+            <!-- Step 7.5 -->
+            <div class="step red">
+                <div class="step-header">
+                    <span class="step-num red">Step 7.5</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>APK Integrity & Anti-Tampering</h4>
+                    <span class="sec-level critical">Critical</span>
+                </div>
+                <p>Verify APK hasn't been modified, repackaged, or tampered with. Match Sportzfy's m7()/m8() verification.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Implement APK integrity verification:
+
+1. IntegrityChecker.kt:
+   - Verify APK signature at runtime:
+     * Get signing certificate info
+     * Compare with expected certificate hash
+     * Use PackageManager.getPackageInfo() with GET_SIGNATURES
+   - File integrity check:
+     * Calculate SHA-256 of classes.dex
+     * Compare with embedded expected hash
+     * Check resources.arsc integrity
+     * Verify native library hashes
+   - Package name verification:
+     * Verify getPackageName() matches expected
+     * Check if app is installed from Play Store
+     * Verify installer package name
+
+2. TamperDetector.kt:
+   - Check for repackaging signs:
+     * Verify META-INF signature files
+     * Check for extra files in APK
+     * Verify zip entry order and count
+   - Detect resource modification:
+     * Hash critical resource files
+     * Check AndroidManifest.xml hash
+   - Monitor for runtime patching:
+     * Check if methods have been hooked
+     * Verify critical method return values
+
+3. SelfHealing.kt:
+   - On tamper detection:
+     * Log event to Crashlytics
+     * Show fake error ("App corrupted, please reinstall")
+     * Degrade functionality silently
+     * Don't immediately exit (avoid giving feedback to attacker)
+   - Gradual degradation:
+     * First: Show more ads
+     * Then: Reduce stream quality
+     * Finally: Show error and exit
+
+4. Integrate in Application class:
+   - Run integrity check on every cold start
+   - Periodic checks during runtime (every 5 minutes)
+   - Check before sensitive operations (playing stream)</div>
+            </div>
+
+            <!-- Step 7.6 -->
+            <div class="step red">
+                <div class="step-header">
+                    <span class="step-num red">Step 7.6</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Root & Emulator Detection</h4>
+                    <span class="sec-level high">High</span>
+                </div>
+                <p>Detect compromised devices and block app functionality.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Implement device security checks:
+
+1. RootDetector.kt:
+   - Check for su binary in common paths
+   - Check for Magisk (/sbin/.magisk, /data/adb/magisk)
+   - Check for SuperSU, KingRoot, etc.
+   - Check Build.TAGS for test-keys
+   - Check for dangerous props (ro.debuggable=1)
+   - Use native code for harder-to-bypass checks
+   - Check for Magisk Hide / Zygisk
+   - Verify SELinux status
+
+2. EmulatorDetector.kt:
+   - Check Build.FINGERPRINT for generic/google/sdk
+   - Check Build.MODEL for emulator keywords
+   - Check Build.MANUFACTURER for Genymotion, etc.
+   - Check /dev/socket/qemud existence
+   - Check for emulator-specific files
+   - Check phone number, IMEI, device ID
+   - Check sensor availability (emulators lack sensors)
+   - Check battery characteristics
+
+3. HookDetector.kt:
+   - Check for Xposed Framework:
+     * Check stack traces for Xposed classes
+     * Check /system/lib for xposed_art.so
+     * Check for Xposed Bridge in loaded classes
+   - Check for Frida:
+     * Check /proc/self/maps for frida-agent
+     * Check for frida-server port (27042)
+     * Use native ptrace to detect instrumentation
+   - Check for Substrate/LSPosed:
+     * Check for com.saurik.substrate
+     * Check for LSPosed files
+
+4. SecurityGate.kt:
+   - Run all checks on app launch
+   - Score-based system (each check adds risk score)
+   - If score exceeds threshold:
+     * Show warning dialog
+     * Degrade functionality
+     * Log to analytics
+   - User can dismiss warning (soft block)
+   - Hard block for critical detections (tampered APK)</div>
+            </div>
+
+            <!-- Step 7.7 -->
+            <div class="step red">
+                <div class="step-header">
+                    <span class="step-num red">Step 7.7</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>SSL Pinning & Network Security</h4>
+                    <span class="sec-level critical">Critical</span>
+                </div>
+                <p>Enforce HTTPS and prevent man-in-the-middle attacks.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Implement network security hardening:
+
+1. res/xml/network_security_config.xml:
+   - Disable cleartext traffic (cleartextTrafficPermitted="false")
+   - Pin certificates for API domain:
+     * SHA-256 pin of public key
+     * Include backup pins
+     * Set expiration date for pins
+   - Trust user-added CAs: false (block proxy tools)
+   - Custom trust anchors if needed
+
+2. SSLPinner.kt (OkHttp CertificatePinner):
+   - Configure certificate pinner with:
+     * Primary pin: SHA-256 of API server cert
+     * Backup pin: SHA-256 of backup cert
+     * Pin for each API domain
+   - Add pinner to OkHttp client
+   - Handle pinning failures gracefully
+
+3. NetworkInterceptor.kt:
+   - Verify response integrity
+   - Check for suspicious headers
+   - Validate response content type
+   - Block redirects to non-HTTPS URLs
+   - Add custom headers for request signing
+
+4. RequestSigner.kt:
+   - Sign API requests with HMAC-SHA256
+   - Include timestamp to prevent replay attacks
+   - Add nonce for each request
+   - Server validates signature (if you control backend)
+
+5. ANTI-PROXY measures:
+   - Check system proxy settings
+   - Block requests through known proxy ports
+   - Detect VPN connections (optional, with user consent)
+   - Verify DNS resolution matches expected IPs</div>
+            </div>
+
+            <!-- Step 7.8 -->
+            <div class="step red">
+                <div class="step-header">
+                    <span class="step-num red">Step 7.8</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Secure Key Storage & Data Protection</h4>
+                    <span class="sec-level high">High</span>
+                </div>
+                <p>Protect all sensitive data at rest and in memory.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Implement secure data storage:
+
+1. SecureKeyStore.kt:
+   - Generate keys in Android Keystore (hardware-backed)
+   - RSA for key wrapping, AES for data encryption
+   - Key alias rotation on app update
+   - Handle key invalidation gracefully
+
+2. SecurePreferences.kt:
+   - Use EncryptedSharedPreferences (AES-256-GCM + HMAC)
+   - Store: auth tokens, API keys, user preferences
+   - Automatic encryption/decryption
+   - Key stored in Android Keystore
+
+3. SecureDatabase.kt:
+   - SQLCipher for encrypted Room database
+   - Database key stored in Keystore
+   - Re-encrypt on key rotation
+   - Add dependency: net.zetetic:android-database-sqlcipher
+
+4. SecureFileStorage.kt:
+   - Encrypt files before writing to disk
+   - Use streams for large files (avoid memory issues)
+   - Secure delete (overwrite with random data)
+   - Store in app's internal storage only
+
+5. MemoryProtection.kt:
+   - Clear sensitive byte arrays after use
+   - Use char[] instead of String for passwords/tokens
+   - Overwrite objects before garbage collection
+   - Disable screenshots on sensitive screens (FLAG_SECURE)
+
+6. TokenManager.kt:
+   - Short-lived access tokens (15 min)
+   - Secure refresh token storage
+   - Token rotation on each use
+   - Clear tokens on security breach
+   - Pin tokens to device (prevent sharing)</div>
+            </div>
+
+            <!-- Step 7.9 -->
+            <div class="step red">
+                <div class="step-header">
+                    <span class="step-num red">Step 7.9</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Anti-Debugging & Runtime Protection</h4>
+                    <span class="sec-level high">High</span>
+                </div>
+                <p>Prevent runtime analysis and debugging of the app.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Implement anti-debugging and runtime protection:
+
+1. AntiDebug.kt:
+   - Check Debug.isDebuggerConnected()
+   - Check Debug.waitingForDebugger()
+   - Read /proc/self/status for TracerPid (non-zero = debugged)
+   - Use ptrace(PTRACE_TRACEME) in native code (self-trace prevents debugger)
+   - Check for JDWP port opening
+   - Monitor timing (debugged code runs slower)
+   - Run checks on background thread every 3 seconds
+
+2. RuntimeMonitor.kt:
+   - Check /proc/self/maps for:
+     * Frida agent libraries
+     * Xposed framework
+     * Substrate hooks
+     * Custom injected libraries
+   - Monitor thread count (abnormal = suspicious)
+   - Check loaded classes for hooking frameworks
+   - Verify critical method integrity (not hooked)
+
+3. CodeObfuscationRuntime.kt:
+   - Dynamic class loading for sensitive operations
+   - Reflection-based method invocation with encrypted names
+   - Decrypted method names only in memory, cleared after use
+   - Multiple code paths for same operation (confuse reverse engineer)
+
+4. AntiScreenCapture.kt:
+   - Set FLAG_SECURE on:
+     * PlayerActivity (stream content)
+     * Network stream URL input
+     * Any screen showing tokens/keys
+   - Detect screen recording apps running
+   - Blur content in recent apps (set FLAG_SECURE)
+
+5. HoneyPotManager.kt:
+   - Embed fake API endpoints in code
+   - Fake unused encryption keys
+   - Dead code paths that look important
+   - Monitor if honey pots are accessed (analytics event)
+   - If accessed → trigger security response</div>
+            </div>
+
+            <!-- Step 7.10 -->
+            <div class="step red">
+                <div class="step-header">
+                    <span class="step-num red">Step 7.10</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Play Integrity API & Device Attestation</h4>
+                    <span class="sec-level medium">Medium</span>
+                </div>
+                <p>Use Google Play Integrity API to verify device and app authenticity.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Integrate Google Play Integrity API:
+
+1. Add dependency: com.google.android.play:integrity
+
+2. IntegrityManager.kt:
+   - Request integrity token on app launch
+   - Send token to backend for verification
+   - Cache verdict for session
+   - Re-request on sensitive operations
+
+3. IntegrityVerdict.kt:
+   - Parse Play Integrity response:
+     * deviceIntegrity: is the device genuine?
+     * appIntegrity: is the app unmodified?
+     * accountIntegrity: is the Google account valid?
+   - Score-based evaluation
+   - Block on low integrity scores
+
+4. DeviceAttestation.kt:
+   - Use SafetyNet (legacy) or Play Integrity (modern)
+   - Verify device hasn't been rooted/tampered
+   - Check if app is from Play Store
+   - Validate app signing certificate
+
+5. Server-side verification:
+   - Decrypt integrity token with Play Console API key
+   - Verify token hasn't been replayed
+   - Check token freshness (within 5 minutes)
+   - Return risk assessment to app</div>
+            </div>
+
+            <!-- Step 7.11 -->
+            <div class="step red">
+                <div class="step-header">
+                    <span class="step-num red">Step 7.11</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>WebView & Deep Link Hardening</h4>
+                    <span class="sec-level medium">Medium</span>
+                </div>
+                <p>Secure all WebView usage and deep link handling.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Harden WebView and deep link security:
+
+1. SecureWebView.kt:
+   - Disable JavaScript unless explicitly needed
+   - setAllowFileAccess(false)
+   - setAllowContentAccess(false)
+   - setAllowFileAccessFromFileURLs(false)
+   - setAllowUniversalAccessFromFileURLs(false)
+   - Validate all URLs before loading:
+     * Whitelist allowed domains
+     * Block intent://, file://, data:// schemes
+     * Check for URL redirects
+   - Clear cookies and cache on sensitive operations
+   - Override shouldOverrideUrlLoading for all links
+
+2. DeepLinkValidator.kt:
+   - Validate all incoming deep links:
+     * Check scheme, host, path against whitelist
+     * Validate query parameters
+     * Block malformed URIs
+     * URL-decode and re-validate
+   - Prevent open redirect attacks
+   - Log suspicious deep link attempts
+
+3. IntentFilterSecurity.kt:
+   - Validate intent extras before use
+   - Check intent source (getCallingActivity)
+   - Sanitize all input from external intents
+   - Block intents from unknown sources for sensitive operations</div>
+            </div>
+
+            <!-- Step 7.12 -->
+            <div class="step red">
+                <div class="step-header">
+                    <span class="step-num red">Step 7.12</span>
+                    <span class="agent think">Thinker</span>
+                    <h4>Security Architecture Review</h4>
+                    <span class="sec-level critical">Critical</span>
+                </div>
+                <p>Deep review of all security implementations for completeness and correctness.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Perform a comprehensive security architecture review:
+
+1. STRIDE Threat Model:
+   - Spoofing: Can someone impersonate the app or user?
+   - Tampering: Can data be modified in transit or at rest?
+   - Repudiation: Can actions be denied?
+   - Information Disclosure: Can sensitive data leak?
+   - Denial of Service: Can the app be made unusable?
+   - Elevation of Privilege: Can someone gain unauthorized access?
+
+2. Attack surface analysis:
+   - All exported activities/services/receivers
+   - Content providers and their permissions
+   - Deep link handlers
+   - WebView surfaces
+   - Network endpoints
+   - Local storage locations
+   - Clipboard usage
+
+3. Security checklist:
+   ☐ All strings encrypted
+   ☐ Code obfuscated with R8
+   ☐ Native library for critical checks
+   ☐ APK integrity verified
+   ☐ Root/emulator detection
+   ☐ SSL pinning configured
+   ☐ Keys in Android Keystore
+   ☐ Database encrypted (SQLCipher)
+   ☐ Anti-debugging active
+   ☐ Screenshot prevention on sensitive screens
+   ☐ WebView hardened
+   ☐ Deep links validated
+   ☐ Play Integrity integrated
+   ☐ No hardcoded secrets
+   ☐ HTTPS enforced
+   ☐ Input validation on all external data
+
+4. Fix any gaps found in the review.</div>
+            </div>
+
+            <!-- Step 7.13 -->
+            <div class="step red">
+                <div class="step-header">
+                    <span class="step-num red">Step 7.13</span>
+                    <span class="agent bash">Basher</span>
+                    <h4>Security Build & Verify</h4>
+                </div>
+                <p>Build the app with all security measures and verify it works correctly.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Build and verify the security-hardened app:
+
+1. Run: ./gradlew clean assembleRelease
+2. Verify native library is included:
+   - Check APK for libsportstream_security.so
+   - Verify it's in arm64-v8a, armeabi-v7a
+3. Verify obfuscation:
+   - Decompile APK with jadx
+   - Confirm class names are obfuscated
+   - Confirm strings are encrypted
+   - Confirm no source file names leak
+4. Run: ./gradlew lint
+5. Check APK size (security adds ~2-5MB)
+6. Test on physical device:
+   - Verify app launches without crashes
+   - Verify security checks don't block legitimate users
+   - Verify API calls work with SSL pinning
+   - Verify encrypted database works
+7. Test on rooted device (should show warning)
+8. Test on emulator (should detect)</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PHASE 8 - ADMIN PANEL -->
+    <!-- ============================================================ -->
+    <section class="section" id="phase8">
+        <div class="phase">
+            <div class="phase-header">
+                <div class="phase-num" style="background:rgba(245,158,11,0.12);border-color:var(--orange);color:var(--orange);">8</div>
+                <div>
+                    <div class="phase-title">🖥️ Admin Panel — Web Dashboard</div>
+                    <div class="phase-subtitle">Triple-platform admin system (Web Dashboard + Separate Android Admin App + Shared API) — Est. 8-10 hours</div>
+                </div>
+            </div>
+
+            <!-- Admin Panel Overview Card -->
+            <div class="card" style="border-color:rgba(245,158,11,0.2);margin-bottom:24px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                    <span style="font-size:32px;">🎛️</span>
+                    <div>
+                        <h3 style="color:#fff;font-size:16px;">Admin Panel Architecture</h3>
+                        <p style="color:var(--text-muted);font-size:13px;">TRIPLE-PLATFORM admin system: Web dashboard (HTML/JS) + Separate Android Admin App + Shared REST API backend. The admin is a completely separate app from the user-facing streaming app. Supports Android 6 (API 23) through Android 16/17 (API 35+).</p>
+                    </div>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+                    <span class="sec-level" style="background:rgba(28,203,212,0.2);color:var(--primary);">Web Dashboard</span>
+                    <span class="sec-level" style="background:rgba(236,72,153,0.2);color:var(--pink);">Android Admin App</span>
+                    <span class="sec-level" style="background:rgba(245,158,11,0.2);color:var(--orange);">Content Management</span>
+                    <span class="sec-level" style="background:rgba(59,130,246,0.2);color:var(--blue);">Analytics</span>
+                    <span class="sec-level" style="background:rgba(34,197,94,0.2);color:var(--green);">User Management</span>
+                    <span class="sec-level" style="background:rgba(167,139,250,0.2);color:var(--purple);">Notifications</span>
+                </div>
+                <div class="security-matrix">
+                    <div class="security-matrix-item" style="background:rgba(236,72,153,0.04);border-color:rgba(236,72,153,0.1);">
+                        <div class="icon">📱</div>
+                        <h4>Separate Android Admin App</h4>
+                        <p>A completely separate Android app (SportStream Admin) for managing content on-the-go. Not bundled with the user app — distributed independently to admins only.</p>
+                    </div>
+                    <div class="security-matrix-item" style="background:rgba(236,72,153,0.04);border-color:rgba(236,72,153,0.1);">
+                        <div class="icon">🔄</div>
+                        <h4>Sync Across All Platforms</h4>
+                        <p>Web dashboard, Android admin app, and user app all share the same REST API. Changes on any platform reflect everywhere instantly.</p>
+                    </div>
+                    <div class="security-matrix-item" style="background:rgba(236,72,153,0.04);border-color:rgba(236,72,153,0.1);">
+                        <div class="icon">📐</div>
+                        <h4>Android 6-17 Compat</h4>
+                        <p>Full support from Android 6.0 (API 23) through Android 16/17 (API 35+). Uses AndroidX compat libraries, graceful feature degradation on older devices.</p>
+                    </div>
+                    <div class="security-matrix-item" style="background:rgba(245,158,11,0.04);border-color:rgba(245,158,11,0.1);">
+                        <div class="icon">📊</div>
+                        <h4>Dashboard</h4>
+                        <p>Overview with live stats, active users, current events, server health, and quick actions at a glance.</p>
+                    </div>
+                    <div class="security-matrix-item" style="background:rgba(245,158,11,0.04);border-color:rgba(245,158,11,0.1);">
+                        <div class="icon">⚽</div>
+                        <h4>Events Manager</h4>
+                        <p>CRUD for live events with team logos, dates, stream links, categories, and scheduling (draft/scheduled/live/ended).</p>
+                    </div>
+                    <div class="security-matrix-item" style="background:rgba(245,158,11,0.04);border-color:rgba(245,158,11,0.1);">
+                        <div class="icon">📺</div>
+                        <h4>Channels Manager</h4>
+                        <p>Manage TV channels with logos, stream URLs, categories, and bulk operations. Upload logos via drag-and-drop.</p>
+                    </div>
+                    <div class="security-matrix-item" style="background:rgba(245,158,11,0.04);border-color:rgba(245,158,11,0.1);">
+                        <div class="icon">🎬</div>
+                        <h4>Highlights Manager</h4>
+                        <p>Upload and manage highlight videos with thumbnails, titles, metadata, and auto-thumbnail generation.</p>
+                    </div>
+                    <div class="security-matrix-item" style="background:rgba(245,158,11,0.04);border-color:rgba(245,158,11,0.1);">
+                        <div class="icon">🏷️</div>
+                        <h4>Categories Manager</h4>
+                        <p>Organize channels into categories with icons, sort order, and visibility toggles.</p>
+                    </div>
+                    <div class="security-matrix-item" style="background:rgba(245,158,11,0.04);border-color:rgba(245,158,11,0.1);">
+                        <div class="icon">🔔</div>
+                        <h4>Push Notifications</h4>
+                        <p>Compose and schedule push notifications with targeting (all users, segments, specific devices), rich content, and delivery tracking.</p>
+                    </div>
+                    <div class="security-matrix-item" style="background:rgba(245,158,11,0.04);border-color:rgba(245,158,11,0.1);">
+                        <div class="icon">⚙️</div>
+                        <h4>App Configuration</h4>
+                        <p>Remote config management — API URLs, update URLs, Telegram links, maintenance mode, force update, and feature flags.</p>
+                    </div>
+                    <div class="security-matrix-item" style="background:rgba(245,158,11,0.04);border-color:rgba(245,158,11,0.1);">
+                        <div class="icon">👤</div>
+                        <h4>Admin Auth & Roles</h4>
+                        <p>Secure admin login with JWT tokens, role-based access (super admin, editor, viewer), and session management.</p>
+                    </div>
+                    <div class="security-matrix-item" style="background:rgba(245,158,11,0.04);border-color:rgba(245,158,11,0.1);">
+                        <div class="icon">📈</div>
+                        <h4>Analytics Dashboard</h4>
+                        <p>Charts for daily active users, stream views, popular channels, peak hours, geographic distribution, and engagement metrics.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 8.1 -->
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 8.1</span>
+                    <span class="agent web">Researcher</span>
+                    <h4>Research Admin Panel Tech Stack</h4>
+                </div>
+                <p>Research the best tech stack for the admin dashboard and backend API.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Research the best approach for building an admin panel for a mobile app backend:
+
+Option A: Standalone HTML/CSS/JS admin panel (no framework, simple)
+Option B: Next.js admin dashboard (React-based, full-featured)
+Option C: Kotlin/Ktor backend + simple web frontend
+
+For each option, research:
+1. Setup complexity and time to build
+2. Authentication (JWT, session-based)
+3. Database options (PostgreSQL, MySQL, SQLite)
+4. File upload handling (images, videos)
+5. Deployment options (Railway, Render, VPS)
+6. Real-time features (WebSocket for live stats)
+
+Recommend the best option for a solo developer building a sports streaming app admin panel. Provide code examples.</div>
+            </div>
+
+            <!-- Step 8.2 -->
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 8.2</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Backend API — Database & Models</h4>
+                </div>
+                <p>Create the backend API with database schema for all app content.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create a backend API for the sports streaming app admin panel using Node.js + Express + PostgreSQL:
+
+1. Project setup:
+   - Initialize Node.js project with TypeScript
+   - Install: express, pg, prisma, jsonwebtoken, bcryptjs, multer, cors, helmet
+   - Set up Prisma ORM with PostgreSQL
+
+2. Database schema (Prisma):
+   model Admin {
+     id, email, password (hashed), name, role (SUPER_ADMIN/EDITOR/VIEWER),
+     avatar, lastLogin, createdAt, updatedAt
+   }
+   
+   model Event {
+     id, title, teamA_name, teamA_logo, teamB_name, teamB_logo,
+     date, time, category, isLive, status (DRAFT/SCHEDULED/LIVE/ENDED),
+     streams: StreamLink[], createdAt, updatedAt
+   }
+   
+   model Channel {
+     id, name, logoUrl, streamUrl, categoryId, isActive,
+     sortOrder, createdAt, updatedAt
+   }
+   
+   model Highlight {
+     id, title, thumbnailUrl, videoUrl, date, duration, views,
+     createdAt, updatedAt
+   }
+   
+   model Category {
+     id, name, iconUrl, sortOrder, isVisible, createdAt, updatedAt
+   }
+   
+   model Banner {
+     id, imageUrl, linkUrl, title, isActive, sortOrder,
+     startDate, endDate, createdAt
+   }
+   
+   model AppConfig {
+     id, key, value, description, updatedAt
+   }
+   
+   model Notification {
+     id, title, body, targetAudience, status (DRAFT/SENT/SCHEDULED),
+     sentAt, scheduledAt, createdAt
+   }
+   
+   model AnalyticsEvent {
+     id, eventType, userId, metadata (JSON), createdAt
+   }
+
+3. Seed script with sample data for testing</div>
+            </div>
+
+            <!-- Step 8.3 -->
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 8.3</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Backend API — Auth & Routes</h4>
+                </div>
+                <p>Build all API routes with JWT authentication and role-based access.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create all API routes for the admin backend:
+
+1. Auth routes:
+   - POST /api/auth/login (email + password → JWT token)
+   - POST /api/auth/logout (invalidate token)
+   - GET /api/auth/me (get current admin profile)
+   - PUT /api/auth/password (change password)
+   
+2. Events routes (CRUD):
+   - GET /api/events (list with pagination, filters, search)
+   - GET /api/events/:id
+   - POST /api/events (create with stream links)
+   - PUT /api/events/:id
+   - DELETE /api/events/:id
+   - PATCH /api/events/:id/status (change live status)
+   
+3. Channels routes (CRUD + bulk):
+   - GET /api/channels (list with category filter)
+   - POST /api/channels
+   - PUT /api/channels/:id
+   - DELETE /api/channels/:id
+   - POST /api/channels/bulk-delete
+   - PATCH /api/channels/reorder
+   
+4. Highlights routes (CRUD):
+   - GET /api/highlights
+   - POST /api/highlights
+   - PUT /api/highlights/:id
+   - DELETE /api/highlights/:id
+   
+5. Categories routes (CRUD + reorder):
+   - GET /api/categories
+   - POST /api/categories
+   - PUT /api/categories/:id
+   - DELETE /api/categories/:id
+   - PATCH /api/categories/reorder
+   
+6. Banners routes:
+   - GET /api/banners
+   - POST /api/banners
+   - PUT /api/banners/:id
+   - DELETE /api/banners/:id
+   
+7. Config routes:
+   - GET /api/config (all config values)
+   - PUT /api/config/:key
+   - POST /api/config/bulk-update
+   
+8. Notifications routes:
+   - GET /api/notifications
+   - POST /api/notifications (send or schedule)
+   - DELETE /api/notifications/:id
+   
+9. Analytics routes:
+   - GET /api/analytics/overview (dashboard stats)
+   - GET /api/analytics/events (time-series data)
+   - GET /api/analytics/channels (popular channels)
+   - GET /api/analytics/users (user metrics)
+   
+10. File upload routes:
+    - POST /api/upload/image (logos, thumbnails, banners)
+    - POST /api/upload/video (highlight videos)
+    - Upload to local storage or S3-compatible storage
+
+11. Middleware:
+    - JWT auth middleware (verify token on all protected routes)
+    - Role middleware (check permissions)
+    - Rate limiter (prevent abuse)
+    - Request validator (sanitize inputs)
+    - Error handler (consistent error responses)
+    - CORS config (allow admin panel origin)</div>
+            </div>
+
+            <!-- Step 8.4 -->
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 8.4</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Admin Panel — Login & Layout</h4>
+                </div>
+                <p>Build the admin panel web UI with login page and main layout.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create the admin panel web frontend (HTML + CSS + JavaScript, no framework):
+
+1. admin/login.html:
+   - Clean, dark-themed login page (matching app design)
+   - Email and password fields with validation
+   - "Remember me" checkbox
+   - Login button with loading spinner
+   - Error message display
+   - JWT token stored in httpOnly cookie or localStorage
+
+2. admin/index.html (main layout):
+   - Sidebar navigation (collapsible on mobile):
+     * Dashboard (home icon)
+     * Events (calendar icon)
+     * Channels (TV icon)
+     * Highlights (play icon)
+     * Categories (tag icon)
+     * Banners (image icon)
+     * Notifications (bell icon)
+     * App Config (gear icon)
+     * Admin Users (people icon)
+     * Analytics (chart icon)
+   - Top bar:
+     * Search bar
+     * Notification bell
+     * Admin profile dropdown (profile, settings, logout)
+   - Main content area (loads pages via fetch/iframe)
+   - Dark theme with glassmorphism (matching app design)
+   - Responsive (works on tablet/desktop)
+
+3. admin/css/admin.css:
+   - Dark theme variables (same as app: --bg: #0a0f1a, --primary: #1CCBD4)
+   - Sidebar styles
+   - Card styles
+   - Table styles
+   - Form styles
+   - Modal/dialog styles
+   - Toast notification styles
+   - Chart container styles
+
+4. admin/js/auth.js:
+   - login(), logout(), checkAuth() functions
+   - JWT token management
+   - Auto-redirect to login if not authenticated
+   - Token refresh logic
+
+5. admin/js/api.js:
+   - Wrapper for all fetch() calls to backend
+   - Automatic auth header injection
+   - Error handling and retry logic
+   - Loading state management</div>
+            </div>
+
+            <!-- Step 8.5 -->
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 8.5</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Admin Panel — Dashboard Page</h4>
+                </div>
+                <p>Build the main dashboard with live stats, charts, and quick actions.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create the admin dashboard page:
+
+1. admin/pages/dashboard.html:
+   - Stats cards row (4 cards):
+     * Total Events (with live count in green)
+     * Total Channels
+     * Total Highlights
+     * Active Users (24h)
+   - Charts section:
+     * Line chart: Views over last 7 days (using Chart.js)
+     * Doughnut chart: Category distribution
+     * Bar chart: Top 10 channels by views
+   - Quick Actions:
+     * "Add New Event" button
+     * "Add New Channel" button
+     * "Send Notification" button
+     * "Toggle Maintenance Mode" button
+   - Recent Activity log:
+     * Last 20 admin actions (created event, updated channel, etc.)
+     * Timestamp and admin name for each
+   - Server Status:
+     * API response time
+     * Database connection status
+     * Storage usage
+
+2. admin/js/dashboard.js:
+   - Fetch stats from /api/analytics/overview
+   - Initialize Chart.js charts
+   - Auto-refresh stats every 30 seconds
+   - Format numbers (1.2K, 3.5M)
+
+3. Add Chart.js CDN to admin/index.html</div>
+            </div>
+
+            <!-- Step 8.6 -->
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 8.6</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Admin Panel — Events Manager</h4>
+                </div>
+                <p>Build the events management page with CRUD, filtering, and scheduling.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create the Events management page:
+
+1. admin/pages/events.html:
+   - Top bar:
+     * Search input (real-time filter)
+     * Category dropdown filter
+     * Status filter (All, Draft, Scheduled, Live, Ended)
+     * "Add Event" button (primary)
+   - Data table:
+     * Columns: Status badge, Teams (logo + name VS logo + name), Category, Date/Time, Streams count, Actions
+     * Sortable columns
+     * Pagination (20 per page)
+     * Bulk select with delete
+   - Row actions:
+     * Edit, Duplicate, Delete, Toggle Live status
+   - Empty state when no events
+
+2. admin/pages/event-form.html (Create/Edit):
+   - Form sections:
+     * Event Details: Title, Category dropdown, Date picker, Time picker
+     * Team A: Name input, Logo upload (drag & drop with preview)
+     * Team B: Name input, Logo upload (drag & drop with preview)
+     * Stream Links: Dynamic list with add/remove
+       - Each: Name (Server 1, Server 2...), URL input, Quality dropdown
+     * Status: Draft / Scheduled / Live / Ended radio buttons
+     * Save & Publish / Save as Draft buttons
+   - Form validation (required fields, URL format)
+   - Auto-save draft every 30 seconds
+
+3. admin/js/events.js:
+   - Load events with pagination and filters
+   - Create/update event via API
+   - Delete with confirmation modal
+   - Image upload with preview
+   - Dynamic stream link add/remove
+   - Status toggle with confirmation</div>
+            </div>
+
+            <!-- Step 8.7 -->
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 8.7</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Admin Panel — Channels & Highlights</h4>
+                </div>
+                <p>Build channel and highlight management pages.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create Channels and Highlights management pages:
+
+1. Channels page (admin/pages/channels.html):
+   - Grid or table view toggle
+   - Category filter chips
+   - Search by name
+   - Each channel card/row: Logo, Name, Category, Stream URL (masked), Status toggle, Actions
+   - Add channel form: Name, Logo upload, Stream URL, Category dropdown
+   - Bulk operations: Select multiple → Delete / Change Category
+   - Drag-to-reorder within category
+
+2. Highlights page (admin/pages/highlights.html):
+   - Table with: Thumbnail preview, Title, Duration, Date, Views, Actions
+   - Add highlight form:
+     * Title
+     * Video URL input (or upload)
+     * Thumbnail upload (or auto-generate from video)
+     * Date, Duration
+   - Bulk delete
+   - Sort by date, views, title
+
+3. Categories page (admin/pages/categories.html):
+   - Sortable list with drag handle
+   - Each: Icon, Name, Channel count, Visibility toggle, Actions
+   - Add/Edit: Name, Icon upload, Sort order
+   - Delete with reassign channels prompt
+
+4. Banners page (admin/pages/banners.html):
+   - Visual preview of banner carousel
+   - Each: Image preview, Title, Link, Date range, Status, Actions
+   - Add/Edit: Image upload, Title, Link URL, Start/End date, Active toggle
+   - Drag-to-reorder
+
+5. Shared JS modules:
+   - admin/js/table.js (reusable data table with sort, filter, pagination)
+   - admin/js/form.js (form validation, image upload with preview)
+   - admin/js/modal.js (confirmation dialogs, edit modals)
+   - admin/js/toast.js (success/error/warning notifications)</div>
+            </div>
+
+            <!-- Step 8.8 -->
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 8.8</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Admin Panel — Notifications & Config</h4>
+                </div>
+                <p>Build notification composer and app configuration pages.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create Notifications and App Config pages:
+
+1. Notifications page (admin/pages/notifications.html):
+   - Notification composer:
+     * Title input
+     * Body textarea (with character count)
+     * Target: All Users / Topic-based / Specific tokens
+     * Deep link URL (optional — opens specific event/channel)
+     * Image URL (optional — rich notification)
+     * Schedule: Send Now / Schedule (date + time picker)
+   - Sent notifications history:
+     * Table: Title, Target, Status, Sent at, Delivered count
+     * Resend / Delete actions
+   - Notification templates:
+     * Save templates for reuse
+     * "Live Event" template (auto-fill with event details)
+     * "New Update" template
+
+2. App Config page (admin/pages/config.html):
+   - Config sections in cards:
+     * API Settings: Base URL, API Version
+     * Update Settings: Latest version, Update URL, Force update toggle
+     * Social Links: Telegram, WhatsApp, Twitter, Website
+     * App Settings: Maintenance mode toggle, Maintenance message,
+       App notice/banner text, Min supported version
+     * Ad Settings: AdMob banner ID, Interstitial ID, Test mode toggle
+     * Feature Flags: Enable/disable features remotely
+   - Each config value: Key label, Input field, Description text, Save button
+   - Bulk save all changes
+   - "Reset to defaults" button
+
+3. Admin Users page (admin/pages/admins.html):
+   - List of admin accounts
+   - Each: Avatar, Name, Email, Role badge, Last login, Actions
+   - Add admin: Name, Email, Password, Role dropdown
+   - Edit admin: Update name, role, reset password
+   - Delete admin (with safety check — can't delete self)
+   - Role permissions:
+     * SUPER_ADMIN: Full access
+     * EDITOR: CRUD content, send notifications
+     * VIEWER: Read-only access</div>
+            </div>
+
+            <!-- Step 8.9 -->
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 8.9</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Admin Panel — Analytics Page</h4>
+                </div>
+                <p>Build a comprehensive analytics dashboard with charts and metrics.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create the Analytics page:
+
+1. admin/pages/analytics.html:
+   - Date range picker (Today, 7 days, 30 days, Custom)
+   - Overview metrics:
+     * Total views, Unique users, Avg session duration, Bounce rate
+     * Each with trend indicator (↑↓) and percentage change
+   - Charts:
+     * Line chart: Daily active users over time
+     * Area chart: Stream views over time
+     * Bar chart: Top 10 most watched events
+     * Horizontal bar: Top 10 channels by views
+     * Pie chart: Content type distribution (events vs channels vs highlights)
+     * Heatmap: Peak usage hours (day of week × hour)
+   - Geographic data:
+     * Top countries table
+     * Top cities table
+   - Device stats:
+     * Android version distribution
+     * Device model distribution
+     * Screen resolution distribution
+   - Export:
+     * "Export CSV" button for all data
+     * "Export PDF Report" button
+
+2. admin/js/analytics.js:
+   - Fetch data from /api/analytics/* endpoints
+   - Initialize all Chart.js charts
+   - Date range filtering
+   - Number formatting utilities
+   - CSV export function
+   - Auto-refresh every 60 seconds
+
+3. admin/js/charts.js:
+   - Chart.js configuration factory
+   - Responsive chart sizing
+   - Dark theme chart colors (matching app palette)
+   - Tooltip customization
+   - Animation configuration</div>
+            </div>
+
+            <!-- Step 8.10 -->
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 8.10</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Mobile App — Admin API Integration</h4>
+                </div>
+                <p>Update the Android app to consume data from the admin API instead of hardcoded JSON.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Update the Android app to use the admin panel API:
+
+1. Update ApiService.kt:
+   - Change base URL to point to admin API
+   - Update endpoints to match admin API routes:
+     * GET /api/events → events list
+     * GET /api/channels → channels list
+     * GET /api/highlights → highlights list
+     * GET /api/categories → categories list
+     * GET /api/banners → banners list
+     * GET /api/config → app configuration
+   - Add API key header for authentication
+
+2. Update data models to match admin API response format:
+   - Add any missing fields
+   - Handle new fields (status, sortOrder, etc.)
+   - Update @SerializedName annotations
+
+3. Update Repository to handle new response format:
+   - Pagination support (if admin API paginates)
+   - Cache strategy (cache for 5 min, refresh on pull)
+   - Offline fallback to cached data
+
+4. Add analytics tracking:
+   - POST /api/analytics/events on app events:
+     * App open, Screen view, Stream start, Stream end
+     * Search query, Channel favorite, Notification click
+   - Batch events and send periodically (every 5 min)
+   - Queue events when offline, send when online
+
+5. Update RemoteConfigHelper to fetch from admin API config endpoint instead of Firebase Remote Config</div>
+            </div>
+
+            <!-- Step 8.11 -->
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 8.11</span>
+                    <span class="agent review">Reviewer</span>
+                    <h4>Admin Panel Review</h4>
+                </div>
+                <p>Review the entire admin panel implementation for security, usability, and correctness.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Review the entire admin panel implementation:
+
+1. Backend security:
+   - All routes protected with JWT auth
+   - Role-based access control works correctly
+   - SQL injection prevention (Prisma handles this)
+   - File upload validation (type, size)
+   - Rate limiting on auth endpoints
+   - CORS configured correctly
+   - Helmet security headers
+
+2. Frontend:
+   - Auth flow works (login → redirect → logout)
+   - Forms validate before submit
+   - Error messages display correctly
+   - Loading states show during API calls
+   - Responsive layout on different screen sizes
+   - All CRUD operations work correctly
+
+3. API contract:
+   - Mobile app endpoints return correct format
+   - Pagination works
+   - Search/filter returns correct results
+   - File uploads save and serve correctly
+
+4. Performance:
+   - Database queries are optimized (indexes)
+   - Image uploads are compressed
+   - API responses are paginated
+   - No N+1 query issues
+
+Fix all issues found.</div>
+            </div>
+
+            <!-- Step 8.12 -->
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 8.12</span>
+                    <span class="agent bash">Basher</span>
+                    <h4>Admin Panel Build & Deploy</h4>
+                </div>
+                <p>Build and deploy the admin panel and backend API.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Build and prepare admin panel for deployment:
+
+1. Backend:
+   - Run: npm run build
+   - Run database migrations: npx prisma migrate deploy
+   - Seed initial admin account: npm run seed
+   - Verify all API endpoints work: npm run test
+   - Create Dockerfile for backend
+
+2. Frontend:
+   - Minify CSS and JS files
+   - Optimize images
+   - Create .htaccess or nginx config for serving
+   - Test all pages load correctly
+
+3. Deployment docs:
+   - Document environment variables needed
+   - Document database setup steps
+   - Document admin account creation
+   - Document API endpoints reference
+
+4. Local testing:
+   - Start backend: npm run dev
+   - Open admin panel in browser
+   - Login with default credentials
+   - Test all CRUD operations
+   - Verify mobile app can fetch data from API</div>
+            </div>
+        </div>
+    </section>
+
+    
+            <!-- Step 8.13 - In-App Admin Login -->
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 8.13</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Separate Android Admin App — Project Setup &amp; Login</h4>
+                </div>
+                <p>Create a completely separate Android project for the admin app with its own authentication.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create a SEPARATE Android admin app (not part of the user app):
+
+1. New Android project: "SportStream Admin"
+   - Package: com.sportstream.admin
+   - Min SDK: 23, Target SDK: 35
+   - Completely independent from the user-facing app
+   - Own build.gradle.kts, own AndroidManifest.xml
+   - Can be distributed via separate APK or private channel
+
+2. AdminLoginActivity.kt:
+   - Full-screen login with app logo
+   - Email + password fields with validation
+   - Login via POST /api/auth/admin-login
+   - Store JWT token in EncryptedSharedPreferences
+   - Auto-login if token is valid on app restart
+   - "Forgot password" link (email reset via API)
+   - Support Android 6+ using AndroidX security-crypto
+
+3. AdminSessionManager.kt:
+   - Singleton managing admin auth state
+   - isAdmin(): Boolean, getAdminRole(): AdminRole
+   - refreshToken() auto-refresh before expiry
+   - logout() clear tokens and redirect to login
+   - Observe admin state via StateFlow
+
+4. MainActivity.kt (Admin):
+   - Bottom navigation: Events, Channels, Highlights, More
+   - Drawer with: Categories, Banners, Notifications, Config, Analytics, Admins
+   - Admin role badge in toolbar
+   - Logout button in drawer header
+
+5. Admin theme:
+   - Dark theme matching the web admin panel
+   - Same color palette as user app but with admin accent (orange #F59E0B)
+   - Glassmorphism cards, Material 3 components</div>
+            </div>
+
+            <!-- Step 8.14 - In-App Events/Channels -->
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 8.14</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Admin App &mdash; Events &amp; Channels Screens</h4>
+                </div>
+                <p>Build event and channel management screens in the separate admin app.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Build events and channels management in the separate admin app:
+
+1. AdminEventsFragment.kt + fragment_admin_events.xml:
+   - RecyclerView with status badges (Draft/Live/Ended/Scheduled)
+   - Pull-to-refresh, FAB to create new event
+   - Swipe-to-delete with undo snackbar
+   - Long-press context menu (Edit, Duplicate, Delete, Toggle Live)
+   - Search bar + category filter chips at top
+   - Pagination (load more on scroll)
+
+2. AdminEventFormActivity.kt + activity_admin_event_form.xml:
+   - Full-screen form (not fragment - better for admin app)
+   - Title, Category dropdown (Material AutoCompleteTextView)
+   - Date/Time pickers (MaterialDatePicker/TimePicker from AndroidX)
+   - Team A: name input + logo upload with preview
+   - Team B: name input + logo upload with preview
+   - Stream links: dynamic RecyclerView rows with add/remove
+   - Status selector (RadioGroup: Draft/Scheduled/Live/Ended)
+   - "Save Draft" and "Publish" buttons
+   - Form validation with TextInputLayout error states
+   - Image upload via camera or gallery (ActivityResultContracts)
+   - Works on Android 6+ with permission handling
+
+3. AdminChannelsFragment.kt + fragment_admin_channels.xml:
+   - Grid layout (2 columns) with channel cards
+   - Each: logo, name, category, active toggle
+   - Category filter chips (ChipGroup)
+   - FAB to add new channel
+   - Multi-select mode for bulk delete
+   - Pull-to-refresh
+
+4. AdminHighlightsFragment.kt + fragment_admin_highlights.xml:
+   - List with thumbnail, title, date, view count
+   - FAB to add new highlight
+   - Edit/delete swipe actions
+   - Video URL input with auto-thumbnail preview (Glide)
+
+5. Shared admin components:
+   - AdminToolbar.kt with role badge and search
+   - AdminEmptyState.kt for empty lists
+   - AdminSwipeCallback.kt (ItemTouchHelper)
+   - ImagePickerHelper.kt (camera + gallery, API 23-35)
+   - ViewBinding throughout, API 23+ compatible</div>
+            </div>
+
+            <!-- Step 8.15 - In-App Config & Notifications -->
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 8.15</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Admin App &mdash; Config, Notifications &amp; Analytics</h4>
+                </div>
+                <p>Build config, notification, and analytics screens in the separate admin app.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Build remaining screens in the separate admin app:
+
+1. AdminConfigActivity.kt + activity_admin_config.xml:
+   - ScrollView with config sections in cards:
+     * API Settings: base URL, version
+     * Update Settings: latest version, update URL, force update switch
+     * Social Links: Telegram, WhatsApp, Twitter, website URLs
+     * App Settings: maintenance mode switch, notice text, min version
+     * Ad Settings: AdMob banner/interstitial IDs, test mode switch
+   - Each field: label + TextInputLayout or SwitchMaterial
+   - "Save All" FAB with loading state
+   - "Reset to Defaults" button with confirmation dialog
+
+2. AdminNotificationsActivity.kt + activity_admin_notifications.xml:
+   - Tab layout: "Compose" and "History"
+   - Compose tab: title, body (multiline), target spinner (All/Topic/Specific),
+     schedule toggle, date/time picker for scheduled sends, Send button
+   - History tab: RecyclerView of sent notifications
+   - Each notification: title, target, status badge, sent date
+   - Swipe-to-delete, tap to resend
+
+3. AdminAnalyticsActivity.kt + activity_admin_analytics.xml:
+   - Overview cards (2x2 grid): Total Views, Active Users, Total Events, Total Channels
+   - Each card with trend arrow and percentage change
+   - Line chart: views over last 7 days (MPAndroidChart)
+   - Bar chart: top 10 channels by views
+   - Date range filter chips: Today, 7 Days, 30 Days
+   - Pull-to-refresh
+   - Keep charts simple for API 23 devices
+
+4. AdminCategoriesFragment.kt:
+   - RecyclerView with drag-to-reorder (ItemTouchHelper)
+   - Each: icon, name, channel count, visibility toggle
+   - Add/edit BottomSheetDialog with name + icon upload
+   - Delete with "reassign channels" confirmation
+
+5. Admin BannersFragment.kt:
+   - List of banners with image preview
+   - Add/edit: image upload, title, link URL, date range, active toggle
+   - Drag-to-reorder</div>
+            </div>
+
+            <!-- Step 8.16 - Android Version Compat -->
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 8.16</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Android 6 &rarr; 16/17 Compat Layer (Both Apps)</h4>
+                </div>
+                <p>Ensure both the user app and admin app work across Android 6.0 (API 23) through Android 16/17 (API 35+).</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Create a shared compatibility module used by BOTH the user app and admin app:
+
+1. VersionCompatHelper.kt:
+   - checkNotificationPermission() - Runtime permissions API 23+, POST_NOTIFICATIONS API 33+
+   - checkStoragePermission() - READ_EXTERNAL_STORAGE API 23-32, READ_MEDIA_* API 33+
+   - checkPictureInPicture() - PiP available API 26+
+   - checkNotificationChannels() - Required API 26+
+   - checkBiometricAuth() - BiometricPrompt API 28+, FingerprintManager API 23-27
+   - checkDarkMode() - System dark mode API 29+
+   - checkScopedStorage() - Scoped storage API 29+
+   - checkForegroundServiceType() - Required API 34+
+   - checkPhotoPicker() - Photo picker API 33+ with gallery fallback
+
+2. build.gradle.kts:
+   - minSdk = 23, targetSdk = 35, compileSdk = 35
+   - AndroidX core-ktx, compat libraries
+   - multidex support
+
+3. PermissionManager.kt:
+   - Unified permission handling for all API levels
+   - Handle "Don't ask again" state
+   - ActivityResultContracts for all permissions
+
+4. NotificationCompatHelper.kt:
+   - Create channels (API 26+), skip silently on API < 26
+   - NotificationCompat.Builder for all levels
+   - Handle POST_NOTIFICATIONS permission (API 33+)
+
+5. UI Compat:
+   - Material3 with MaterialComponents fallback
+   - ViewBinding (all API levels)
+   - Display cutouts (API 28+), edge-to-edge (API 29+)
+   - WindowInsetsCompat for keyboard/status bar
+
+6. Testing matrix:
+   - API 23 emulator (minimum)
+   - API 28 emulator (Pie)
+   - API 33 emulator (Android 13)
+   - API 35 device (Android 16)
+   - Verify graceful degradation on each</div>
+            </div>
+
+            <!-- Step 8.17 - Dual Platform Review -->
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 8.17</span>
+                    <span class="agent review">Reviewer</span>
+                    <h4>Admin System Review (All 3 Platforms)</h4>
+                </div>
+                <p>Review the complete admin system across web dashboard, Android admin app, and shared API.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Review the complete triple-platform admin system:
+
+1. Web Admin: CRUD ops, JWT auth, role-based access, file uploads, responsive
+2. Android Admin App (separate APK): All screens load on API 23+, forms validate, image upload works,
+   permissions handled on API 23-35, admin login/logout, role-based UI, charts render
+   - App is completely independent from user app
+   - Own package name, own signing key possible
+   - Can be distributed privately to admin users only
+3. Cross-platform sync: Changes on any platform appear on all others, same API,
+   same data models, no conflicts when editing from both simultaneously
+4. API contract: Correct format, pagination, search/filter, file uploads
+5. Performance: Optimized queries, compressed uploads, paginated responses
+
+Fix all issues found.</div>
+            </div>
+
+
+    <!-- ============================================================ -->
+    <!-- PHASE 9 - TESTING -->
+    <!-- ============================================================ -->
+    <section class="section" id="phase9">
+        <div class="phase">
+            <div class="phase-header">
+                <div class="phase-num p7">9</div>
+                <div>
+                    <div class="phase-title">Testing & Quality Assurance</div>
+                    <div class="phase-subtitle">End-to-end testing, security testing, performance, and final review — Est. 3-4 hours</div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-num" style="background:rgba(28,203,212,0.2);color:var(--primary);">Step 9.1</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>Write Unit Tests</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Write unit tests for core logic:
+
+1. Repository tests (using fake data sources):
+   - MainRepository returns cached data when offline
+   - FavoritesRepository toggle works correctly
+   - PlaylistRepository CRUD operations
+
+2. ViewModel tests:
+   - HomeViewModel loads events correctly
+   - CategoriesViewModel filters by category
+   - PlayerViewModel switches streams
+
+3. Utility tests:
+   - Date/time formatting
+   - URL validation
+   - Search query filtering
+
+Run: ./gradlew test</div>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-num" style="background:rgba(28,203,212,0.2);color:var(--primary);">Step 9.2</span>
+                    <span class="agent browser">Browser</span>
+                    <h4>UI Testing on Emulator</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Run the app on Android emulator and test all flows:
+
+1. Full user journey:
+   - Launch → Splash → Home (verify events load)
+   - Navigate tabs (Home → Categories → Highlights)
+   - Open drawer, test each menu item
+   - Open an event → Player starts
+   - Player controls: play/pause, seek, lock, PiP
+   - Add to favorites, check favorites tab
+   - Create playlist, add channel
+   - Search for content
+   - Test network stream with URL
+
+2. Edge cases:
+   - Rotate device during playback
+   - Background/foreground during playback
+   - No internet connection
+   - Rapid navigation between screens
+   - Deep link handling
+
+3. Performance:
+   - Check for memory leaks (LeakCanary)
+   - Check for ANR (main thread blocking)
+   - Verify smooth scrolling in lists</div>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-num" style="background:rgba(239,68,68,0.2);color:var(--red);">Step 9.3</span>
+                    <span class="agent browser">Browser</span>
+                    <h4>Security Penetration Testing</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Do a comprehensive final code review of the entire project:
+
+1. Code quality:
+   - No hardcoded strings (use strings.xml)
+   - No hardcoded colors (use colors.xml)
+   - Consistent naming conventions
+   - No unused imports or variables
+   - Proper Kotlin idioms used
+
+2. Architecture:
+   - Clean MVVM separation
+   - No memory leaks (observers, callbacks)
+   - Proper coroutine scope usage
+   - Repository pattern followed consistently
+
+3. Security:
+   - No API keys hardcoded
+   - HTTPS enforced
+   - Input validation on URLs
+
+4. Performance:
+   - Efficient RecyclerView adapters
+   - Image loading optimized (Glide caching)
+   - Background work on IO dispatcher
+
+Fix all issues found.</div>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-num" style="background:rgba(28,203,212,0.2);color:var(--primary);">Step 9.4</span>
+                    <span class="agent bash">Basher</span>
+                    <h4>Final Build & APK</h4>
+                </div>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Build the final release APK:
+
+1. Run: ./gradlew clean assembleRelease
+2. Verify APK is generated in app/build/outputs/apk/release/
+3. Check APK size (should be under 30MB without videos)
+4. Run: ./gradlew lint
+5. Fix any remaining lint warnings
+6. Generate signed APK or AAB for Play Store</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- TIMELINE -->
+    <!-- ============================================================ -->
+    <section class="section">
+        <div class="section-header">
+            <div class="section-icon blue">📅</div>
+            <div>
+                <div class="section-title">Estimated Timeline</div>
+                <div class="section-desc">Day-by-day breakdown of the build process</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="time">Day 1 — Morning</div>
+                    <div class="desc"><strong>Phase 1:</strong> Project setup, dependencies, Firebase, theme (2-3 hrs)</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="time">Day 1 — Afternoon</div>
+                    <div class="desc"><strong>Phase 2:</strong> Data models, API, Room, Repository, ViewModels (3-4 hrs)</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="time">Day 2 — Full Day</div>
+                    <div class="desc"><strong>Phase 3:</strong> All UI screens — Splash, Main, Home, Categories, Highlights (4-5 hrs)</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="time">Day 3 — Full Day</div>
+                    <div class="desc"><strong>Phase 4:</strong> Video player with custom controls, gestures, PiP, subtitles (4-5 hrs)</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="time">Day 4 — Morning</div>
+                    <div class="desc"><strong>Phase 5:</strong> Favorites, Playlists, Network Stream, Notifications (3-4 hrs)</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="time">Day 4 — Afternoon</div>
+                    <div class="desc"><strong>Phase 6:</strong> Ads, auto-update, animations, error handling (3-4 hrs)</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="time">Day 5 — Full Day</div>
+                    <div class="desc"><strong style="color:var(--red);">Phase 7: Security & Protection</strong> — 20-layer security hardening (4-5 hrs)</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="time">Day 6 — Morning</div>
+                    <div class="desc"><strong>Phase 8:</strong> Testing, security audit, code review, final build (3-4 hrs)</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PROMPT TEMPLATE -->
+    <!-- ============================================================ -->
+    <section class="section">
+        <div class="section-header">
+            <div class="section-icon green">📋</div>
+            <div>
+                <div class="section-title">Quick-Start: Copy-Paste Master Prompt</div>
+                <div class="section-desc">Use this single prompt to kick off the entire project in Codebuff</div>
+            </div>
+        </div>
+        <div class="card">
+            <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px;">Copy this prompt into Codebuff to start building the app from scratch:</p>
+            <div class="prompt-box" style="font-size:13px;line-height:1.8;"><span class="cmd">Build a live sports streaming Android app called "SportStream" with the following features:</span>
+
+<span class="comment">## Architecture</span>
+- Kotlin, MVVM, Material 3 dark theme
+- Media3/ExoPlayer for video, OkHttp for networking, Room for local storage
+- Firebase (FCM, Remote Config, Crashlytics, Analytics)
+- Navigation Component with BottomNavigationView
+
+<span class="comment">## Screens</span>
+1. SplashActivity - Logo, loading animation, network check
+2. MainActivity - Drawer + BottomNav (Home, Categories, Highlights)
+3. PlayerActivity - Full-screen landscape player with custom controls
+
+<span class="comment">## Features</span>
+- Live events list with team logos, VS layout, LIVE badge
+- Channel grid with category chip filters
+- Highlights with thumbnails
+- Video player: play/pause, seek, lock, PiP, quality select, subtitles, swipe gestures
+- Favorites (Room database)
+- User playlists
+- Network stream (play any URL)
+- Push notifications
+- In-app update
+- AdMob ads
+- Search across all content
+
+<span class="comment">## Design</span>
+- Dark theme with glassmorphism
+- Primary: #1CCBD4, Background: #0A0F1A, Cards: #121A27
+- Fonts: Poppins, Montserrat Bold
+- Material 3 components with custom glass styling
+
+<span class="comment">## Start with Phase 1: Create the project structure, add dependencies, set up Firebase, and create the theme system.</span></div>
+        </div>
+    </section>
+
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+    <p>Sportzfy Clone — Complete Build Plan for Codebuff</p>
+    <p style="margin-top:8px;">8 Phases · 55+ Steps · 7 Agent Types · 20 Security Layers · ~4 Days Estimated</p>
+    <p style="margin-top:16px;font-size:11px;color:rgba(255,255,255,0.3);">Generated from decompiled APK analysis · Designed for <a href="#">Codebuff</a> AI-powered development</p>
+</footer>
+
+</body>
+</html>

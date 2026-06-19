@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sportzfy - Complete App Analysis</title>
+    <style>
+        :root {
+            --primary: #1CCBD4;
+            --primary-dark: #17a8b0;
+            --secondary: #131931;
+            --bg-dark: #0a0f1a;
+            --bg-card: #121a27;
+            --bg-card-alt: #0e1525;
+            --text: #e0e6ed;
+            --text-muted: #8899aa;
+            --border: #1e2d45;
+            --accent-green: #22c55e;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-purple: #a78bfa;
+            --glass: rgba(28, 203, 212, 0.08);
+            --glass-border: rgba(28, 203, 212, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 20%, rgba(28, 203, 212, 0.05) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, rgba(167, 139, 250, 0.03) 0%, transparent 50%);
+            z-index: -1;
+            animation: bgShift 20s ease-in-out infinite alternate;
+        }
+
+        @keyframes bgShift {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-5%, -5%); }
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 80px 20px 60px;
+            position: relative;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 600px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 6px 18px;
+            border-radius: 50px;
+            font-size: 13px;
+            color: var(--primary);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            animation: fadeInUp 0.6s ease 0.1s both;
+        }
+
+        .hero .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+            animation: fadeInUp 0.6s ease 0.2s both;
+        }
+
+        .hero .version-badge {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 8px 20px;
+            background: linear-gradient(135deg, rgba(28, 203, 212, 0.15), rgba(167, 139, 250, 0.15));
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--primary);
+            animation: fadeInUp 0.6s ease 0.3s both;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Section */
+        .section {
+            margin: 50px 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .section-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .section-icon.blue { background: rgba(28, 203, 212, 0.15); }
+        .section-icon.green { background: rgba(34, 197, 94, 0.15); }
+        .section-icon.orange { background: rgba(245, 158, 11, 0.15); }
+        .section-icon.purple { background: rgba(167, 139, 250, 0.15); }
+        .section-icon.red { background: rgba(239, 68, 68, 0.15); }
+        .section-icon.pink { background: rgba(236, 72, 153, 0.15); }
+
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .section-desc {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 2px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--accent-purple));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--glass-border);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        /* Grid layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 20px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        /* Activity table */
+        .activity-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .activity-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: rgba(28, 203, 212, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            border: 1px solid var(--glass-border);
+        }
+
+        .activity-info h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .activity-info p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tag.main { background: rgba(28, 203, 212, 0.2); color: var(--primary); }
+        .tag.secondary { background: rgba(167, 139, 250, 0.2); color: var(--accent-purple); }
+
+        /* Navigation cards */
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover {
+            background: rgba(28, 203, 212, 0.06);
+            border-color: var(--glass-border);
+        }
+
+        .nav-item .icon {
+            font-size: 18px;
+            width: 32px;
+            text-align: center;
+        }
+
+        .nav-item .label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Feature list */
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+
+        .feature-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #000;
+            flex-shrink: 0;
+        }
+
+        .feature-content h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .feature-content p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Sub-features */
+        .sub-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .sub-feature {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .sub-feature .dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+
+        /* Tech stack table */
+        .tech-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .tech-table tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .tech-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .tech-table td {
+            padding: 14px 16px;
+            font-size: 14px;
+        }
+
+        .tech-table td:first-child {
+            color: var(--primary);
+            font-weight: 600;
+            width: 180px;
+        }
+
+        .tech-table td:last-child {
+            color: var(--text-muted);
+        }
+
+        /* Color palette */
+        .color-swatch {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.2s;
+        }
+
+        .color-swatch:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .color-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
+        }
+
+        .color-info .name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .color-info .hex {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Roadmap / Phase */
+        .phase-card {
+            position: relative;
+            padding-left: 36px;
+        }
+
+        .phase-card::before {
+            content: '';
+            position: absolute;
+            left: 14px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--primary), transparent);
+        }
+
+        .phase-marker {
+            position: absolute;
+            left: 4px;
+            top: 4px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .phase-marker-inner {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+
+        .phase-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .phase-items {
+            list-style: none;
+        }
+
+        .phase-items li {
+            padding: 6px 0;
+            font-size: 14px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .phase-items li::before {
+            content: '▸';
+            color: var(--primary);
+            font-size: 12px;
+        }
+
+        /* Enhancement cards */
+        .enhancement {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.2s;
+        }
+
+        .enhancement:hover {
+            background: rgba(28, 203, 212, 0.06);
+            border-color: var(--glass-border);
+            transform: translateX(4px);
+        }
+
+        .enhancement .num {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: rgba(167, 139, 250, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent-purple);
+            flex-shrink: 0;
+        }
+
+        .enhancement .text {
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .enhancement .text strong {
+            color: #fff;
+        }
+
+        /* Protection section */
+        .protection-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            background: rgba(239, 68, 68, 0.06);
+            border: 1px solid rgba(239, 68, 68, 0.12);
+            margin-bottom: 10px;
+        }
+
+        .protection-item .shield {
+            font-size: 18px;
+        }
+
+        .protection-item .text {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .protection-item .text strong {
+            color: var(--accent-red);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 60px;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.2rem; }
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+            }
+            .container { padding: 0 16px; }
+            .card { padding: 20px; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* TOC */
+        .toc {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .toc a {
+            padding: 6px 16px;
+            border-radius: 8px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .toc a:hover {
+            background: rgba(28, 203, 212, 0.15);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Hero -->
+<header class="hero">
+    <div class="hero-badge">📊 Complete Analysis</div>
+    <h1>Sportzfy</h1>
+    <p class="subtitle">Live sports streaming Android app — Complete feature analysis, architecture breakdown, and roadmap to build a similar or superior product.</p>
+    <div class="version-badge">v22.0 &nbsp;·&nbsp; Package: com.blaze.sportzfy &nbsp;·&nbsp; SDK 23–36</div>
+</header>
+
+<div class="container">
+
+    <!-- TOC -->
+    <nav class="toc">
+        <a href="#overview">Overview</a>
+        <a href="#activities">Activities</a>
+        <a href="#navigation">Navigation</a>
+        <a href="#features">Core Features</a>
+        <a href="#player">Video Player</a>
+        <a href="#design">Design System</a>
+        <a href="#protection">Protection</a>
+        <a href="#techstack">Tech Stack</a>
+        <a href="#api">API Architecture</a>
+        <a href="#roadmap">Build Roadmap</a>
+        <a href="#enhancements">Enhancements</a>
+    </nav>
+
+    <!-- Overview -->
+    <section class="section" id="overview">
+        <div class="section-header">
+            <div class="section-icon blue">📱</div>
+            <div>
+                <div class="section-title">What Is Sportzfy?</div>
+                <div class="section-desc">A live sports streaming app for Android</div>
+            </div>
+        </div>
+        <div class="card">
+            <p style="color: var(--text-muted); font-size: 15px; line-height: 1.8;">
+                <strong style="color: #fff;">Sportzfy</strong> (package: <code style="background: rgba(28,203,212,0.1); padding: 2px 8px; border-radius: 4px; color: var(--primary);">com.blaze.sportzfy</code>) is a live sports streaming Android application at version 22.0 (versionCode 31). It streams live sports events, TV channels, and match highlights. The app targets Android SDK 36 with a minimum SDK of 23 (Android 6.0 Marshmallow), making it compatible with a wide range of devices including phones, tablets, and Android TV.
+            </p>
+        </div>
+    </section>
+
+    <!-- Activities -->
+    <section class="section" id="activities">
+        <div class="section-header">
+            <div class="section-icon green">🏗️</div>
+            <div>
+                <div class="section-title">Architecture &amp; Activities</div>
+                <div class="section-desc">The app's screen structure and entry points</div>
+            </div>
+        </div>
+        <div class="grid-2">
+            <div class="card activity-card">
+                <div class="activity-icon">🚀</div>
+                <div class="activity-info">
+                    <h3>SplashActivity <span class="tag main">Entry</span></h3>
+                    <p>App entry point with animated logo, Lottie loading animation, network connectivity checks, and version display.</p>
+                </div>
+            </div>
+            <div class="card activity-card">
+                <div class="activity-icon">🏠</div>
+                <div class="activity-info">
+                    <h3>MainActivity <span class="tag main">Hub</span></h3>
+                    <p>Main hub with DrawerLayout, BottomNavigationView (3 tabs), search toolbar, and fragment container.</p>
+                </div>
+            </div>
+            <div class="card activity-card">
+                <div class="activity-icon">🎬</div>
+                <div class="activity-info">
+                    <h3>PlayerActivity <span class="tag secondary">Media</span></h3>
+                    <p>Full-screen landscape video player (Media3/ExoPlayer) with PiP support, custom controls, and subtitle rendering.</p>
+                </div>
+            </div>
+            <div class="card activity-card">
+                <div class="activity-icon">🖥️</div>
+                <div class="activity-info">
+                    <h3>LandscapeActivity</h3>
+                    <p>Dedicated sensor-landscape activity for wide-screen content display.</p>
+                </div>
+            </div>
+            <div class="card activity-card">
+                <div class="activity-icon">🌐</div>
+                <div class="activity-info">
+                    <h3>CustomBrowserActivity</h3>
+                    <p>In-app browser for embedded web content and external link viewing.</p>
+                </div>
+            </div>
+            <div class="card activity-card">
+                <div class="activity-icon">📄</div>
+                <div class="activity-info">
+                    <h3>WebActivity</h3>
+                    <p>Secondary web content viewer for pages and embedded content.</p>
+                </div>
+            </div>
+            <div class="card activity-card">
+                <div class="activity-icon">💬</div>
+                <div class="activity-info">
+                    <h3>SupportActivity</h3>
+                    <p>Transparent-themed support and help screen for user assistance.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Navigation -->
+    <section class="section" id="navigation">
+        <div class="section-header">
+            <div class="section-icon orange">🧭</div>
+            <div>
+                <div class="section-title">Navigation Structure</div>
+                <div class="section-desc">Bottom tabs and side drawer menu</div>
+            </div>
+        </div>
+        <div class="grid-2">
+            <div class="card">
+                <h3 style="color: var(--primary); margin-bottom: 16px; font-size: 15px;">📱 Bottom Navigation (3 Tabs)</h3>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div class="nav-item">
+                        <span class="icon">🏠</span>
+                        <span class="label"><strong style="color:#fff;">Home</strong> — Live events with team logos, match times, live indicators</span>
+                    </div>
+                    <div class="nav-item">
+                        <span class="icon">📂</span>
+                        <span class="label"><strong style="color:#fff;">Categories</strong> — Browse channels organized by sport/category</span>
+                    </div>
+                    <div class="nav-item">
+                        <span class="icon">⭐</span>
+                        <span class="label"><strong style="color:#fff;">Highlights</strong> — Match highlights and replay content</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h3 style="color: var(--accent-purple); margin-bottom: 16px; font-size: 15px;">📋 Side Drawer Menu</h3>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div class="nav-item"><span class="icon">📡</span><span class="label">Network Stream — Play custom URLs</span></div>
+                    <div class="nav-item"><span class="icon">📝</span><span class="label">Playlists — User-created playlists</span></div>
+                    <div class="nav-item"><span class="icon">📌</span><span class="label">Floating Player — PiP mode</span></div>
+                    <div class="nav-item"><span class="icon">⚙️</span><span class="label">Video Quality Settings</span></div>
+                    <div class="nav-item"><span class="icon">🐛</span><span class="label">Crash Log Toggle</span></div>
+                    <div class="nav-item"><span class="icon">🔔</span><span class="label">Notice / Notifications</span></div>
+                    <div class="nav-item"><span class="icon">💬</span><span class="label">Join Us (Telegram)</span></div>
+                    <div class="nav-item"><span class="icon">©️</span><span class="label">Copyright Info</span></div>
+                    <div class="nav-item"><span class="icon">🔗</span><span class="label">Share App</span></div>
+                    <div class="nav-item"><span class="icon">✉️</span><span class="label">Email Contact</span></div>
+                    <div class="nav-item"><span class="icon">🔄</span><span class="label">Update App</span></div>
+                    <div class="nav-item"><span class="icon">🚪</span><span class="label">Exit</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Core Features -->
+    <section class="section" id="features">
+        <div class="section-header">
+            <div class="section-icon purple">⚡</div>
+            <div>
+                <div class="section-title">Core Features</div>
+                <div class="section-desc">All major functionality the app provides</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="feature-item">
+                <div class="feature-number">1</div>
+                <div class="feature-content">
+                    <h4>Live Sports Streaming</h4>
+                    <p>Real-time live events with team logos, names, "VS" layout, date/time display, and animated LIVE badge indicator.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-number">2</div>
+                <div class="feature-content">
+                    <h4>Channel Browsing</h4>
+                    <p>Grid of TV channels organized by categories with horizontal scrolling ChipGroup filter tabs.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-number">3</div>
+                <div class="feature-content">
+                    <h4>Match Highlights</h4>
+                    <p>On-demand replay content with pull-to-refresh and update notifications.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-number">4</div>
+                <div class="feature-content">
+                    <h4>Advanced Video Player</h4>
+                    <p>Media3/ExoPlayer powered player with extensive controls.</p>
+                    <div class="sub-features">
+                        <span class="sub-feature"><span class="dot"></span>Play/Pause</span>
+                        <span class="sub-feature"><span class="dot"></span>Rewind/FF</span>
+                        <span class="sub-feature"><span class="dot"></span>Seek bar</span>
+                        <span class="sub-feature"><span class="dot"></span>Screen lock</span>
+                        <span class="sub-feature"><span class="dot"></span>PiP mode</span>
+                        <span class="sub-feature"><span class="dot"></span>Aspect ratio</span>
+                        <span class="sub-feature"><span class="dot"></span>Quality select</span>
+                        <span class="sub-feature"><span class="dot"></span>Subtitles</span>
+                        <span class="sub-feature"><span class="dot"></span>Volume control</span>
+                        <span class="sub-feature"><span class="dot"></span>Swipe gestures</span>
+                        <span class="sub-feature"><span class="dot"></span>Link switching</span>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-number">5</div>
+                <div class="feature-content">
+                    <h4>Floating Player</h4>
+                    <p>Foreground service for background and picture-in-picture playback with custom floating controls.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-number">6</div>
+                <div class="feature-content">
+                    <h4>Favorites</h4>
+                    <p>Save favorite channels and events for quick access, stored locally.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-number">7</div>
+                <div class="feature-content">
+                    <h4>Custom Playlists</h4>
+                    <p>User-created playlists with floating action button to add new ones. Swipe-to-refresh support.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-number">8</div>
+                <div class="feature-content">
+                    <h4>Network Stream</h4>
+                    <p>Play any URL directly. Supports RTSP, HTTP, HTTPS, M3U8, MPD, MP4, MKV, MOV, 3GP, WebM, TS, and subtitle formats (SRT, ASS, SSA, VTT, TTML).</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-number">9</div>
+                <div class="feature-content">
+                    <h4>Push Notifications</h4>
+                    <p>Firebase Cloud Messaging for live event alerts and app notifications.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-number">10</div>
+                <div class="feature-content">
+                    <h4>Cloud Services</h4>
+                    <p>Firebase Remote Config for dynamic updates, Crashlytics for crash reporting, and Analytics for usage tracking.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-number">11</div>
+                <div class="feature-content">
+                    <h4>Ad Support</h4>
+                    <p>Google Ads integration with dedicated ad fragment and ad services.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-number">12</div>
+                <div class="feature-content">
+                    <h4>Cross-Device Support</h4>
+                    <p>Works on phones, tablets (sw600dp+), Android TV (Leanback), and watches.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Player Deep Dive -->
+    <section class="section" id="player">
+        <div class="section-header">
+            <div class="section-icon red">🎬</div>
+            <div>
+                <div class="section-title">Video Player Deep Dive</div>
+                <div class="section-desc">Custom Media3/ExoPlayer with advanced controls</div>
+            </div>
+        </div>
+        <div class="card">
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+                <span class="sub-feature"><span class="dot"></span>Play/Pause</span>
+                <span class="sub-feature"><span class="dot"></span>Rewind</span>
+                <span class="sub-feature"><span class="dot"></span>Fast Forward</span>
+                <span class="sub-feature"><span class="dot"></span>Seek Bar + Buffer</span>
+                <span class="sub-feature"><span class="dot"></span>Screen Lock/Unlock</span>
+                <span class="sub-feature"><span class="dot"></span>Picture-in-Picture</span>
+                <span class="sub-feature"><span class="dot"></span>Resize/Fit</span>
+                <span class="sub-feature"><span class="dot"></span>Video Quality</span>
+                <span class="sub-feature"><span class="dot"></span>Subtitles</span>
+                <span class="sub-feature"><span class="dot"></span>Volume Control</span>
+                <span class="sub-feature"><span class="dot"></span>Swipe Gestures</span>
+                <span class="sub-feature"><span class="dot"></span>Link Switching</span>
+                <span class="sub-feature"><span class="dot"></span>Stream Update Banner</span>
+                <span class="sub-feature"><span class="dot"></span>Refresh Button</span>
+                <span class="sub-feature"><span class="dot"></span>Share Button</span>
+                <span class="sub-feature"><span class="dot"></span>Title Display</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 14px;">
+                The player features a custom controller layout with a top bar (back, title, lock, PiP, resize, settings), center controls (rewind, play/pause, fast forward), and bottom bar (time/seek bar, volume, fullscreen). It supports multiple stream sources per event with a horizontal RecyclerView for link selection, and displays a notification banner when stream links change. Swipe gestures enable brightness and volume adjustment.
+            </p>
+        </div>
+    </section>
+
+    <!-- Design System -->
+    <section class="section" id="design">
+        <div class="section-header">
+            <div class="section-icon pink">🎨</div>
+            <div>
+                <div class="section-title">Design System</div>
+                <div class="section-desc">Dark theme with glassmorphism aesthetic</div>
+            </div>
+        </div>
+        <div class="grid-2">
+            <div class="card">
+                <h3 style="color: #fff; margin-bottom: 16px;">🎨 Color Palette</h3>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div class="color-swatch">
+                        <div class="color-circle" style="background: #1CCBD4;"></div>
+                        <div class="color-info">
+                            <div class="name">Primary</div>
+                            <div class="hex">#1CCBD4</div>
+                        </div>
+                    </div>
+                    <div class="color-swatch">
+                        <div class="color-circle" style="background: #131931;"></div>
+                        <div class="color-info">
+                            <div class="name">Secondary</div>
+                            <div class="hex">#131931</div>
+                        </div>
+                    </div>
+                    <div class="color-swatch">
+                        <div class="color-circle" style="background: #121A27;"></div>
+                        <div class="color-info">
+                            <div class="name">Card Background</div>
+                            <div class="hex">#121A27</div>
+                        </div>
+                    </div>
+                    <div class="color-swatch">
+                        <div class="color-circle" style="background: #0a0f1a;"></div>
+                        <div class="color-info">
+                            <div class="name">Dark Background</div>
+                            <div class="hex">#0A0F1A</div>
+                        </div>
+                    </div>
+                    <div class="color-swatch">
+                        <div class="color-circle" style="background: #1CCBD4;"></div>
+                        <div class="color-info">
+                            <div class="name">Accent / Stroke</div>
+                            <div class="hex">#1CCBD4</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h3 style="color: #fff; margin-bottom: 16px;">🔤 Typography</h3>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="padding: 12px 16px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
+                        <div style="font-family: serif; font-size: 20px; color: #fff; margin-bottom: 4px;">Kelly Slab</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Headings, splash title, version text</div>
+                    </div>
+                    <div style="padding: 12px 16px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
+                        <div style="font-size: 20px; color: #fff; margin-bottom: 4px;">Poppins Regular</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Body text, general UI</div>
+                    </div>
+                    <div style="padding: 12px 16px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
+                        <div style="font-size: 20px; color: #fff; margin-bottom: 4px; font-weight: bold;">Montserrat Bold</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Emphasis text, buttons</div>
+                    </div>
+                    <div style="padding: 12px 16px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
+                        <div style="font-size: 20px; color: #fff; margin-bottom: 4px;">Roboto Medium</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Numeric displays, time text</div>
+                    </div>
+                </div>
+                <h3 style="color: #fff; margin: 24px 0 12px;">📐 UI Patterns</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <span class="sub-feature"><span class="dot"></span>Glassmorphism</span>
+                    <span class="sub-feature"><span class="dot"></span>Material Design 3</span>
+                    <span class="sub-feature"><span class="dot"></span>Blob Shapes</span>
+                    <span class="sub-feature"><span class="dot"></span>Gradient Backgrounds</span>
+                    <span class="sub-feature"><span class="dot"></span>Card-based Layout</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Protection -->
+    <section class="section" id="protection">
+        <div class="section-header">
+            <div class="section-icon red">🛡️</div>
+            <div>
+                <div class="section-title">Protection &amp; Security</div>
+                <div class="section-desc">Native code protection and obfuscation</div>
+            </div>
+        </div>
+        <div class="card">
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">The app uses native code protection via <code style="background: rgba(239,68,68,0.1); padding: 2px 8px; border-radius: 4px; color: var(--accent-red);">libabcd.so</code> / <code style="background: rgba(239,68,68,0.1); padding: 2px 8px; border-radius: 4px; color: var(--accent-red);">libabcdProtect</code> with multiple layers:</p>
+            <div class="protection-item">
+                <span class="shield">🔒</span>
+                <span class="text"><strong>String Decryption</strong> — XOR cipher with key 16 for all sensitive strings</span>
+            </div>
+            <div class="protection-item">
+                <span class="shield">🔐</span>
+                <span class="text"><strong>File Integrity Checks</strong> — Byte-by-byte comparison of asset files</span>
+            </div>
+            <div class="protection-item">
+                <span class="shield">🔑</span>
+                <span class="text"><strong>Reflection-based Verification</strong> — Runtime class/method validation</span>
+            </div>
+            <div class="protection-item">
+                <span class="shield">📦</span>
+                <span class="text"><strong>DEX Protection</strong> — Encrypted assets (libabcd.enc, libabcd2.enc)</span>
+            </div>
+            <div class="protection-item">
+                <span class="shield">🧬</span>
+                <span class="text"><strong>Heavy Obfuscation</strong> — All class/method names are CJK characters or single letters</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack -->
+    <section class="section" id="techstack">
+        <div class="section-header">
+            <div class="section-icon blue">🔧</div>
+            <div>
+                <div class="section-title">Tech Stack</div>
+                <div class="section-desc">Technologies and libraries used</div>
+            </div>
+        </div>
+        <div class="card">
+            <table class="tech-table">
+                <tr><td>Language</td><td>Java + Kotlin (with Coroutines)</td></tr>
+                <tr><td>UI Framework</td><td>Android Views (XML layouts), Material Design 3</td></tr>
+                <tr><td>Video Player</td><td>Media3 (ExoPlayer successor)</td></tr>
+                <tr><td>Networking</td><td>OkHttp3</td></tr>
+                <tr><td>Database</td><td>Room (SQLite)</td></tr>
+                <tr><td>Push Notifications</td><td>Firebase Cloud Messaging</td></tr>
+                <tr><td>Remote Config</td><td>Firebase Remote Config</td></tr>
+                <tr><td>Analytics</td><td>Firebase Analytics + Crashlytics</td></tr>
+                <tr><td>Animations</td><td>Lottie</td></tr>
+                <tr><td>Data Persistence</td><td>AndroidX DataStore (Preferences)</td></tr>
+                <tr><td>Layout System</td><td>ConstraintLayout, CoordinatorLayout, DrawerLayout</td></tr>
+                <tr><td>Lists</td><td>RecyclerView (multiple adapters)</td></tr>
+                <tr><td>Serialization</td><td>Protocol Buffers (Firebase messaging)</td></tr>
+                <tr><td>Ads</td><td>Google Ads SDK</td></tr>
+            </table>
+        </div>
+    </section>
+
+    <!-- API -->
+    <section class="section" id="api">
+        <div class="section-header">
+            <div class="section-icon green">🌐</div>
+            <div>
+                <div class="section-title">API Architecture</div>
+                <div class="section-desc">How the app fetches its data</div>
+            </div>
+        </div>
+        <div class="card">
+            <div style="padding: 16px 20px; background: rgba(28,203,212,0.08); border: 1px solid var(--glass-border); border-radius: 10px; margin-bottom: 20px;">
+                <div style="font-size: 12px; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">API Endpoint</div>
+                <code style="font-size: 15px; color: #fff; word-break: break-all;">https://sohailllllllll.space/app.json</code>
+            </div>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">This JSON endpoint serves all app data, likely including:</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <span class="sub-feature"><span class="dot"></span>Channel list + stream URLs</span>
+                <span class="sub-feature"><span class="dot"></span>Category definitions</span>
+                <span class="sub-feature"><span class="dot"></span>Event schedules</span>
+                <span class="sub-feature"><span class="dot"></span>Highlight videos</span>
+                <span class="sub-feature"><span class="dot"></span>Banner/ads config</span>
+                <span class="sub-feature"><span class="dot"></span>Update info</span>
+                <span class="sub-feature"><span class="dot"></span>Telegram links</span>
+                <span class="sub-feature"><span class="dot"></span>Notice messages</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Build Roadmap -->
+    <section class="section" id="roadmap">
+        <div class="section-header">
+            <div class="section-icon orange">🚀</div>
+            <div>
+                <div class="section-title">Build Roadmap</div>
+                <div class="section-desc">Step-by-step plan to build a similar app</div>
+            </div>
+        </div>
+        <div class="grid-2">
+            <div class="card phase-card" style="margin-bottom: 20px;">
+                <div class="phase-marker"><div class="phase-marker-inner"></div></div>
+                <div class="phase-title">Phase 1 — Foundation</div>
+                <ul class="phase-items">
+                    <li>Android project with Kotlin, Material 3, dark theme</li>
+                    <li>Bottom navigation (Home, Categories, Highlights)</li>
+                    <li>Navigation drawer with settings</li>
+                    <li>Firebase setup (FCM, Remote Config, Crashlytics, Analytics)</li>
+                    <li>Backend API (Node.js/Firebase) serving JSON</li>
+                </ul>
+            </div>
+            <div class="card phase-card" style="margin-bottom: 20px;">
+                <div class="phase-marker"><div class="phase-marker-inner"></div></div>
+                <div class="phase-title">Phase 2 — Core Screens</div>
+                <ul class="phase-items">
+                    <li>Splash screen with animations</li>
+                    <li>Home screen — live events list</li>
+                    <li>Categories screen — channel grid</li>
+                    <li>Highlights screen — video list</li>
+                    <li>Favorites system (Room database)</li>
+                    <li>Playlist management</li>
+                </ul>
+            </div>
+            <div class="card phase-card" style="margin-bottom: 20px;">
+                <div class="phase-marker"><div class="phase-marker-inner"></div></div>
+                <div class="phase-title">Phase 3 — Video Player</div>
+                <ul class="phase-items">
+                    <li>Media3/ExoPlayer integration</li>
+                    <li>Custom player controls</li>
+                    <li>Swipe gestures (brightness/volume)</li>
+                    <li>Multiple stream source switching</li>
+                    <li>Floating/PiP player service</li>
+                </ul>
+            </div>
+            <div class="card phase-card" style="margin-bottom: 20px;">
+                <div class="phase-marker"><div class="phase-marker-inner"></div></div>
+                <div class="phase-title">Phase 4 — Polish &amp; Launch</div>
+                <ul class="phase-items">
+                    <li>Ad integration</li>
+                    <li>Auto-update mechanism</li>
+                    <li>TV/Leanback support</li>
+                    <li>Performance optimization</li>
+                    <li>Testing and QA</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhancements -->
+    <section class="section" id="enhancements">
+        <div class="section-header">
+            <div class="section-icon purple">💡</div>
+            <div>
+                <div class="section-title">Enhancement Ideas</div>
+                <div class="section-desc">Features to exceed the original app</div>
+            </div>
+        </div>
+        <div class="grid-3">
+            <div class="enhancement">
+                <div class="num">1</div>
+                <div class="text"><strong>User Authentication</strong> — Login, profiles, sync across devices</div>
+            </div>
+            <div class="enhancement">
+                <div class="num">2</div>
+                <div class="text"><strong>Live Chat</strong> — Comments during live events</div>
+            </div>
+            <div class="enhancement">
+                <div class="num">3</div>
+                <div class="text"><strong>Smart Notifications</strong> — Per-sport/per-team preferences</div>
+            </div>
+            <div class="enhancement">
+                <div class="num">4</div>
+                <div class="text"><strong>Offline Downloads</strong> — Save highlights for offline viewing</div>
+            </div>
+            <div class="enhancement">
+                <div class="num">5</div>
+                <div class="text"><strong>Chromecast</strong> — Cast to TV with full controls</div>
+            </div>
+            <div class="enhancement">
+                <div class="num">6</div>
+                <div class="text"><strong>Multi-language</strong> — Full i18n support</div>
+            </div>
+            <div class="enhancement">
+                <div class="num">7</div>
+                <div class="text"><strong>Theme Toggle</strong> — Dark/Light mode switch</div>
+            </div>
+            <div class="enhancement">
+                <div class="num">8</div>
+                <div class="text"><strong>Calendar View</strong> — Schedule of upcoming events</div>
+            </div>
+            <div class="enhancement">
+                <div class="num">9</div>
+                <div class="text"><strong>Social Sharing</strong> — Deep links with rich previews</div>
+            </div>
+            <div class="enhancement">
+                <div class="num">10</div>
+                <div class="text"><strong>Subscriptions</strong> — In-app purchases or premium model</div>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+    <p>Sportzfy App Analysis — Generated from decompiled APK source code</p>
+    <p style="margin-top: 8px;">Package: <code style="color: var(--primary);">com.blaze.sportzfy</code> &nbsp;·&nbsp; Version 22.0 &nbsp;·&nbsp; SDK 23–36</p>
+</footer>
+
+</body>
+</html>
