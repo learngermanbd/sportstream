@@ -19,11 +19,12 @@
     <string name="main_nav_favorites">FAVORITES</string>
     <string name="main_nav_settings">SETTINGS</string>
 
-    <!-- Tab placeholder content (Step 3.2 — replaced in Steps 3.3, 5.1, 5.5). -->
+    <!-- Tab placeholder content (Step 3.2 — replaced in Steps 3.3, 5.1, 5.5).
+         Note: fragment_live_title / fragment_live_subtitle were dropped in
+         the Step 3.2 realignment commit (the Live tab was renamed Categories
+         and the placeholder liveFragment + fragment_live.xml are gone). -->
     <string name="fragment_home_title">HOME</string>
     <string name="fragment_home_subtitle">Step 3.3 incoming</string>
-    <string name="fragment_live_title">LIVE</string>
-    <string name="fragment_live_subtitle">Step 3.3 incoming</string>
     <string name="fragment_favorites_title">FAVORITES</string>
     <string name="fragment_favorites_subtitle">Step 5.1 incoming</string>
     <string name="fragment_settings_title">SETTINGS</string>

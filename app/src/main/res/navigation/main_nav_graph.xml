@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Phase 3 · Step 3.2 — Navigation graph for the post-splash Main screen.
-    Hosts the 4 bottom-nav destinations (Home / Live / Favorites / Settings).
+    Hosts the 4 bottom-nav destinations (Home / Categories / Favorites / Settings).
     Destination IDs MUST match menu item IDs in res/menu/bottom_nav_menu.xml —
     that is what makes BottomNavigationView.setupWithNavController() resolve
     taps without any manual navController.navigate(...) wiring.
