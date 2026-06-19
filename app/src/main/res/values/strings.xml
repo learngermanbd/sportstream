@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SportStream</string>
-    <!-- Step 1.5 / Step 3.1 will add: tagline, version_label, error_no_network, etc. -->
+    <!-- Splash screen (Step 3.1) -->
+    <string name="splash_loading">Connecting…</string>
+    <string name="splash_error_title">NETWORK ERROR</string>
+    <string name="splash_retry">RETRY</string>
+    <string name="splash_version_template">v%1$s</string>
+    <!-- Main placeholder (Step 3.1) -->
+    <string name="main_title">SPORTS STREAMING</string>
+    <string name="main_subtitle">Welcome — Phase 3 · Step 3.2 next</string>
+    <string name="main_phase_badge">PHASE 3 · STEP 3.2 INCOMING</string>
 </resources>
