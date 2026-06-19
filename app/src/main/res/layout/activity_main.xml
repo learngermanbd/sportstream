@@ -12,8 +12,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_splash"
-    android:fitsSystemWindows="true">
+    android:background="@drawable/bg_splash">
 
     <!-- NavHostFragment hosts res/navigation/main_nav_graph.xml (4 destinations). -->
     <androidx.fragment.app.FragmentContainerView

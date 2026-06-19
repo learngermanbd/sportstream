@@ -69,4 +69,21 @@ class MainViewModel(
             )
         )
     }
+
+    /**
+     * Phase 3 · Step 3.2 polish — RETRY entry point.
+     *
+     * Resets the VM state to [UiState.Idle] so the next [load] call observes
+     * a clean gate — caller-side `if (state is Idle) load()` checks pass on
+     * a subsequent onCreate (Activity recreation scenario), and the visible
+     * state sequence is Error -> Idle -> Loading -> Success/Error, which
+     * makes the gate logic testable end-to-end. UI side: MainActivity's
+     * Snackbar RETRY action calls this function — bypassing the onCreate
+     * Idle gate (boot-only) but presenting a meaningful "back-to-Idle" UX
+     * to anyone observing `state`.
+     */
+    fun retry() {
+        setState(UiState.Idle)
+        load()
+    }
 }

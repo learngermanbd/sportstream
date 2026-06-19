@@ -2,6 +2,10 @@ package com.sportstream.app.ui.activities
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -9,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
+import com.google.android.material.snackbar.Snackbar
 import com.sportstream.app.R
 import com.sportstream.app.SportStreamApp
 import com.sportstream.app.databinding.ActivityMainBinding
@@ -59,9 +64,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Edge-to-edge: must run BEFORE super.onCreate / setContentView so
+        // insets dispatch to our view-level listener below instead of being
+        // swallowed by the platform's pre-edge-to-edge padding model.
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Gesture-nav pill handling — BottomNavigationView grows its bottom
+        // padding by the system-bars inset so the active-indicator pill and
+        // the tab icons never sit beneath the OS gesture pill. Returning
+        // `insets` propagates the same insets to siblings (the NavHostFragment
+        // above) so future top-inset handling can be layered here too.
+        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomNav) { v, insets ->
+            val sysBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updatePadding(bottom = sysBars.bottom)
+            insets
+        }
 
         // BottomNav <-> NavController wiring. Tab swaps are handled by
         // setupWithNavController() — no manual navController.navigate(...)
@@ -87,14 +107,23 @@ class MainActivity : AppCompatActivity() {
             mainVm.load()
         }
 
-        // Observe state for the STARTED window. Currently a no-op sink — Step 3.x
-        // will attach a Snackbar handler on UiState.Error and a global loader
-        // toggle on UiState.Loading. The collection machinery is already in
-        // place so the future change is one statement.
+        // Error -> Snackbar with RETRY. Anchored to bottomNav so the bar
+        // floats ABOVE the bottom navigation (default root-anchoring would
+        // sit the snackbar behind the BottomNav or behind the gesture-nav
+        // pill on Android 10+). RETRY calls mainVm.retry() which re-gates
+        // state to UiState.Idle and re-runs load() — the Step 3.2-polish
+        // semantics. The Snackbar is LENGTH_INDEFINITE so it stays until
+        // the user retries or navigates away — a transient snackbar would
+        // auto-dismiss before the user has time to read the error.
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mainVm.state.collectLatest {
-                    /* Step 3.x / 3.5 will wire Error → Snackbar here. */
+                mainVm.state.collectLatest { state ->
+                    if (state is UiState.Error) {
+                        Snackbar.make(binding.root, state.message, Snackbar.LENGTH_INDEFINITE)
+                            .setAnchorView(binding.bottomNav)
+                            .setAction(getString(R.string.splash_retry)) { mainVm.retry() }
+                            .show()
+                    }
                 }
             }
         }
