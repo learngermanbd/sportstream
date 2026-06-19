@@ -345,6 +345,7 @@
     <div class="stats-bar">
         <div class="stat"><div class="num">9</div><div class="label">Phases</div></div>
         <div class="stat"><div class="num">85+</div><div class="label">Steps</div></div>
+        <div class="stat"><div class="num">19</div><div class="label">Admin Screens</div></div>
         <div class="stat"><div class="num">10</div><div class="label">DB Models</div></div>
         <div class="stat"><div class="num">20+</div><div class="label">API Endpoints</div></div>
         <div class="stat"><div class="num">20+</div><div class="label">Security Layers</div></div>
@@ -372,6 +373,7 @@
     <nav class="toc">
         <a href="#ai-guide">AI Agent Guide</a>
         <a href="#backend-architecture">Backend Architecture</a>
+        <a href="#admin-app-plan">Admin App Plan</a>
         <a href="#phase1">Phase 1: Project Setup</a>
         <a href="#phase2">Phase 2: Core Architecture</a>
         <a href="#phase3">Phase 3: Home & Events</a>
@@ -1311,6 +1313,589 @@ npx prisma migrate deploy && node src/server.js</div>
                     <li><strong>1 AppConfig:</strong> Default config with placeholder URLs</li>
                     <li><strong>0 events/channels/highlights:</strong> Admin adds these via the panel</li>
                 </ul>
+            </div>
+        </div>
+    </section>
+
+    
+    <!-- ANDROID ADMIN APP DEEP-DIVE -->
+    <style>
+        .admin-app-deep-dive {background:linear-gradient(135deg,rgba(245,158,11,0.06),rgba(167,139,250,0.04));border:1px solid rgba(245,158,11,0.15);border-radius:16px;padding:28px;margin-bottom:30px;}
+        .admin-app-deep-dive h3 {color:#fff;font-size:18px;margin-bottom:8px;}
+        .admin-app-deep-dive>p {color:var(--text-muted);font-size:13px;margin-bottom:16px;}
+        .aadd-section {background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px;margin:14px 0;}
+        .aadd-section h4 {color:var(--orange);font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+        .aadd-section h5 {color:#fff;font-size:13px;margin:12px 0 6px;}
+        .aadd-section p,.aadd-section li {font-size:12px;color:var(--text-muted);line-height:1.6;}
+        .aadd-section ul {margin:6px 0 6px 18px;}
+        .aadd-section code {background:rgba(245,158,11,0.1);padding:1px 6px;border-radius:4px;font-size:11px;color:var(--orange);}
+        .screen-card {background:rgba(245,158,11,0.04);border:1px solid rgba(245,158,11,0.1);border-radius:10px;padding:14px;margin:10px 0;}
+        .screen-card h5 {color:var(--orange);font-size:13px;margin:0 0 6px;}
+        .screen-card .sc-ascii {background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;font-family:'Courier New',monospace;font-size:10px;color:var(--green);white-space:pre;line-height:1.4;overflow-x:auto;margin:8px 0;}
+        .screen-card .sc-desc {font-size:11px;color:var(--text-muted);line-height:1.5;}
+        .screen-card .sc-features {margin:6px 0 0 14px;font-size:11px;}
+        .screen-card .sc-features li {padding:2px 0;}
+        .nav-table {width:100%;border-collapse:collapse;margin:10px 0;font-size:11px;}
+        .nav-table th {background:rgba(245,158,11,0.15);color:var(--orange);padding:6px 10px;text-align:left;font-weight:700;border-bottom:1px solid rgba(255,255,255,0.1);}
+        .nav-table td {padding:5px 10px;border-bottom:1px solid rgba(255,255,255,0.03);color:var(--text-muted);}
+        .nav-table tr:hover td {background:rgba(255,255,255,0.02);}
+        .dep-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin:10px 0;}
+        .dep-chip {background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.1);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--text-muted);}
+        .dep-chip strong {color:var(--orange);}
+</style>
+    <section class="section" id="admin-app-plan">
+        <div class="admin-app-deep-dive">
+            <h3>&#128241; Android Admin App &mdash; Complete Screen &amp; Architecture Plan</h3>
+            <p>Detailed plan for the separate <strong style="color:#fff;">SportStream Admin</strong> Android app (com.sportstream.admin). Jetpack Compose + Material 3 + MVVM + Clean Architecture. Orange accent theme to distinguish from the user app.</p>
+
+            <!-- APP IDENTITY -->
+            <div class="aadd-section">
+                <h4>&#127919; App Identity</h4>
+                <table class="nav-table">
+                    <tr><th>Property</th><th>Value</th></tr>
+                    <tr><td>App Name</td><td><strong style="color:#fff;">SportStream Admin</strong></td></tr>
+                    <tr><td>Package</td><td><code>com.sportstream.admin</code></td></tr>
+                    <tr><td>Min SDK</td><td>23 (Android 6.0)</td></tr>
+                    <tr><td>Target SDK</td><td>35 (Android 16)</td></tr>
+                    <tr><td>UI Framework</td><td>Jetpack Compose + Material 3</td></tr>
+                    <tr><td>Architecture</td><td>MVVM + Clean Architecture</td></tr>
+                    <tr><td>Theme</td><td>Dark glassmorphism, orange accent <code>#F59E0B</code></td></tr>
+                    <tr><td>Distribution</td><td>Private APK (not on Play Store)</td></tr>
+                </table>
+            </div>
+
+            <!-- PROJECT STRUCTURE -->
+            <div class="aadd-section">
+                <h4>&#128193; Project Structure</h4>
+                <div class="prompt-box" style="margin-top:8px;"><span class="comment">// com.sportstream.admin/ package structure</span>
+app/
+  AdminApp.kt                     <span class="comment">// Application class</span>
+  MainActivity.kt                 <span class="comment">// Single activity (Compose)</span>
+
+  core/
+    network/
+      ApiClient.kt                <span class="comment">// OkHttp + Retrofit setup</span>
+      AdminApiService.kt          <span class="comment">// All admin API endpoints</span>
+      AuthInterceptor.kt          <span class="comment">// JWT token injection</span>
+    auth/
+      TokenManager.kt             <span class="comment">// EncryptedSharedPreferences</span>
+      BiometricHelper.kt          <span class="comment">// BiometricPrompt (API 28+)</span>
+      SessionManager.kt           <span class="comment">// Login state, auto-logout</span>
+    theme/
+      Theme.kt / Color.kt / Type.kt
+    navigation/
+      NavGraph.kt                 <span class="comment">// All navigation routes</span>
+    util/
+      DateUtils.kt / ValidationUtils.kt / VersionCompatHelper.kt
+
+  data/
+    models/                       <span class="comment">// DTOs matching backend schema</span>
+      Admin.kt, Event.kt, Channel.kt, Highlight.kt,
+      Category.kt, Banner.kt, AppConfig.kt,
+      Notification.kt, AnalyticsData.kt, StreamLink.kt
+    repository/
+      AuthRepository.kt, EventRepository.kt,
+      ChannelRepository.kt, HighlightRepository.kt,
+      CategoryRepository.kt, BannerRepository.kt,
+      ConfigRepository.kt, NotificationRepository.kt,
+      AnalyticsRepository.kt
+    remote/
+      FileUploader.kt             <span class="comment">// Supabase Storage uploads</span>
+
+  ui/
+    login/        LoginScreen.kt + LoginViewModel.kt
+    dashboard/    DashboardScreen.kt + DashboardViewModel.kt
+    events/       EventListScreen.kt + EventDetailScreen.kt + EventFormScreen.kt + EventViewModel.kt
+    channels/     ChannelListScreen.kt + ChannelFormScreen.kt + ChannelViewModel.kt
+    highlights/   HighlightListScreen.kt + HighlightFormScreen.kt + HighlightViewModel.kt
+    categories/   CategoryListScreen.kt + CategoryFormScreen.kt + CategoryViewModel.kt
+    banners/      BannerListScreen.kt + BannerFormScreen.kt + BannerViewModel.kt
+    notifications/ NotificationComposerScreen.kt + NotificationHistoryScreen.kt + NotificationViewModel.kt
+    config/       ConfigEditorScreen.kt + ConfigViewModel.kt
+    analytics/    AnalyticsScreen.kt + AnalyticsViewModel.kt
+    components/   AdminTopBar.kt, AdminBottomNav.kt, AdminNavDrawer.kt, StatsCard.kt,
+                  DataListItem.kt, FormTextField.kt, ImagePicker.kt, StatusChip.kt,
+                  ConfirmDialog.kt, LoadingOverlay.kt, ErrorState.kt
+
+  di/
+    AppModule.kt, NetworkModule.kt, RepositoryModule.kt  <span class="comment">// Hilt DI</span></div>
+            </div>
+
+            <!-- SCREEN 1: LOGIN -->
+            <div class="aadd-section">
+                <h4>&#128274; Screen 1: Login</h4>
+                <div class="screen-card">
+                    <h5>Login Screen Layout</h5>
+                    <div class="sc-ascii">+------------------------------+
+|      SportStream Admin       |
+|                              |
+|  +------------------------+  |
+|  | Email                  |  |
+|  +------------------------+  |
+|  +------------------------+  |
+|  | Password           eye |  |
+|  +------------------------+  |
+|                              |
+|  [x] Remember me             |
+|  [x] Enable Biometric Login  |
+|                              |
+|  [     Sign In      ]        |
+|                              |
+|  v1.0.0                      |
++------------------------------+</div>
+                    <div class="sc-desc">Fields: Email, Password (visibility toggle). Options: Remember me, Biometric login (API 28+).</div>
+                    <ul class="sc-features">
+                        <li><strong>BiometricPrompt</strong> on return visits if enabled</li>
+                        <li><strong>Validation:</strong> Email format, password min 8 chars</li>
+                        <li><strong>Error states:</strong> Invalid credentials, network error, account locked</li>
+                        <li><strong>On success:</strong> Navigate to Dashboard, JWT stored in EncryptedSharedPreferences</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- SCREEN 2: DASHBOARD -->
+            <div class="aadd-section">
+                <h4>&#128200; Screen 2: Dashboard</h4>
+                <div class="screen-card">
+                    <h5>Dashboard Screen Layout</h5>
+                    <div class="sc-ascii">+------------------------------+
+| =  Dashboard         admin   |
++------------------------------+
+|  Overview                    |
+|  +------+ +------+ +------+  |
+|  |  42  | |  18  | | 156  |  |
+|  |Events| | Live | |Chnls |  |
+|  +------+ +------+ +------+  |
+|  +------+ +------+ +------+  |
+|  |  89  | |   5  | | 12K  |  |
+|  |Highl | |Bnnrs | |Views |  |
+|  +------+ +------+ +------+  |
+|                              |
+|  Traffic (Last 7 Days)       |
+|  +------------------------+  |
+|  |   Line Chart (Vico)    |  |
+|  +------------------------+  |
+|                              |
+|  Recent Activity             |
+|  * Event "IPL Final" added   |
+|  * Push sent to 12K users    |
+|                              |
+|  Quick Actions               |
+|  [+ Add Event] [+ Send Notif]|
++------------------------------+
+| Home  Events  Chnl  Notif  ..|
++------------------------------+</div>
+                    <div class="sc-desc">6 stat cards (Events, Live, Channels, Highlights, Banners, Views). Line chart (Vico library) for 7-day traffic. Recent activity log. Quick action buttons.</div>
+                </div>
+            </div>
+
+            <!-- SCREEN 3: EVENTS LIST -->
+            <div class="aadd-section">
+                <h4>&#9917; Screen 3: Events List</h4>
+                <div class="screen-card">
+                    <h5>Events List Layout</h5>
+                    <div class="sc-ascii">+------------------------------+
+| &lt;- Events           search  |
++------------------------------+
+| [All] [Live] [Scheduled]     |
+| [Draft] [Ended]              |
++------------------------------+
+|                              |
+|  LIVE                        |
+|  +------------------------+  |
+|  | IPL Final              |  |
+|  | MI vs CSK | Today 8PM  |  |
+|  | 3 streams | Cricket    |  |
+|  +------------------------+  |
+|                              |
+|  SCHEDULED                   |
+|  +------------------------+  |
+|  | EPL Matchday 30        |  |
+|  | ARS vs CHE | Tomorrow  |  |
+|  | 2 streams | Football   |  |
+|  +------------------------+  |
+|                              |
+|                 [+]          |
++------------------------------+</div>
+                    <div class="sc-desc">Filter chips: All/Live/Scheduled/Draft/Ended. List items: Status dot, title, teams, date/time, stream count, category. Swipe left to delete (undo snackbar). FAB to create new. Search in top bar.</div>
+                </div>
+            </div>
+
+            <!-- SCREEN 4: EVENT FORM -->
+            <div class="aadd-section">
+                <h4>&#9998; Screen 4: Event Form (Create/Edit)</h4>
+                <div class="screen-card">
+                    <h5>Event Form Layout</h5>
+                    <div class="sc-ascii">+------------------------------+
+| &lt;- Create Event        save  |
++------------------------------+
+|  Title *                     |
+|  [ IPL 2026 Final         ]  |
+|  Category *                  |
+|  [ Cricket              v ]  |
+|  Team A          Team B      |
+|  [ Mumbai I    ] [ Chennai ]  |
+|  [camera]        [camera]     |
+|  Date          Time          |
+|  [2026-05-25]   [20:00]      |
+|  Status                      |
+|  (o) Draft  ( ) Scheduled    |
+|  ( ) Live   ( ) Ended        |
+|  Description                 |
+|  [                        ]  |
+|  --- Stream Links ---        |
+|  [+ Add Stream Link]         |
+|  +------------------------+  |
+|  | Server 1 | HD | Active |  |
+|  | https://stream1.m3u8   |  |
+|  | [Edit] [Delete]        |  |
+|  +------------------------+  |
+|  [     Save Event      ]     |
++------------------------------+</div>
+                    <div class="sc-desc">Full CRUD form: Title, Category dropdown, Team names + logo upload, Date/Time pickers, Status radio, Description, dynamic Stream Links list (add/remove).</div>
+                    <ul class="sc-features">
+                        <li><strong>Image picker:</strong> Camera or gallery, compress before upload to Supabase Storage</li>
+                        <li><strong>Stream links:</strong> Add/remove multiple URLs with name, quality selector, active toggle</li>
+                        <li><strong>Validation:</strong> Required fields (*), URL format for streams</li>
+                        <li><strong>Save:</strong> POST /api/events (create) or PUT /api/events/:id (edit)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- SCREEN 5-6: CHANNELS -->
+            <div class="aadd-section">
+                <h4>&#128225; Screens 5-6: Channels (List + Form)</h4>
+                <div class="screen-card">
+                    <h5>Channels List</h5>
+                    <div class="sc-ascii">+------------------------------+
+| &lt;- Channels          +      |
++------------------------------+
+| [All] [Cricket] [Football]   |
++------------------------------+
+| +----+ Star Sports           |
+| |logo| Cricket - Active      |
+| +----+ stream://star...      |
+| +----+ Sky Sports            |
+| |logo| Football - Active     |
+| +----+ stream://sky...       |
+| +----+ ESPN                  |
+| |logo| Basketball - Inactive |
+| +----+ stream://espn...      |
+|                 [+]          |
++------------------------------+</div>
+                    <div class="sc-desc">Category filter chips. List items: Logo, name, category, active/inactive StatusChip, stream URL preview. Swipe to toggle active or delete. Tap to edit. FAB to create.</div>
+                </div>
+                <div class="screen-card">
+                    <h5>Channel Form Fields</h5>
+                    <ul class="sc-features">
+                        <li>Name, Category dropdown, Logo upload</li>
+                        <li>Stream URL with format validation (HLS/DASH/Progressive)</li>
+                        <li>Active toggle, Sort order</li>
+                        <li>"Test Connection" button (optional - tries to load stream)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- SCREEN 7-8: HIGHLIGHTS -->
+            <div class="aadd-section">
+                <h4>&#127916; Screens 7-8: Highlights (List + Form)</h4>
+                <div class="screen-card">
+                    <h5>Highlights List</h5>
+                    <div class="sc-ascii">+------------------------------+
+| &lt;- Highlights        +      |
++------------------------------+
+| +------------------------+   |
+| | [Thumbnail 16:9]       |   |
+| | Best Catches of IPL    |   |
+| | May 20, 2026 - 5:32   |   |
+| | 1.2K views             |   |
+| +------------------------+   |
+| +------------------------+   |
+| | [Thumbnail 16:9]       |   |
+| | Top 10 Goals EPL       |   |
+| | May 19, 2026 - 8:15   |   |
+| | 3.4K views             |   |
+| +------------------------+   |
+|                 [+]          |
++------------------------------+</div>
+                    <div class="sc-desc">Thumbnail (16:9), title, date, duration, view count. Swipe to delete. FAB to upload new highlight.</div>
+                </div>
+                <div class="screen-card">
+                    <h5>Highlight Form Fields</h5>
+                    <ul class="sc-features">
+                        <li>Title, Thumbnail upload (or auto-extract from video)</li>
+                        <li>Video URL input OR direct upload to Supabase Storage</li>
+                        <li>Date, Duration, progress indicator for large uploads</li>
+                        <li>Max video size: 100MB</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- SCREEN 9: CATEGORIES + BANNERS -->
+            <div class="aadd-section">
+                <h4>&#128196; Screens 9-12: Categories + Banners (List + Form)</h4>
+                <div class="screen-card">
+                    <h5>Same list + form pattern</h5>
+                    <ul class="sc-features">
+                        <li><strong>Categories:</strong> Name, Icon upload, Sort order, Visible toggle</li>
+                        <li><strong>Banners:</strong> Image upload, Title, Link URL, Active toggle, Sort order</li>
+                        <li>Both reuse the same DataListItem + FormTextField components</li>
+                        <li>Category list uses Grid (3 cols) on tablets, List on phones</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- SCREEN 10: NOTIFICATION COMPOSER -->
+            <div class="aadd-section">
+                <h4>&#128276; Screen 10: Notification Composer</h4>
+                <div class="screen-card">
+                    <h5>Notification Composer Layout</h5>
+                    <div class="sc-ascii">+------------------------------+
+| &lt;- Send Notification    send |
++------------------------------+
+|  Title *                     |
+|  [ IPL Final Starting!    ]  |
+|  Message *                   |
+|  [ MI vs CSK starts in    ]  |
+|  [ 30 minutes. Tune in!   ]  |
+|  Image (optional)            |
+|  [ Upload Image ]            |
+|  Deep Link                   |
+|  [ sportstream://event/5  ]  |
+|                              |
+|  Target Audience *           |
+|  (o) All Users               |
+|  ( ) Topic: Cricket          |
+|  ( ) Topic: Football         |
+|  ( ) Specific Device Token   |
+|                              |
+|  Delivery                    |
+|  (o) Send Now                |
+|  ( ) Schedule                |
+|  [ May 25, 2026 - 7:30PM ]  |
+|                              |
+|  --- Preview ---             |
+|  +------------------------+  |
+|  | IPL Final Starting!    |  |
+|  | MI vs CSK starts in    |  |
+|  | 30 minutes...          |  |
+|  +------------------------+  |
+|  [  Send Notification  ]     |
++------------------------------+</div>
+                    <div class="sc-desc">Target: All users, topic-based, or specific device token. Delivery: Immediate or scheduled (date/time picker). Live preview of notification appearance. History tab shows sent/scheduled with status.</div>
+                </div>
+            </div>
+
+            <!-- SCREEN 11: CONFIG EDITOR -->
+            <div class="aadd-section">
+                <h4>&#9881;&#65039; Screen 11: Config Editor</h4>
+                <div class="screen-card">
+                    <h5>Config Editor Layout</h5>
+                    <div class="sc-ascii">+------------------------------+
+| &lt;- App Configuration   save  |
++------------------------------+
+|  API Base URL                |
+|  [ https://api.sport...   ]  |
+|  Update URL                  |
+|  [ https://github.com/..  ]  |
+|  Telegram Link               |
+|  [ https://t.me/sport...  ]  |
+|  Notice Text                 |
+|  [ IPL 2026 starting soon ]  |
+|  Min App Version             |
+|  [ 1.0.0                  ]  |
+|                              |
+|  [x] Maintenance Mode        |
+|                              |
+|  --- Feature Flags ---       |
+|  [ ] Premium Enabled         |
+|  [x] Highlights Enabled      |
+|  [ ] Chat Enabled            |
+|                              |
+|  [  Save Configuration  ]    |
++------------------------------+</div>
+                    <div class="sc-desc">All remote config values editable. PUT /api/config (SUPER_ADMIN only). Changes propagate to all user devices within 30 minutes.</div>
+                </div>
+            </div>
+
+            <!-- SCREEN 12: ANALYTICS -->
+            <div class="aadd-section">
+                <h4>&#128202; Screen 12: Analytics</h4>
+                <div class="screen-card">
+                    <h5>Analytics Dashboard Layout</h5>
+                    <div class="sc-ascii">+------------------------------+
+| &lt;- Analytics          date  |
++------------------------------+
+| [7D] [30D] [90D] [Custom]   |
++------------------------------+
+|  Total Events (Line Chart)   |
+|  +------------------------+  |
+|  |     /\    /\           |  |
+|  | /\ /  \/ /  \         |  |
+|  +------------------------+  |
+|  Popular Channels (Bar)      |
+|  +------------------------+  |
+|  | #### Star Sports       |  |
+|  | ###  Sky Sports        |  |
+|  | ##   ESPN              |  |
+|  +------------------------+  |
+|  Category Distribution (Pie) |
+|  +------------------------+  |
+|  |    +---+              |  |
+|  |  +-|   |+ Cricket 45% |  |
+|  |  | |   || Football 30%|  |
+|  |  +-|   |+ Other 25%   |  |
+|  +------------------------+  |
+|  Device Stats                |
+|  Android 14: 35% | 13: 28%   |
+|  Top Countries               |
+|  India 45% | Bangladesh 25%  |
+|  [ Export CSV Report ]       |
++------------------------------+</div>
+                    <div class="sc-desc">Vico library for line, bar, and pie charts (Compose-native). Date range selector. Device stats, geographic data. CSV export.</div>
+                </div>
+            </div>
+
+            <!-- SCREEN 13: ADMIN USERS -->
+            <div class="aadd-section">
+                <h4>&#128101; Screen 13: Admin User Management (Super Admin only)</h4>
+                <div class="screen-card">
+                    <h5>Admin Users List</h5>
+                    <div class="sc-ascii">+------------------------------+
+| &lt;- Admin Users          +   |
++------------------------------+
+| +----+ John Doe              |
+| |icon| john@email.com        |
+| +----+ SUPER_ADMIN (red)     |
+| +----+ Jane Smith            |
+| |icon| jane@email.com        |
+| +----+ EDITOR (orange)       |
+| +----+ Bob Wilson            |
+| |icon| bob@email.com         |
+| +----+ VIEWER (blue)         |
+|                 [+]          |
++------------------------------+</div>
+                    <div class="sc-desc">Only visible to SUPER_ADMIN. Create: Name, Email, Password, Role dropdown. Edit: Change role, reset password, deactivate. Role badges color-coded.</div>
+                </div>
+            </div>
+
+            <!-- NAVIGATION -->
+            <div class="aadd-section">
+                <h4>&#128736;&#65039; Navigation Structure</h4>
+                <h5>Bottom Navigation (5 tabs)</h5>
+                <table class="nav-table">
+                    <tr><th>Tab</th><th>Icon</th><th>Screen</th></tr>
+                    <tr><td>Dashboard</td><td>&#127968;</td><td>DashboardScreen</td></tr>
+                    <tr><td>Events</td><td>&#9917;</td><td>EventListScreen</td></tr>
+                    <tr><td>Channels</td><td>&#128225;</td><td>ChannelListScreen</td></tr>
+                    <tr><td>Notifications</td><td>&#128276;</td><td>NotificationComposerScreen</td></tr>
+                    <tr><td>Config</td><td>&#9881;&#65039;</td><td>ConfigEditorScreen</td></tr>
+                </table>
+                <h5>Navigation Drawer (hamburger menu)</h5>
+                <table class="nav-table">
+                    <tr><th>Item</th><th>Screen</th></tr>
+                    <tr><td>Dashboard</td><td>DashboardScreen</td></tr>
+                    <tr><td>Events</td><td>EventListScreen</td></tr>
+                    <tr><td>Channels</td><td>ChannelListScreen</td></tr>
+                    <tr><td>Highlights</td><td>HighlightListScreen</td></tr>
+                    <tr><td>Categories</td><td>CategoryListScreen</td></tr>
+                    <tr><td>Banners</td><td>BannerListScreen</td></tr>
+                    <tr><td>Notifications</td><td>NotificationComposerScreen</td></tr>
+                    <tr><td>Config</td><td>ConfigEditorScreen</td></tr>
+                    <tr><td>Analytics</td><td>AnalyticsScreen</td></tr>
+                    <tr><td>Admin Users</td><td>AdminUserListScreen (SUPER_ADMIN only)</td></tr>
+                    <tr><td>Logout</td><td>Back to LoginScreen</td></tr>
+                </table>
+            </div>
+
+            <!-- SECURITY -->
+            <div class="aadd-section">
+                <h4>&#128274; Security Features</h4>
+                <table class="nav-table">
+                    <tr><th>Feature</th><th>Implementation</th><th>API Level</th></tr>
+                    <tr><td>JWT Auth</td><td>EncryptedSharedPreferences</td><td>23+</td></tr>
+                    <tr><td>Biometric Lock</td><td>BiometricPrompt on foreground</td><td>28+</td></tr>
+                    <tr><td>Auto-logout</td><td>Token expiry (15 min) redirect</td><td>23+</td></tr>
+                    <tr><td>Secure Storage</td><td>Android Keystore + EncryptedSharedPrefs</td><td>23+</td></tr>
+                    <tr><td>Screenshot Block</td><td>FLAG_SECURE on all screens</td><td>23+</td></tr>
+                    <tr><td>Root Detection</td><td>RootBeer library on launch</td><td>23+</td></tr>
+                    <tr><td>ProGuard</td><td>Aggressive obfuscation</td><td>23+</td></tr>
+                </table>
+            </div>
+
+            <!-- THEME -->
+            <div class="aadd-section">
+                <h4>&#127912; Theme &amp; Design</h4>
+                <div class="dep-grid">
+                    <div class="dep-chip"><strong>Primary:</strong> #F59E0B (Orange)</div>
+                    <div class="dep-chip"><strong>Background:</strong> #0A0F1A (Dark)</div>
+                    <div class="dep-chip"><strong>Surface:</strong> #121A27 (Cards)</div>
+                    <div class="dep-chip"><strong>Accent:</strong> #EF4444 (Red/Live)</div>
+                    <div class="dep-chip"><strong>Font:</strong> Poppins</div>
+                    <div class="dep-chip"><strong>Style:</strong> Glassmorphism</div>
+                </div>
+                <p>Orange accent distinguishes admin app from user app (cyan). Same dark bg and card style for brand consistency.</p>
+            </div>
+
+            <!-- DEPENDENCIES -->
+            <div class="aadd-section">
+                <h4>&#128230; Build Dependencies</h4>
+                <div class="prompt-box"><span class="comment">// build.gradle.kts (app) - Admin App</span>
+// Compose + Material 3
+androidx.compose.material3:material3:1.3.0
+androidx.compose.ui:ui:1.7.0
+androidx.navigation:navigation-compose:2.8.0
+
+// Networking
+com.squareup.retrofit2:retrofit:2.11.0
+com.squareup.okhttp3:okhttp:4.12.0
+com.google.code.gson:gson:2.11.0
+
+// ViewModel + State
+androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0
+org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0
+
+// Dependency Injection
+com.google.dagger:hilt-android:2.51
+androidx.hilt:hilt-navigation-compose:1.2.0
+
+// Image Loading
+io.coil-kt:coil-compose:2.6.0
+
+// Charts (Vico - Compose native)
+com.patrykandpatrick.vico:compose-m3:2.0.0-beta.2
+
+// Security
+androidx.security:security-crypto:1.1.0-alpha06
+androidx.biometric:biometric:1.2.0-alpha05
+com.scottyab:rootbeer-lib:0.1.0
+
+// Supabase Storage
+io.github.jan-tennert.supabase:storage-kt:2.5.0
+
+// Permissions
+com.google.accompanist:accompanist-permissions:0.34.0</div>
+            </div>
+
+            <!-- BUILD TIME -->
+            <div class="aadd-section">
+                <h4>&#9200; Estimated Build Time</h4>
+                <table class="nav-table">
+                    <tr><th>Section</th><th>Screens</th><th>Est. Time</th></tr>
+                    <tr><td>Login + Auth</td><td>1</td><td>2 hours</td></tr>
+                    <tr><td>Dashboard</td><td>1</td><td>3 hours</td></tr>
+                    <tr><td>Events (list + form + streams)</td><td>2</td><td>4 hours</td></tr>
+                    <tr><td>Channels (list + form)</td><td>2</td><td>2 hours</td></tr>
+                    <tr><td>Highlights (list + form)</td><td>2</td><td>2 hours</td></tr>
+                    <tr><td>Categories + Banners</td><td>4</td><td>2 hours</td></tr>
+                    <tr><td>Notification Composer + History</td><td>2</td><td>3 hours</td></tr>
+                    <tr><td>Config Editor</td><td>1</td><td>1.5 hours</td></tr>
+                    <tr><td>Analytics (with charts)</td><td>1</td><td>3 hours</td></tr>
+                    <tr><td>Admin Users</td><td>2</td><td>1.5 hours</td></tr>
+                    <tr><td>Security (biometric, root detect)</td><td>&mdash;</td><td>2 hours</td></tr>
+                    <tr><td>Android 6-17 compat layer</td><td>&mdash;</td><td>2 hours</td></tr>
+                    <tr><td><strong style="color:#fff;">Total</strong></td><td><strong style="color:#fff;">~19 screens</strong></td><td><strong style="color:#fff;">~28 hours</strong></td></tr>
+                </table>
             </div>
         </div>
     </section>
