@@ -3,7 +3,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.kapt)        // Room compiler + future annotation processors
+    alias(libs.plugins.ksp)                    // Room compiler + future annotation processors
     alias(libs.plugins.google.services)    // Firebase Messaging only (BoM)
 }
 
@@ -54,7 +54,7 @@ dependencies {
     // ── Room — local database (Favorites, Playlists, CachedEvent) ──
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-    kapt(libs.room.compiler)
+    ksp(libs.room.compiler)
 
     // ── Firebase — messaging ONLY (FCM push notifications) ──
     // Remote Config intentionally replaced by our own /api/config endpoint (Phase 8).

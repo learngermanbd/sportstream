@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
  * GET requests against a fixed [baseUrl]. Returns the response body as a String
  * so callers (in this layer: [ApiService]) stay parser-agnostic.
  *
- * @param baseUrl   The configured API host, e.g. "https://sportstream.example.com".
+ * @param baseUrl   The configured API host, e.g. "https://learngermanwith.fun/".
  *                  Will be [DEFAULT_BASE_URL] until `RemoteConfigHelper.fetchConfig()`
  *                  delivers a real one (Phase 7 \u00b7 Step 7.6).
  * @param httpClient The OkHttp instance. Use [buildHttpClient] to get the shared one
@@ -66,7 +66,7 @@ class ApiClient(
 
     companion object {
         /** Placeholder admin DNS lands in Phase 7 \u00b7 Step 7.6. */
-        const val DEFAULT_BASE_URL = "https://sportstream.example.com"
+        const val DEFAULT_BASE_URL = "https://learngermanwith.fun/"
 
         /** Sent on every authed request. Real version from BuildConfig.VERSION_NAME in 6.5. */
         const val APP_VERSION = "1.0.0"

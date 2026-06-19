@@ -8,6 +8,7 @@ import com.sportstream.app.data.local.LocalModule
 import com.sportstream.app.data.remote.NetworkModule
 import com.sportstream.app.data.repository.RepositoryModule
 import io.sentry.android.core.SentryAndroid
+import android.util.Log
 
 /**
  * SportStream Application. Phase 1 · Step 1.4 → Phase 2 · Step 2.3.
@@ -56,7 +57,8 @@ class SportStreamApp : Application() {
             remoteDataSource = network.remoteDataSource,
             localDataSource = local.localDataSource
         )
-    }
+            Log.i("SportStreamApp", "Resolved API Base URL: ${com.sportstream.app.data.remote.AppConfig.defaults().apiBaseUrl}")
+}
 
     companion object {
         /** Sentry DSN. Replace at release time via gradle property / env. */

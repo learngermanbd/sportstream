@@ -29,8 +29,8 @@ data class AppConfig(
          * card (Step 3.1) instead of silently using offline defaults.
          */
         fun defaults() = AppConfig(
-            apiBaseUrl      = "https://sportstream.example.com/api",
-            updateUrl       = "https://sportstream.example.com/update",
+            apiBaseUrl      = "https://learngermanwith.fun/api",
+            updateUrl       = "https://learngermanwith.fun/update",
             telegramLink    = "https://t.me/sportstream",
             noticeText      = "",
             maintenanceMode = false,

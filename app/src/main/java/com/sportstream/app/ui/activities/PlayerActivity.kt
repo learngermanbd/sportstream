@@ -20,8 +20,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
@@ -40,8 +42,13 @@ import com.sportstream.app.databinding.ActivityPlayerBinding
 import com.sportstream.app.ui.adapters.PlayerLinkAdapter
 import com.sportstream.app.ui.common.UiState
 import com.sportstream.app.ui.gestures.SwipeGestureDetector
+import com.sportstream.app.ui.player.TrackSelectionDialogFragment
+import com.sportstream.app.ui.player.VideoQualityManager
+import com.sportstream.app.data.prefs.PlayerPrefs
+import com.sportstream.app.data.prefs.VideoQualityMode
 import com.sportstream.app.ui.viewmodels.PlayerSnapshot
 import com.sportstream.app.ui.viewmodels.PlayerViewModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
@@ -183,6 +190,9 @@ class PlayerActivity : AppCompatActivity() {
         const val EXTRA_VIDEO_URL  = "videoUrl"
         const val EXTRA_TITLE      = "title"
         const val EXTRA_EVENT_ID   = "eventId"
+        // Step 4.5 — optional companion subtitle track (SRT / VTT / SSA / ASS).
+        const val EXTRA_SUBTITLE_URL = "subtitleUrl"
+        const val EXTRA_SUBTITLE_LANG = "subtitleLang"
 
         // onSaveInstanceState keys (parallel to the Intent extras above).
         const val STATE_POS = "player_pos_ms"
@@ -231,9 +241,12 @@ class PlayerActivity : AppCompatActivity() {
         binding.btnLock.setOnClickListener { toggleLock() }
         binding.btnPip.setOnClickListener { enterPip() }
         binding.btnResize.setOnClickListener { cycleResizeMode() }
+        binding.btnQuality.setOnClickListener { showQualityPicker() }
+        binding.btnSubtitle.setOnClickListener { showSubtitlePicker() }
         binding.btnSettings.setOnClickListener {
             // Placeholder: surfaces "Settings coming in Step 4.5"
-            // (subtitle + quality pickers). No-op for v1.
+            // (subtitle + quality pickers). Step 4.5 wired those into their
+            // own buttons; this remains a hook for future settings.
         }
 
         // Center buttons.
@@ -305,6 +318,10 @@ class PlayerActivity : AppCompatActivity() {
                     StreamLink(name = getString(R.string.player_links_empty), url = url, quality = com.sportstream.app.data.models.VideoQuality.AUTO)
                 )
                 selectedLinkIndex = 0
+                // Step 4.5 — stash companion subtitle URL on the activity so submitCurrentLink
+                // can attach a SubtitleConfiguration to MediaItem.Builder if present.
+                pendingSubtitleUrl = intent.getStringExtra(EXTRA_SUBTITLE_URL).orEmpty()
+                pendingSubtitleLang = intent.getStringExtra(EXTRA_SUBTITLE_LANG)
                 submitCurrentLink(url)
             }
             intent.hasExtra(EXTRA_CHANNEL_ID) -> {
@@ -514,8 +531,19 @@ class PlayerActivity : AppCompatActivity() {
                 p.addListener(playerListener)
                 binding.playerView.player = p
                 binding.playerView.useController = false
+                // Step 4.5 — apply the persisted VideoQuality choice immediately so a
+                // mid-session cold-launch resumes the user's last selection.
+                VideoQualityManager.apply(p, currentQuality)
             }
         pollPlaybackState()
+        lifecycleScope.launch {
+            // Step 4.5 mitigation (k1/Kapt relationship) — runBlocking version
+            // was kapt-breaking on private @OptIn in Kotlin 2.0+; revert to async
+            // safety re-apply which races ExoPlayer.prepare() by ~0–1 segment fetch
+            // on cold start, then locks to the persisted VideoQualityMode.
+            currentQuality = playerPrefs.readVideoQualityMode()
+            exoPlayer?.let { VideoQualityManager.apply(it, currentQuality) }
+        }
     }
 
     private fun releasePlayer() {
@@ -635,16 +663,86 @@ class PlayerActivity : AppCompatActivity() {
             return
         }
         val player = exoPlayer ?: initializePlayer().let { exoPlayer!! }
-        val item = MediaItem.Builder()
+        val builder = MediaItem.Builder()
             .setUri(url)
             .setMediaMetadata(
                 MediaMetadata.Builder()
                     .setTitle(binding.titleText.text?.toString().orEmpty())
                     .build()
             )
-            .build()
+        // Step 4.5 — if a companion subtitle URL was routed in, attach a SubtitleConfiguration.
+        // MIME detection via extension; falls back to VTT for unknown providers.
+        if (pendingSubtitleUrl.isNotBlank()) {
+            val mime = detectSubtitleMime(pendingSubtitleUrl)
+            val sub = MediaItem.SubtitleConfiguration.Builder(android.net.Uri.parse(pendingSubtitleUrl))
+                .setMimeType(mime)
+                .setLanguage(pendingSubtitleLang ?: "en")
+                .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
+                .build()
+            builder.setSubtitleConfigurations(listOf(sub))
+        }
+        val item = builder.build()
         player.setMediaItem(item)
         player.prepare()
+    }
+
+    // Step 4.5 — detect subtitle MIME from URL extension using Media3 MimeTypes constants.
+    private fun detectSubtitleMime(url: String): String {
+        val lower = url.lowercase()
+        return when {
+            lower.endsWith(".srt") -> MimeTypes.APPLICATION_SUBRIP
+            lower.endsWith(".vtt") -> MimeTypes.TEXT_VTT
+            lower.endsWith(".ass") || lower.endsWith(".ssa") -> MimeTypes.TEXT_SSA
+            lower.endsWith(".ttml") || lower.endsWith(".xml") -> MimeTypes.APPLICATION_TTML
+            else -> {
+                // Best-effort default — log so it shows up in adb.
+                android.util.Log.w("PlayerActivity",
+                    getString(R.string.player_subtitle_url_unknown_mime) + ": " + url)
+                MimeTypes.TEXT_VTT
+            }
+        }
+    }
+
+    // Step 4.5 — quality picker: 5-way MaterialAlertDialog with single-choice items.
+    private fun showQualityPicker() {
+        val modes = VideoQualityMode.values()
+        val labels = modes.map { mode ->
+            when (mode) {
+                VideoQualityMode.AUTO -> getString(R.string.player_quality_auto)
+                VideoQualityMode.FHD -> getString(R.string.player_quality_fhd)
+                VideoQualityMode.HD -> getString(R.string.player_quality_hd)
+                VideoQualityMode.SD -> getString(R.string.player_quality_sd)
+                VideoQualityMode.LD -> getString(R.string.player_quality_ld)
+            }
+        }
+        val currentIndex = (0 until modes.size).firstOrNull { modes[it] == currentQuality } ?: 0
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.player_quality_title)
+            .setSingleChoiceItems(labels.toTypedArray(), currentIndex) { dialog, which ->
+                val picked = modes[which]
+                currentQuality = picked
+                exoPlayer?.let { VideoQualityManager.apply(it, picked) }
+                kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                    playerPrefs.setVideoQualityMode(picked)
+                }
+                dialog.dismiss()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    // Step 4.5 — subtitle picker: open TrackSelectionDialogFragment if the player has text tracks.
+    private fun showSubtitlePicker() {
+        val p = exoPlayer ?: run {
+            android.widget.Toast.makeText(this, R.string.player_track_selection_empty, android.widget.Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (!TrackSelectionDialogFragment.exoPlayerHasTextTracks(p)) {
+            // Disable the button visually if there are no text tracks.
+            android.widget.Toast.makeText(this, R.string.player_track_selection_empty, android.widget.Toast.LENGTH_SHORT).show()
+            return
+        }
+        TrackSelectionDialogFragment.show(supportFragmentManager, p, playerPrefs)
     }
 
     private fun switchToLink(link: StreamLink) {
@@ -758,6 +856,16 @@ class PlayerActivity : AppCompatActivity() {
         binding.loadingIndicator.visibility = View.VISIBLE
         binding.errorText.visibility = View.GONE
     }
+
+    /** ----- Step 4.5 — Quality + Subtitle state ----- */
+    private val playerPrefs: PlayerPrefs by lazy { PlayerPrefs(applicationContext) }
+
+    /** Pending subtitle URL (cleared on each new intent / load). */
+    private var pendingSubtitleUrl: String = ""
+    private var pendingSubtitleLang: String? = null
+
+    /** Current quality — seeded from DataStore on first observe. */
+    private var currentQuality: VideoQualityMode = VideoQualityMode.AUTO
 
     private fun showReady() {
         binding.loadingIndicator.visibility = View.GONE

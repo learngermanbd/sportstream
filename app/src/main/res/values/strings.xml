@@ -133,4 +133,21 @@
     <string name="player_unlock_short">Unlock</string>
     <string name="player_lock_desc">Lock player controls</string>
     <string name="player_unlock_desc">Unlock player controls</string>
+    <!-- Step 4.5 — quality selector (5-way). -->
+    <string name="player_quality_title">Video quality</string>
+    <string name="player_quality_auto">Auto</string>
+    <string name="player_quality_fhd">Full HD (1080p)</string>
+    <string name="player_quality_hd">HD (720p)</string>
+    <string name="player_quality_sd">Standard (480p)</string>
+    <string name="player_quality_ld">Low (360p)</string>
+    <!-- Step 4.5 — subtitle track dialog. -->
+    <string name="player_track_selection_title">Subtitles</string>
+    <string name="player_track_selection_close_desc">Close</string>
+    <string name="player_track_selection_section_subtitle">Subtitle tracks</string>
+    <string name="player_track_selection_empty">No subtitle tracks available for this stream</string>
+    <string name="player_track_selection_done">Done</string>
+    <string name="player_track_off">Off</string>
+    <string name="player_subtitle_url_desc">Subtitle URL</string>
+    <!-- Step 4.5 — intent routing extras. -->
+    <string name="player_subtitle_url_unknown_mime">Unknown subtitle MIME for URL — attaching as best-effort VTT</string>
 </resources>

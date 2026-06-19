@@ -2,6 +2,7 @@
 # Toolchain
 agp = "8.7.3"
 kotlin = "2.0.21"
+ksp = "2.0.21-1.0.27"
 google-services = "4.4.2"
 # kotlin-kapt reuses the Kotlin version (kept as separate alias for clarity)
 
@@ -80,5 +81,5 @@ viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "viewpag
 [plugins]
 android-application = { id = "com.android.application",                  version.ref = "agp" }
 kotlin-android      = { id = "org.jetbrains.kotlin.android",             version.ref = "kotlin" }
-kotlin-kapt         = { id = "org.jetbrains.kotlin.kapt",                version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp",                 version.ref = "ksp" }
 google-services     = { id = "com.google.gms.google-services",           version.ref = "google-services" }

@@ -22,7 +22,7 @@ import java.io.IOException
 object RemoteConfigHelper {
 
     /** Placeholder backend URL. Real DNS + cert pinned in Phase 7 \u00b7 Step 7.7. */
-    private const val DEFAULT_API_URL = "https://sportstream.example.com/api/config"
+    private const val DEFAULT_API_URL = "https://learngermanwith.fun/api/config"
 
     /** 30 minutes in milliseconds. */
     private const val REFRESH_INTERVAL_MS = 30L * 60L * 1000L
