@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Phase 1 · Step 1.5 — Splash background.
+    Diagonal gradient from dark-bg → secondary → card-bg.
+    Used by activity_splash.xml (SplashActivity) in Phase 3.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+       android:shape="rectangle">
+    <gradient
+        android:angle="45"
+        android:startColor="@color/dark_bg"
+        android:centerColor="@color/secondary"
+        android:endColor="@color/card_bg"
+        android:type="linear" />
+</shape>

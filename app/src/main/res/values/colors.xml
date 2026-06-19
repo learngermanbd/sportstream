@@ -1,6 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Step 1.5 will add: primary #1CCBD4, secondary #131931, card_bg #121A27, dark_bg #0A0F1A, etc. -->
+    <!-- Phase 1 · Step 1.5 — SportStream palette. Source: sportzfy_build_plan.html -->
+    <color name="primary">#1CCBD4</color>
+    <color name="primary_dark">#17a8b0</color>
+    <color name="secondary">#131931</color>
+    <color name="dark_bg">#0A0F1A</color>
+    <color name="card_bg">#121A27</color>
+    <color name="border_default">#1E2D45</color>
+    <color name="text">#E0E6ED</color>
+    <color name="text_muted">#8899AA</color>
+
+    <!-- Glass primary fill: cyan at ~8% alpha (0x14 = 20/255 = 7.84%) -->
+    <color name="glass_primary">#141CCBD4</color>
+    <!-- Glass primary border at ~15% alpha (0x26 = 38/255 = 14.9%) -->
+    <color name="glass_primary_border">#261CCBD4</color>
+
+    <!-- Semantic accents -->
+    <color name="live_red">#EF4444</color>
+    <color name="success_green">#22C55E</color>
+    <color name="warning_orange">#F59E0B</color>
+
+    <!-- Common -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

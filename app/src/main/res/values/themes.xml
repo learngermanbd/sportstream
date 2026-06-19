@@ -1,7 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Step 1.5 will replace this with Material 3 dark theme + glassmorphism. -->
-    <style name="Theme.SportStream" parent="@android:style/Theme.Material.NoActionBar">
-        <item name="android:windowBackground">@android:color/black</item>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+        Phase 1 · Step 1.5 — Material 3 dark theme for SportStream.
+        Material lib 1.12.0 (Step 1.2) supplies Theme.Material3.* styles.
+    -->
+    <style name="Theme.SportStream" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Brand palette -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/dark_bg</item>
+        <item name="colorPrimaryContainer">@color/secondary</item>
+        <item name="colorOnPrimaryContainer">@color/primary</item>
+        <item name="colorSecondary">@color/primary</item>
+        <item name="colorOnSecondary">@color/dark_bg</item>
+        <item name="colorTertiary">@color/text_muted</item>
+
+        <!-- Surfaces -->
+        <item name="colorSurface">@color/card_bg</item>
+        <item name="colorOnSurface">@color/text</item>
+        <item name="colorSurfaceVariant">@color/border_default</item>
+        <item name="colorOnSurfaceVariant">@color/text_muted</item>
+        <item name="colorOnBackground">@color/text</item>
+        <item name="colorError">@color/live_red</item>
+        <item name="colorOnError">@color/white</item>
+        <item name="colorOutline">@color/border_default</item>
+
+        <!-- Window chrome — edge-to-edge dark surface, transparent system bars -->
+        <item name="android:windowBackground">@color/dark_bg</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
+
+        <!-- Text colors -->
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textColorPrimary">@color/text</item>
+        <item name="android:textColorSecondary">@color/text_muted</item>
+        <item name="android:textColorHint">@color/text_muted</item>
     </style>
 </resources>

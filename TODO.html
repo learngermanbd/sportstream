@@ -493,16 +493,16 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p><strong>Next:</strong> Step 1.5 (Buff — design system &amp; theme: colors.xml / themes.xml / styles.xml / glass drawables / Poppins font).</p>
         </div>
 
-        <!-- 1.5 TODO -->
-        <div class="step todo">
+        <!-- 1.5 DONE -->
+        <div class="step done">
             <div class="step-header">
-                <span class="step-num blue">STEP 1.5</span>
+                <span class="step-num green">STEP 1.5</span>
                 <span class="agent buff">Buff</span>
                 <span class="meta-chip">DEFAULT</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Design system &amp; theme</h4>
-            <p>Done when: <code>colors.xml</code> (primary <code>#1CCBD4</code>, bg <code>#0A0F1A</code>, card <code>#121A27</code>), <code>themes.xml</code> (Material 3 dark, NoActionBar), <code>styles.xml</code> (glass card, bottom nav, player overlay), <code>bg_glass_card.xml</code>, <code>bg_splash.xml</code>, <code>bg_player_controls.xml</code>, Poppins font.</p>
+            <p>Done when: ✓ <code>colors.xml</code> with full SportStream palette (primary <code>#1CCBD4</code>, primary-dark <code>#17a8b0</code>, secondary, dark-bg, card-bg, border, text, text-muted, glass-primary 8 % fill, glass-primary-border 15 % alpha, live-red, success-green, warning-orange). ✓ <code>themes.xml</code> Theme.SportStream extending <code>Theme.Material3.DayNight.NoActionBar</code> with edge-to-edge transparent status / nav bars + dark <code>windowBackground</code>. ✓ <code>styles.xml</code> with SportStream.GlassCard / BottomNav / PlayerOverlay / Button (Material3) / Text variants; empty SportStream + SportStream.Text base styles for dot-inheritance. ✓ <code>drawable/bg_glass_card.xml</code> (12 dp 8 % primary fill + 1 dp stroke), <code>bg_splash.xml</code> (diagonal gradient), <code>bg_player_controls.xml</code> (8 dp 8 % primary fill + 1 dp stroke). ✓ <code>font/poppins_regular.xml</code> font-family aliasing system sans-serif-medium (Poppins TTF placeholder; real TTF lands in Step 7.x). ✓ <code>./gradlew :app:processDebugResources --no-daemon</code> BUILD SUCCESSFUL after 3 ship-blocker fixes (added empty <code>SportStream</code> + <code>SportStream.Text</code> dot-inheritance bases, removed invalid <code>colorBackground</code> theme attr, collapsed redundant font-family weights).</p>
             <p><strong>Next:</strong> Step 1.6 (Code Reviewer) + run <code>./gradlew assembleDebug</code> (Basher) in parallel.</p>
         </div>
 
