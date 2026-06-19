@@ -2013,31 +2013,61 @@ com.google.accompanist:accompanist-permissions:0.34.0</div>
                 <h4>&#128260; Update Flow Architecture</h4>
                 <div class="iau-flow">App Launch (SplashActivity)
     |
-    +-- 1. Fetch /api/config
-    |       Response includes:
-    |       +-- minAppVersion: "1.0.0"   (FORCE update threshold)
-    |       +-- latestVersion: "1.2.0"   (FLEXIBLE update)
-    |       +-- updateUrl: APK download URL
-    |       +-- updateHash: SHA-256 hash (integrity check)
-    |       +-- updateChangelog: "What's new..."
+    +-- 1. Fetch /api/config (with X-App-Version header)
+    |       |
+    |       +-- IF version < minAppVersion:
+    |       |       API returns HTTP 426 (Upgrade Required)
+    |       |       +-- response: { error: "upgrade_required", minVersion, latestVersion, updateUrl, updateHash, changelog }
+    |       |       +-- App CANNOT proceed &mdash; FORCE UPDATE dialog (blocking)
+    |       |
+    |       +-- IF version >= minAppVersion:
+    |               API returns 200 OK with config
+    |               +-- Config includes: latestVersion, updateUrl, updateHash, changelog
+    |               +-- App checks if current < latestVersion &rarr; show "Update available" banner (optional)
     |
-    +-- 2. Compare versions
-    |       +-- current < minAppVersion --> FORCE UPDATE (blocking dialog)
-    |       +-- current < latestVersion --> FLEXIBLE UPDATE (banner)
-    |       +-- current >= latestVersion --> No update needed
+    +-- 2. ALSO enforced on ALL API endpoints:
+    |       Every API call includes X-App-Version header
+    |       Backend middleware checks version on EVERY request
+    |       +-- IF version < minAppVersion &rarr; return 426 on ANY endpoint
+    |       +-- App globally intercepts 426 responses &rarr; show force update dialog
+    |       +-- NO data is served to outdated clients
     |
     +-- 3. Download &amp; Install
             +-- Download APK via DownloadManager
             +-- Show progress notification
             +-- Verify APK SHA-256 hash
-            +-- Install via FileProvider + ACTION_INSTALL_PACKAGE</div>
+            +-- Install via FileProvider + ACTION_INSTALL_PACKAGE
+            +-- After install &rarr; new version can access API normally</div>
             </div>
 
             <!-- TWO UPDATE MODES -->
             <div class="iau-section">
-                <h4>&#128279; Two Update Modes</h4>
+                <h4>&#128683; Server-Enforced Version Blocking</h4>
+                <p style="color:var(--red);font-size:12px;font-weight:600;">Older versions CANNOT use the app. The backend API rejects ALL requests from outdated clients with HTTP 426 (Upgrade Required). No data is served. No exceptions.</p>
                 <h5>Mode 1: Force Update (Blocking)</h5>
-                <p>When <code>currentVersion &lt; minAppVersion</code> &mdash; user CANNOT use the app until they update.</p>
+                <p>When <code>currentVersion &lt; minAppVersion</code> &mdash; the <strong>backend API returns HTTP 426</strong> on every request. The app is completely blocked. No events, no channels, no config &mdash; nothing works until the user updates.</p>
+                <h5>Server-Side Enforcement (Express Middleware)</h5>
+                <div class="prompt-box"><span class="comment">// middleware/versionCheck.js &mdash; Runs on EVERY API request</span>
+const versionCheck = (req, res, next) =&gt; {
+    const appVersion = req.headers['x-app-version'];
+    const config = getAppConfig(); // From DB
+    const minVersion = config.minAppVersion;
+
+    if (!appVersion || isVersionLower(appVersion, minVersion)) {
+        return res.status(426).json({
+            error: 'upgrade_required',
+            message: 'This app version is no longer supported',
+            minVersion: minVersion,
+            latestVersion: config.latestVersion,
+            updateUrl: config.updateUrl,
+            updateHash: config.updateHash,
+            changelog: config.updateChangelog
+        });
+    }
+    next(); // Version OK, proceed
+};
+
+app.use(versionCheck); <span class="comment">// Apply to ALL routes</span></div>
                 <div class="iau-wireframe">+--------------------------------------+
 |                                      |
 |           Update Required            |
@@ -2067,7 +2097,10 @@ com.google.accompanist:accompanist-permissions:0.34.0</div>
                     <li>If no internet &rarr; show network error, block app</li>
                 </ul>
 
-                <h5>Mode 2: Flexible Update (Non-Blocking)</h5>
+                <h5>Optional: Update Available Banner (Non-Blocking)</h5>
+                <p style="color:var(--orange);font-size:11px;">If the app version is above minAppVersion but below latestVersion, the app still works but shows an optional "Update available" banner. This is a soft nudge, not a block. The API serves all data normally.</p>
+                <p style="font-size:11px;"><strong>Note:</strong> When minAppVersion is bumped by admin, ALL older versions are instantly blocked &mdash; no app-side code change needed. The server controls enforcement.</p>
+                <h5 style="margin-top:12px;">Non-Blocking Banner</h5>
                 <p>When <code>currentVersion &lt; latestVersion</code> but <code>&gt;= minAppVersion</code> &mdash; user CAN skip.</p>
                 <div class="iau-wireframe">+--------------------------------------+
 | SportStream             search  menu |
@@ -2276,6 +2309,8 @@ Download complete:
                 <h4>&#128737;&#65039; Security Considerations</h4>
                 <table class="iau-table">
                     <tr><th>Risk</th><th>Mitigation</th></tr>
+                    <tr><td><strong>Version bypass</strong></td><td><strong style="color:var(--red);">Server-enforced: HTTP 426 on ALL endpoints if version &lt; minAppVersion. No data served to outdated clients.</strong></td></tr>
+                    <tr><td>Version header spoofing</td><td>Server validates X-App-Version header format (semver). Reject malformed headers with 400.</td></tr>
                     <tr><td>MITM on APK download</td><td>HTTPS only, certificate pinning on update URL</td></tr>
                     <tr><td>Tampered APK</td><td>SHA-256 hash verification before install</td></tr>
                     <tr><td>Rollback attack</td><td>Server enforces minimum version, APK signed with same key</td></tr>
@@ -2312,14 +2347,63 @@ Download complete:
                 <ul>
                     <li><strong>1.</strong> Developer builds new APK version</li>
                     <li><strong>2.</strong> Uploads APK to GitHub Releases (or any hosting)</li>
-                    <li><strong>3.</strong> Admin opens Config Editor &rarr; sets new latestVersion + updateUrl + changelog</li>
-                    <li><strong>4.</strong> All users see update banner on next app launch</li>
-                    <li><strong>5.</strong> If minVersion is bumped &rarr; force update dialog blocks app</li>
+                    <li><strong>3.</strong> Admin opens Config Editor &rarr; sets new <code>latestVersion</code> + <code>updateUrl</code> + <code>changelog</code></li>
+                    <li><strong>4.</strong> All users see "Update available" banner on next app launch</li>
+                    <li><strong>5.</strong> When admin bumps <code>minAppVersion</code> &rarr; <strong style="color:var(--red);">ALL older versions are INSTANTLY blocked</strong> by the server. The API returns HTTP 426 on every request. No data is served. Users MUST update to continue.</li>
                 </ul>
+                <p style="color:var(--red);font-size:11px;font-weight:600;">&#9888;&#65039; Server-side enforcement means: even if a user disables the update dialog or modifies the APK, they still can't access any API data. The server is the single source of truth.</p>
             </div>
 
             <!-- KEY CLASSES -->
             <div class="iau-section">
+                <h4>&#128274; Client-Side: Global 426 Interceptor</h4>
+                <p>Every API call goes through OkHttp. Add an interceptor that catches HTTP 426 responses globally and triggers the force update dialog.</p>
+                <div class="prompt-box"><span class="comment">// VersionEnforcementInterceptor.kt &mdash; OkHttp Interceptor</span>
+class VersionEnforcementInterceptor(
+    private val onUpgradeRequired: (UpgradeResponse) -&gt; Unit
+) : Interceptor {
+
+    override fun intercept(chain: Interceptor.Chain): Response {
+        // Add version header to EVERY request
+        val request = chain.request().newBuilder()
+            .addHeader("X-App-Version", BuildConfig.VERSION_NAME)
+            .build()
+
+        val response = chain.proceed(request)
+
+        // Check for 426 Upgrade Required
+        if (response.code == 426) {
+            val body = response.body?.string()
+            val upgradeResponse = Gson().fromJson(body, UpgradeResponse::class.java)
+            // Trigger force update dialog on main thread
+            Handler(Looper.getMainLooper()).post {
+                onUpgradeRequired(upgradeResponse)
+            }
+            response.close()
+        }
+        return response
+    }
+}
+
+data class UpgradeResponse(
+    val error: String,           // "upgrade_required"
+    val message: String,         // "This app version is no longer supported"
+    val minVersion: String,      // "1.1.0"
+    val latestVersion: String,   // "1.2.0"
+    val updateUrl: String,       // APK download URL
+    val updateHash: String,      // SHA-256 hash
+    val changelog: String        // What's new
+)
+
+<span class="comment">// Add to ApiClient.kt OkHttpClient builder:</span>
+val client = OkHttpClient.Builder()
+    .addInterceptor(VersionEnforcementInterceptor { upgradeResponse -&gt;
+        // Show force update dialog from anywhere in the app
+        UpdateDialogFragment.show(supportFragmentManager, upgradeResponse)
+    })
+    .addInterceptor(loggingInterceptor)
+    .build()</div>
+
                 <h4>&#128196; Key Classes Summary</h4>
                 <table class="iau-table">
                     <tr><th>Class</th><th>Package</th><th>Purpose</th></tr>
@@ -2330,6 +2414,8 @@ Download complete:
                     <tr><td><code>UpdateDialogFragment</code></td><td>ui/components/</td><td>Force update blocking dialog</td></tr>
                     <tr><td><code>UpdateBannerView</code></td><td>ui/components/</td><td>Flexible update banner (home screen)</td></tr>
                     <tr><td><code>RemoteConfigHelper</code></td><td>utils/</td><td>Fetches /api/config (includes update info)</td></tr>
+                    <tr><td><code>VersionEnforcementInterceptor</code></td><td>core/network/</td><td>OkHttp interceptor: adds X-App-Version header, catches 426 globally</td></tr>
+                    <tr><td><code>versionCheck</code> middleware</td><td>backend/</td><td>Express middleware: validates version on every request, returns 426</td></tr>
                 </table>
             </div>
         </div>
