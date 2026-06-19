@@ -22,10 +22,10 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/liveFragment"
-        android:name="com.sportstream.app.ui.fragments.LiveFragment"
-        android:label="@string/main_nav_live"
-        tools:layout="@layout/fragment_live" />
+        android:id="@+id/categoriesFragment"
+        android:name="com.sportstream.app.ui.fragments.CategoriesFragment"
+        android:label="@string/main_nav_categories"
+        tools:layout="@layout/fragment_categories" />
 
     <fragment
         android:id="@+id/favoritesFragment"
@@ -38,11 +38,5 @@
         android:name="com.sportstream.app.ui.fragments.SettingsFragment"
         android:label="@string/main_nav_settings"
         tools:layout="@layout/fragment_settings" />
-
-    <fragment
-        android:id="@+id/categoriesFragment"
-        android:name="com.sportstream.app.ui.fragments.CategoriesFragment"
-        android:label="@string/main_nav_categories"
-        tools:layout="@layout/fragment_categories" />
 
 </navigation>

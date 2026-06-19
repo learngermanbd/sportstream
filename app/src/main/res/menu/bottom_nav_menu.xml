@@ -15,9 +15,9 @@
         android:title="@string/main_nav_home" />
 
     <item
-        android:id="@+id/liveFragment"
+        android:id="@+id/categoriesFragment"
         android:icon="@android:drawable/ic_media_play"
-        android:title="@string/main_nav_live" />
+        android:title="@string/main_nav_categories" />
 
     <item
         android:id="@+id/favoritesFragment"
