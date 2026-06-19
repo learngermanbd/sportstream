@@ -39,4 +39,10 @@
         android:label="@string/main_nav_settings"
         tools:layout="@layout/fragment_settings" />
 
+    <fragment
+        android:id="@+id/categoriesFragment"
+        android:name="com.sportstream.app.ui.fragments.CategoriesFragment"
+        android:label="@string/main_nav_categories"
+        tools:layout="@layout/fragment_categories" />
+
 </navigation>

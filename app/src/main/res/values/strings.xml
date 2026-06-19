@@ -41,4 +41,16 @@
     <string name="view_item_match_default_title">Match</string>
     <string name="view_item_match_team_a_desc">Team A logo</string>
     <string name="view_item_match_team_b_desc">Team B logo</string>
+
+    <!-- Categories tab (Step 3.4) — section header, chip copy, empty state. -->
+    <string name="fragment_categories_header">CHANNELS</string>
+    <string name="fragment_categories_chip_all">All</string>
+    <string name="fragment_categories_empty">No channels in this category</string>
+
+    <!-- Nav graph label for the Categories destination (used by toolbars, action labels). -->
+    <string name="main_nav_categories">CATEGORIES</string>
+
+    <!-- view_item_channel.xml row content (Step 3.4). -->
+    <string name="view_item_channel_default_name">Channel</string>
+    <string name="view_item_channel_logo_desc">Channel logo</string>
 </resources>
