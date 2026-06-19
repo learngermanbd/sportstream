@@ -330,7 +330,7 @@
     <p class="sub">A step-by-step blueprint to build a live sports streaming app using <strong style="color:var(--primary)">Codebuff</strong> and its specialized AI agents. Every step includes the exact agent, prompt, and expected output.</p>
     <div class="meta">
         <div class="meta-item">🎯 <strong>9 Phases</strong></div>
-        <div class="meta-item">📝 <strong>80+ Steps</strong></div>
+        <div class="meta-item">📝 <strong>85+ Steps</strong></div>
         <div class="meta-item">🤖 <strong>7 Agent Types</strong></div>
         <div class="meta-item">🛡️ <strong>20+ Security Layers</strong></div>
         <div class="meta-item">📱 <strong>Android 6-17</strong></div>
@@ -376,6 +376,63 @@
         <a href="#phase8">Phase 8: Admin Panel</a>
         <a href="#phase9">Phase 9: Testing & QA</a>
     </nav>
+
+
+    <!-- TECH STACK OVERVIEW -->
+    <section class="section">
+        <div class="card" style="border-color:rgba(28,203,212,0.2);">
+            <h3 style="color:#fff;margin-bottom:16px;font-size:16px;">🏗️ Final Tech Stack</h3>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">
+                <span class="sec-level" style="background:rgba(28,203,212,0.2);color:var(--primary);">FCM Only</span>
+                <span class="sec-level" style="background:rgba(34,197,94,0.2);color:var(--green);">Sentry</span>
+                <span class="sec-level" style="background:rgba(59,130,246,0.2);color:var(--blue);">Supabase</span>
+                <span class="sec-level" style="background:rgba(167,139,250,0.2);color:var(--purple);">Self-Hosted Config</span>
+                <span class="sec-level" style="background:rgba(245,158,11,0.2);color:var(--orange);">Render/Railway</span>
+            </div>
+            <div class="security-matrix">
+                <div class="security-matrix-item" style="background:rgba(28,203,212,0.04);border-color:rgba(28,203,212,0.1);">
+                    <div class="icon">🔔</div>
+                    <h4>Push: Firebase FCM</h4>
+                    <p>ONLY Firebase service used. Free, unlimited. Firebase Messaging dependency + google-services.json. Server-side via FCM HTTP v1 API from your backend.</p>
+                </div>
+                <div class="security-matrix-item" style="background:rgba(34,197,94,0.04);border-color:rgba(34,197,94,0.1);">
+                    <div class="icon">🐛</div>
+                    <h4>Crashes: Sentry</h4>
+                    <p>Replaces Firebase Crashlytics. 5K errors/mo free. Better stack traces, performance monitoring, open-source. SDK: io.sentry:sentry-android.</p>
+                </div>
+                <div class="security-matrix-item" style="background:rgba(59,130,246,0.04);border-color:rgba(59,130,246,0.1);">
+                    <div class="icon">🗄️</div>
+                    <h4>Database: Supabase (PostgreSQL)</h4>
+                    <p>Managed Postgres with built-in Storage (for logos/thumbnails/videos) and Auth (for admin login). Free tier: 500MB + 1GB storage. $25/mo Pro for production (no pause).</p>
+                </div>
+                <div class="security-matrix-item" style="background:rgba(167,139,250,0.04);border-color:rgba(167,139,250,0.1);">
+                    <div class="icon">⚙️</div>
+                    <h4>Config: Your Own API</h4>
+                    <p>Replaces Firebase Remote Config entirely. Your admin panel serves config at /api/config (API URLs, update URLs, Telegram links, feature flags, maintenance mode).</p>
+                </div>
+                <div class="security-matrix-item" style="background:rgba(245,158,11,0.04);border-color:rgba(245,158,11,0.1);">
+                    <div class="icon">🖥️</div>
+                    <h4>Backend: Render → Railway</h4>
+                    <p>Node.js + Express API on Render (free for dev). Migrate to Railway ($5/mo) for production — no spin-down, always-on for push notifications and live content.</p>
+                </div>
+                <div class="security-matrix-item" style="background:rgba(236,72,153,0.04);border-color:rgba(236,72,153,0.1);">
+                    <div class="icon">🎬</div>
+                    <h4>Video: External URLs + Supabase</h4>
+                    <p>Live streams: admin adds external HLS/DASH URLs. ExoPlayer plays directly. Highlights: upload to Supabase Storage or Cloudflare Stream. No self-hosted video encoding.</p>
+                </div>
+                <div class="security-matrix-item" style="background:rgba(239,68,68,0.04);border-color:rgba(239,68,68,0.1);">
+                    <div class="icon">💰</div>
+                    <h4>Monetization: Hybrid</h4>
+                    <p>Free tier: AdMob banner + interstitial ads. Premium ($2-3/mo): remove ads + HD streams + offline downloads. Google Play Billing for subscriptions. Add monetization after gaining users.</p>
+                </div>
+                <div class="security-matrix-item" style="background:rgba(28,203,212,0.04);border-color:rgba(28,203,212,0.1);">
+                    <div class="icon">📱</div>
+                    <h4>Analytics: PostHog (or skip)</h4>
+                    <p>Open-source, 1M events/mo free. Self-hostable. Add later when you have real users. Or use Microsoft Clarity for free heatmaps/session recordings.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- ============================================================ -->
     <!-- PHASE 1 -->
@@ -429,8 +486,9 @@ Add the following dependencies to build.gradle.kts (app level):
 - androidx.media3:media3-ui (player UI)
 - com.squareup.okhttp3:okhttp (networking)
 - androidx.room:room-runtime + room-ktx + room-compiler (database)
-- com.google.firebase:firebase-bom (Firebase BoM)
-- firebase-analytics, firebase-messaging, firebase-remote-config, firebase-crashlytics
+- com.google.firebase:firebase-bom (Firebase BoM) — for FCM ONLY
+- firebase-messaging (FCM push notifications — ONLY Firebase service used)
+- io.sentry:sentry-android (crash reporting, replaces Crashlytics)
 - com.airbnb.android:lottie (animations)
 - com.google.android.material:material (Material 3)
 - androidx.navigation:navigation-fragment-ktx + navigation-ui-ktx
@@ -460,16 +518,19 @@ Verify all dependencies resolve without errors. Fix any version conflicts.</div>
                 <div class="step-header">
                     <span class="step-num blue">Step 1.4</span>
                     <span class="agent buff">Buff</span>
-                    <h4>Firebase Setup</h4>
+                    <h4>FCM + Sentry + API Config Setup</h4>
                 </div>
                 <p>Create google-services.json placeholder and initialize Firebase in the Application class.</p>
                 <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
 1. Create a placeholder google-services.json with dummy values (user will replace with real ones)
 2. Create SportStreamApp.kt extending Application class
-3. Initialize Firebase, set up Firebase Messaging token retrieval
-4. Create a RemoteConfigHelper.kt utility class to fetch remote config values
-5. Register the Application class in AndroidManifest.xml
-6. Add INTERNET, ACCESS_NETWORK_STATE, POST_NOTIFICATIONS, WAKE_LOCK permissions to manifest</div>
+3. Initialize Firebase Messaging ONLY (FCM) for push notifications
+4. Initialize Sentry SDK for crash reporting (replaces Crashlytics)
+5. Create a RemoteConfigHelper.kt that fetches config from YOUR API (/api/config) instead of Firebase Remote Config
+6. Register the Application class in AndroidManifest.xml
+7. Add INTERNET, ACCESS_NETWORK_STATE, POST_NOTIFICATIONS, WAKE_LOCK permissions to manifest
+8. Add Sentry dependency: io.sentry:sentry-android
+9. FCM is the ONLY Firebase service used. No Analytics, no Remote Config, no Crashlytics.</div>
             </div>
 
             <!-- Step 1.5 -->
@@ -1290,24 +1351,34 @@ Implement network stream feature (play any URL):
 Set up push notifications:
 
 1. SportStreamMessagingService.kt (extends FirebaseMessagingService):
-   - onNewToken: send token to server
+   - onNewToken: send FCM token to your backend API (POST /api/users/fcm-token)
    - onMessageReceived: 
      - Parse notification data (title, body, event_id, stream_url)
      - Show notification with event details
-     - Tap → open PlayerActivity with stream URL
+     - Deep link to specific event/player on tap
+   - Subscribe to FCM topics based on user preferences (e.g., "cricket", "football")
    
 2. NotificationHelper.kt:
-   - Create notification channel "Live Events"
-   - Build notifications with:
-     - Large icon (event/team logo)
-     - BigTextStyle for long content
-     - Action button: "Watch Now"
-   - Handle notification permissions (API 33+)
+   - Create notification channel "Live Events" (API 26+)
+   - Build notifications with NotificationCompat (all API levels)
+   - Large icon (event/team logo), BigTextStyle, Action button: "Watch Now"
+   - Handle POST_NOTIFICATIONS permission (API 33+)
+   - Set priority: HIGH for live events (wakes device immediately)
 
-3. RemoteConfigHelper.kt:
-   - Fetch and cache remote config values
-   - API URL, Telegram link, update URL, notice text
-   - Minimum app version for force update</div>
+3. RemoteConfigHelper.kt (self-hosted, NOT Firebase):
+   - Fetch config from YOUR API: GET /api/config
+   - Cache in DataStore preferences (offline fallback)
+   - Config includes: API URL, Telegram link, update URL, notice text,
+     maintenance mode, feature flags, min app version
+   - Refresh on app launch + every 30 minutes
+   - This replaces Firebase Remote Config entirely
+
+4. FCM Server-Side (Node.js backend):
+   - POST /api/notifications/send (admin triggers from admin panel)
+   - Use firebase-admin SDK: admin.messaging().send() for topics
+   - Use admin.messaging().sendEachForMulticast() for targeted tokens
+   - Schedule notifications via node-cron or Bull queue
+   - Target: all users (topic), specific sport fans (topic), or favorited team users (tokens)</div>
             </div>
 
             <div class="step green">
@@ -1536,7 +1607,8 @@ Configure release build:
 1. proguard-rules.pro:
    - Keep rules for Room entities and DAOs
    - Keep rules for Retrofit interfaces
-   - Keep rules for Firebase classes
+   - Keep rules for Firebase Messaging classes (FCM only)
+   - Keep rules for Sentry SDK
    - Keep rules for ExoPlayer/Media3
    - Keep Serializable/Parcelable classes
    - Optimize and shrink resources
@@ -3187,6 +3259,61 @@ Review the complete triple-platform admin system:
 Fix all issues found.</div>
             </div>
 
+
+    
+            <!-- Step 8.18 - Notification Targeting -->
+            <div class="step orange">
+                <div class="step-header">
+                    <span class="step-num orange">Step 8.18</span>
+                    <span class="agent buff">Buff</span>
+                    <h4>FCM Notification Targeting &amp; Scheduling System</h4>
+                </div>
+                <p>Build a sophisticated notification targeting system using FCM topics and token-based delivery.</p>
+                <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
+Build a notification targeting and scheduling system for the backend:
+
+1. FCM Topic Strategy:
+   - Global topic: "all_users" (app-wide announcements)
+   - Sport topics: "cricket", "football", "tennis", "basketball" etc.
+   - Users subscribe/unsubscribe in app settings
+   - Admin sends to topics via POST /api/notifications/send
+
+2. Token-Based Targeting (for favorites):
+   - Store FCM tokens in database: User table with fcmTokens[]
+   - When admin sends "Team A is live", query users who favorited Team A
+   - Get their FCM tokens, send via sendEachForMulticast()
+   - More reliable delivery than topics for personalized alerts
+
+3. Notification Scheduler (backend):
+   - POST /api/notifications/schedule
+   - Store scheduled notifications in database
+   - Use node-cron or Bull queue to trigger at scheduled time
+   - Support: "Send when event goes live" (event status trigger)
+   - Support: "Send 15 min before event" (time-based trigger)
+
+4. Notification Models:
+   - NotificationLog: title, body, target, sentAt, deliveredCount, failedCount
+   - NotificationTemplate: reusable templates for "Event Live", "New Highlight", etc.
+
+5. Android App Topic Management:
+   - On first launch: subscribe to "all_users"
+   - In settings: toggle sport-specific topics
+   - When user favorites a team: subscribe to team topic
+   - When user unfavorites: unsubscribe from team topic
+   - FCM auto-handles deduplication
+
+6. Delivery Best Practices:
+   - Set priority: "high" for live events (wakes device)
+   - Include deep link in data payload (not just notification)
+   - Throttle: max 1 notification per 5 minutes per user
+   - Aggregate match events (don't send 10 goals in 10 seconds)
+   - Log all sends for analytics
+
+7. Admin Panel Integration:
+   - Notification composer in web admin + Android admin app
+   - Target selector: All Users / Sport Topic / Specific Event Subscribers
+   - Preview before sending
+   - Delivery stats dashboard (sent, delivered, opened)
 
     <!-- ============================================================ -->
     <!-- PHASE 9 - TESTING -->
