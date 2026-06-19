@@ -336,6 +336,8 @@
         <div class="meta-item">📱 <strong>Android 6-17</strong></div>
         <div class="meta-item">🤖 <strong>AI Agent Guide</strong></div>
         <div class="meta-item">🛠️ <strong>Backend Deep-Dive</strong></div>
+        <div class="meta-item">📱 <strong>User App Plan</strong></div>
+        <div class="meta-item">🖼️ <strong>UI References</strong></div>
     </div>
 </header>
 
@@ -345,6 +347,7 @@
     <div class="stats-bar">
         <div class="stat"><div class="num">9</div><div class="label">Phases</div></div>
         <div class="stat"><div class="num">85+</div><div class="label">Steps</div></div>
+        <div class="stat"><div class="num">17</div><div class="label">User Screens</div></div>
         <div class="stat"><div class="num">19</div><div class="label">Admin Screens</div></div>
         <div class="stat"><div class="num">10</div><div class="label">DB Models</div></div>
         <div class="stat"><div class="num">20+</div><div class="label">API Endpoints</div></div>
@@ -375,6 +378,8 @@
         <a href="#backend-architecture">Backend Architecture</a>
         <a href="#admin-app-plan">Admin App Plan</a>
         <a href="#inapp-update">In-App Update</a>
+        <a href="#ui-reference">UI References</a>
+        <a href="#user-app-plan">User App Plan</a>
         <a href="#phase1">Phase 1: Project Setup</a>
         <a href="#phase2">Phase 2: Core Architecture</a>
         <a href="#phase3">Phase 3: Home & Events</a>
@@ -501,7 +506,7 @@
                 </div>
                 <div class="model-card">
                     <div class="mc-icon">&#128269;</div>
-                    <h4>Code Searcher &mdash; <code style="font-size:10px;">Ripgrep Engine</code></h4>
+                    <h4>Code Searcher &mdash; <code style="font-size:10px;">Ripgrep (Code Search)</code></h4>
                     <p>Searches code patterns using <strong style="color:var(--purple);">ripgrep</strong> (line-oriented search). Find all references to a function, class, or variable. Essential for refactoring. Returns up to 250 results across all source files.</p>
                     <span class="mc-tag good">Refactoring</span>
                 </div>
@@ -2455,6 +2460,395 @@ val client = OkHttpClient.Builder()
 
     <!-- PHASE 1 -->
     <!-- ============================================================ -->
+
+    <!-- UI REFERENCE FILES -->
+    <style>
+        .ui-ref-section {background:linear-gradient(135deg,rgba(236,72,153,0.06),rgba(245,158,11,0.04));border:1px solid rgba(236,72,153,0.15);border-radius:16px;padding:28px;margin-bottom:30px;}
+        .ui-ref-section h3 {color:#fff;font-size:18px;margin-bottom:8px;}
+        .ui-ref-section>p {color:var(--text-muted);font-size:13px;margin-bottom:16px;}
+        .ref-card {background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px;display:flex;align-items:center;gap:16px;transition:all 0.2s;}
+        .ref-card:hover {border-color:rgba(236,72,153,0.3);transform:translateY(-2px);}
+        .ref-card .ref-icon {font-size:36px;flex-shrink:0;}
+        .ref-card h4 {color:#fff;font-size:14px;font-weight:700;margin-bottom:4px;}
+        .ref-card p {font-size:12px;color:var(--text-muted);margin:0;}
+        .ref-card .ref-size {display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(236,72,153,0.2);color:var(--pink);margin-top:6px;}
+    </style>
+    <section class="section" id="ui-reference">
+        <div class="ui-ref-section">
+            <h3>&#128248; UI Reference Files</h3>
+            <p>Before building any UI screens, study these reference materials thoroughly. They contain the exact visual design, animations, and interaction patterns to replicate in the SportStream app.</p>
+            <div class="grid-2" style="margin-top:16px;">
+                <div class="ref-card">
+                    <div class="ref-icon">&#127909;</div>
+                    <div>
+                        <h4>Demo Video &mdash; UI/UX Walkthrough</h4>
+                        <p>Screen recording of the original Sportzfy app showing navigation flow, animations, player gestures, drawer menu, and all screens in action. Study timing and transitions carefully.</p>
+                        <span class="ref-size">MP4 &bull; ~6 MB</span>
+                    </div>
+                </div>
+                <div class="ref-card">
+                    <div class="ref-icon">&#128247;</div>
+                    <div>
+                        <h4>Screenshots &mdash; All Screens</h4>
+                        <p>High-resolution screenshots of every screen: Splash, Home (with banners + live events), Categories, Highlights, Player (with controls), Drawer menu, and more. Exact pixel-level reference.</p>
+                        <span class="ref-size">ZIP &bull; ~10 MB</span>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top:16px;padding:14px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:10px;">
+                <p style="color:var(--orange);font-size:12px;font-weight:600;margin-bottom:4px;">&#9888;&#65039; Important &mdash; Use These Before Building</p>
+                <p style="color:var(--text-muted);font-size:12px;">Reference these files in <strong>every UI-related prompt</strong> to Codebuff. Include phrases like: <em>"Match the layout shown in the screenshot reference"</em> or <em>"Replicate the animation timing from the demo video."</em> The MiMo 2.5 (multimodal) model can analyze screenshots directly &mdash; attach them when asking for pixel-perfect layouts.</p>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- USER APP DEEP-DIVE -->
+    <style>
+        .user-app-deep-dive {background:linear-gradient(135deg,rgba(28,203,212,0.06),rgba(59,130,246,0.04));border:1px solid rgba(28,203,212,0.15);border-radius:16px;padding:28px;margin-bottom:30px;}
+        .user-app-deep-dive h3 {color:#fff;font-size:18px;margin-bottom:8px;}
+        .user-app-deep-dive>p {color:var(--text-muted);font-size:13px;margin-bottom:16px;}
+        .uad-section {background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px;margin:14px 0;}
+        .uad-section h4 {color:var(--primary);font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+        .uad-section h5 {color:#fff;font-size:13px;margin:12px 0 6px;}
+        .uad-section p,.uad-section li {font-size:12px;color:var(--text-muted);line-height:1.6;}
+        .uad-section ul {margin:6px 0 6px 18px;}
+        .uad-section code {background:rgba(28,203,212,0.1);padding:1px 6px;border-radius:4px;font-size:11px;color:var(--primary);}
+        .screen-card {background:rgba(28,203,212,0.04);border:1px solid rgba(28,203,212,0.1);border-radius:10px;padding:14px;margin:10px 0;transition:all 0.2s;}
+        .screen-card:hover {border-color:rgba(28,203,212,0.25);transform:translateY(-2px);}
+        .screen-card h5 {color:var(--primary);font-size:13px;margin-bottom:6px;}
+        .screen-card p {font-size:11px;color:var(--text-muted);line-height:1.5;}
+        .wireframe {background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;margin:10px 0;font-family:'Courier New',monospace;font-size:11px;color:var(--green);white-space:pre;line-height:1.4;overflow-x:auto;}
+    </style>
+    <section class="section" id="user-app-plan">
+        <div class="user-app-deep-dive">
+            <h3>&#128241; User App (SportStream) &mdash; Architecture &amp; Screen Plan</h3>
+            <p>Complete architecture for the user-facing Android app: 17 screens, custom video player with gestures, in-app updates, FCM notifications, AdMob monetization, and security hardening. XML + ViewBinding (not Compose) for maximum API 23+ compatibility.</p>
+
+            <!-- APP IDENTITY -->
+            <div class="uad-section">
+                <h4>&#127968;&#65039; App Identity</h4>
+                <table class="api-table">
+                    <tr><th>Property</th><th>Value</th></tr>
+                    <tr><td><strong>App Name</strong></td><td>SportStream</td></tr>
+                    <tr><td><strong>Package</strong></td><td><code>com.sportstream.app</code></td></tr>
+                    <tr><td><strong>Min SDK</strong></td><td>23 (Android 6.0 Marshmallow)</td></tr>
+                    <tr><td><strong>Target SDK</strong></td><td>35 (Android 16)</td></tr>
+                    <tr><td><strong>UI Framework</strong></td><td>XML Layouts + ViewBinding (Kotlin)</td></tr>
+                    <tr><td><strong>Architecture</strong></td><td>MVVM + Repository Pattern</td></tr>
+                    <tr><td><strong>Theme</strong></td><td>Dark glassmorphism, cyan accent <code>#1CCBD4</code>, bg <code>#0A0F1A</code></td></tr>
+                    <tr><td><strong>Distribution</strong></td><td>APK sideload (not on Play Store initially)</td></tr>
+                </table>
+            </div>
+
+            <!-- PROJECT STRUCTURE -->
+            <div class="uad-section">
+                <h4>&#128193; Project Structure</h4>
+                <div class="wireframe">com.sportstream.app/
+&#9500;&#9472;&#9472; app/src/main/java/com/sportstream/app/
+&#9474;   &#9500;&#9472;&#9472; SportStreamApp.kt              # Application class (FCM + Sentry init)
+&#9474;   &#9500;&#9472;&#9472; ui/
+&#9474;   &#9474;   &#9500;&#9472;&#9472; splash/SplashActivity.kt      # Network check, config fetch, loading
+&#9474;   &#9474;   &#9500;&#9472;&#9472; main/MainActivity.kt          # DrawerLayout + BottomNav
+&#9474;   &#9474;   &#9500;&#9472;&#9472; home/HomeFragment.kt          # Banners + Live Events
+&#9474;   &#9474;   &#9500;&#9472;&#9472; categories/CategoriesFragment.kt # ChipGroup + Channel Grid
+&#9474;   &#9474;   &#9500;&#9472;&#9472; highlights/HighlightsFragment.kt # Video highlights
+&#9474;   &#9474;   &#9500;&#9472;&#9472; player/PlayerActivity.kt      # Media3 ExoPlayer + gestures
+&#9474;   &#9474;   &#9474;   &#9500;&#9472;&#9472; SwipeGestureDetector.kt
+&#9474;   &#9474;   &#9474;   &#9500;&#9472;&#9472; VideoQualityManager.kt
+&#9474;   &#9474;   &#9474;   &#9492;&#9472;&#9472; player_controller.xml
+&#9474;   &#9474;   &#9500;&#9472;&#9472; favorites/FavoritesFragment.kt # Room-backed favorites
+&#9474;   &#9474;   &#9500;&#9472;&#9472; playlist/PlaylistFragment.kt   # Custom playlists
+&#9474;   &#9474;   &#9500;&#9472;&#9472; search/SearchFragment.kt      # Debounced search
+&#9474;   &#9474;   &#9492;&#9472;&#9472; settings/SettingsFragment.kt  # Video quality, theme
+&#9474;   &#9500;&#9472;&#9472; data/
+&#9474;   &#9474;   &#9500;&#9472;&#9472; models/ (Event, Channel, Highlight, Category, Banner, etc.)
+&#9474;   &#9474;   &#9500;&#9472;&#9472; repository/ (MainRepo, FavoritesRepo, PlaylistRepo)
+&#9474;   &#9474;   &#9500;&#9472;&#9472; remote/ (ApiService, ApiClient, VersionEnforcementInterceptor)
+&#9474;   &#9474;   &#9492;&#9472;&#9472; local/ (Room DB, FavoritesDao, PlaylistDao)
+&#9474;   &#9500;&#9472;&#9472; viewmodels/ (HomeVM, CategoriesVM, PlayerVM, etc.)
+&#9474;   &#9500;&#9472;&#9472; services/
+&#9474;   &#9474;   &#9500;&#9472;&#9472; FCMService.kt               # FCM push + deep links
+&#9474;   &#9474;   &#9500;&#9472;&#9472; FloatingPlayerService.kt    # Overlay player
+&#9474;   &#9474;   &#9492;&#9472;&#9472; BackgroundPlaybackService.kt
+&#9474;   &#9500;&#9472;&#9472; update/
+&#9474;   &#9474;   &#9500;&#9472;&#9472; UpdateManager.kt            # In-app update logic
+&#9474;   &#9474;   &#9500;&#9472;&#9472; UpdateInstaller.kt          # APK install via FileProvider
+&#9474;   &#9474;   &#9492;&#9472;&#9472; ApkVerifier.kt             # SHA-256 integrity check
+&#9474;   &#9492;&#9472;&#9472; utils/
+&#9474;       &#9500;&#9472;&#9472; RemoteConfigHelper.kt       # Fetches /api/config
+&#9474;       &#9500;&#9472;&#9472; Constants.kt
+&#9474;       &#9492;&#9472;&#9472; Extensions.kt
+&#9500;&#9472;&#9472; app/src/main/res/
+&#9474;   &#9500;&#9472;&#9472; layout/ (activity_*.xml, fragment_*.xml, item_*.xml)
+&#9474;   &#9500;&#9472;&#9472; values/ (colors.xml, themes.xml, styles.xml, strings.xml)
+&#9474;   &#9500;&#9472;&#9472; drawable/ (bg_glass_card.xml, ic_*.xml)
+&#9474;   &#9500;&#9472;&#9472; font/ (Poppins)
+&#9474;   &#9492;&#9472;&#9472; xml/ (network_security_config.xml, file_paths.xml)
+&#9492;&#9472;&#9472; app/build.gradle.kts
+&#9492;&#9472;&#9472; google-services.json</div>
+            </div>
+
+            <!-- NAVIGATION STRUCTURE -->
+            <div class="uad-section">
+                <h4>&#128196; Navigation Structure</h4>
+                <h5>Bottom Navigation (3 tabs)</h5>
+                <table class="api-table">
+                    <tr><th>Tab</th><th>Icon</th><th>Fragment</th><th>Description</th></tr>
+                    <tr><td>Home</td><td>&#127968;</td><td>HomeFragment</td><td>Banners, live events, recent highlights</td></tr>
+                    <tr><td>Categories</td><td>&#128193;</td><td>CategoriesFragment</td><td>Channel grid with category chips</td></tr>
+                    <tr><td>Highlights</td><td>&#127916;</td><td>HighlightsFragment</td><td>Video highlight reels</td></tr>
+                </table>
+                <h5>Navigation Drawer (right swipe or hamburger)</h5>
+                <table class="api-table">
+                    <tr><th>#</th><th>Item</th><th>Action</th></tr>
+                    <tr><td>1</td><td>&#127760; Network Stream</td><td>URL input dialog &rarr; Player</td></tr>
+                    <tr><td>2</td><td>&#127911; Playlists</td><td>Navigate to PlaylistsFragment</td></tr>
+                    <tr><td>3</td><td>&#128241; Floating Player</td><td>Toggle overlay service</td></tr>
+                    <tr><td>4</td><td>&#127909; Video Quality</td><td>Quality selection dialog (Auto/1080p/720p/480p)</td></tr>
+                    <tr><td>5</td><td>&#128227; Notice</td><td>Show app notice from config</td></tr>
+                    <tr><td>6</td><td>&#128172; Join Us</td><td>Open Telegram link</td></tr>
+                    <tr><td>7</td><td>&#128279; Share</td><td>Share app APK/text</td></tr>
+                    <tr><td>8</td><td>&#128260; Update</td><td>Check for updates</td></tr>
+                    <tr><td>9</td><td>&#128682; Exit</td><td>Finish app</td></tr>
+                </table>
+            </div>
+
+            <!-- ALL 17 SCREENS -->
+            <div class="uad-section">
+                <h4>&#127916; All 17 Screens</h4>
+
+                <div class="screen-card">
+                    <h5>Screen 1: SplashActivity</h5>
+                    <p>Dark gradient background, glass logo card (180dp, rounded 28dp), app name + tagline, Lottie loading bar. Fetches <code>/api/config</code>, checks version enforcement (HTTP 426), navigates to Main after 2s. Shows network error card with WiFi/Mobile/Retry if offline.</p>
+                </div>
+
+                <div class="screen-card">
+                    <h5>Screen 2: MainActivity (Host)</h5>
+                    <p>DrawerLayout + BottomNavigationView (3 tabs). Toolbar with search icon. Navigation Component manages fragment transactions. Drawer slides from right side.</p>
+                </div>
+
+                <div class="screen-card">
+                    <h5>Screen 3: HomeFragment</h5>
+                    <p>SwipeRefreshLayout. Banner ViewPager2 with auto-scroll (5s interval, infinite loop). "LIVE Events" section header with animated red dot. Events RecyclerView: team logos, "Team A vs Team B", date/time, LIVE/SCHEDULED badge. EventAdapter with DiffUtil.</p>
+                    <div class="wireframe">&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474; &#128240; SportStream    &#128269;    &#9776;           &#9474;
+&#9474;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9474;
+&#9474; &#9679;&#9679;&#9679; [Banner: IPL 2026 Special] &#9679;&#9679;     &#9474;
+&#9474;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9474;
+&#9474; &#128308; LIVE Events                        &#9474;
+&#9474; &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;  &#9474;
+&#9474; &#9474; [MI logo] MI  vs  CSK [CSK logo] &#9474;  &#9474;
+&#9474; &#9474; IPL Final &bull; Today 7:30 PM       &#9474;  &#9474;
+&#9474; &#9474; &#128308; LIVE NOW                    &#9474;  &#9474;
+&#9474; &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;  &#9474;
+&#9474;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9474;
+&#9474; &#9484;&#127968;&#9488; &#9484;&#127913;&#9488; &#9484;&#127916;&#9488;                         &#9474;
+&#9474; &#9474;Home&#9474; &#9474;Cat&#9474; &#9474;Hi &#9474;                         &#9474;
+&#9474; &#9492;&#9472;&#9472;&#9472;&#9472;&#9496; &#9492;&#9472;&#9472;&#9472;&#9472;&#9496; &#9492;&#9472;&#9472;&#9472;&#9472;&#9496;                         &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</div>
+                </div>
+
+                <div class="screen-card">
+                    <h5>Screen 4: CategoriesFragment</h5>
+                    <p>ChipGroup category filters (All, Cricket, Football, Tennis, etc.). GridLayoutManager (3 columns) of channel cards with logo, name, LIVE badge. Click &rarr; PlayerActivity.</p>
+                </div>
+
+                <div class="screen-card">
+                    <h5>Screen 5: HighlightsFragment</h5>
+                    <p>RecyclerView with 16:9 thumbnail cards, play overlay icon, title, date, duration badge. Click &rarr; PlayerActivity with highlight video URL.</p>
+                </div>
+
+                <div class="screen-card">
+                    <h5>Screen 6: PlayerActivity</h5>
+                    <p>Full-screen Media3 ExoPlayer with <strong>custom controller layout</strong>. Top bar: back, title (marquee), lock, PiP, resize, settings buttons (glass bg). Links bar: stream source chips. Center: rewind 10s, play/pause, forward 10s. Bottom: position, SeekBar, duration, volume, fullscreen. Auto-hide after 3s.</p>
+                    <div class="wireframe">&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474; [&#8592;] MI vs CSK (marquee scrolling...)  [&#128274;][&#9634;][&#8644;][&#9881;]   &#9474;
+&#9474;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9474;
+&#9474; [&#128260;] [Server 1] [Server 2] [Server 3]     &#9474;
+&#9474;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9474;
+&#9474;                                            &#9474;
+&#9474;              [&#9194;10s]  [ &#9654; ]  [10s&#9193;]           &#9474;
+&#9474;                                            &#9474;
+&#9474;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9474;
+&#9474; 12:34 &#9644;&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;&#9644;&#9644; 45:00 [&#128266;][&#9974;] &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</div>
+                </div>
+
+                <div class="screen-card">
+                    <h5>Screen 7: Swipe Gestures (Player)</h5>
+                    <p>Horizontal swipe: seek forward/backward with time indicator overlay. Left vertical: adjust system brightness (Settings.System). Right vertical: adjust AudioManager volume. Single tap: toggle controls. Double tap left/right: rewind/forward 10s. Visual feedback overlay during gesture.</p>
+                </div>
+
+                <div class="screen-card">
+                    <h5>Screen 8: FavoritesFragment</h5>
+                    <p>Room-backed favorite channels list. Heart toggle animation. Swipe-to-delete with undo Snackbar. Empty state with illustration. Long-press any channel to add to favorites.</p>
+                </div>
+
+                <div class="screen-card">
+                    <h5>Screen 9: PlaylistFragment</h5>
+                    <p>Custom playlists CRUD. FAB to create new playlist. Drag-to-reorder channels within playlist. Add-to-playlist dialog from PlayerActivity. Persistent in Room database.</p>
+                </div>
+
+                <div class="screen-card">
+                    <h5>Screen 10: SearchFragment</h5>
+                    <p>Search icon in toolbar. Debounced Flow (300ms) filtering across events, channels, highlights. Results in single RecyclerView with section headers. Recent searches in DataStore.</p>
+                </div>
+
+                <div class="screen-card">
+                    <h5>Screen 11: Floating Player (Service)</h5>
+                    <p>WindowManager overlay with SYSTEM_ALERT_WINDOW permission. Draggable 16:9 window. Minimize/close buttons. Tap to expand back to PlayerActivity. FOREGROUND_SERVICE_MEDIA_PLAYBACK on API 34+.</p>
+                </div>
+
+                <div class="screen-card">
+                    <h5>Screen 12: Picture-in-Picture (API 26+)</h5>
+                    <p>System PiP with RemoteActions (play/pause, rewind, forward). Aspect ratio maintained. Auto-enter on back press while playing. Gracefully skipped on API &lt; 26.</p>
+                </div>
+
+                <div class="screen-card">
+                    <h5>Screen 13: Network Stream Dialog</h5>
+                    <p>MaterialAlertDialog with URL input (paste from clipboard), format selector (Auto/HLS/DASH/Progressive), recent URLs list from DataStore. Validates URL before opening player.</p>
+                </div>
+
+                <div class="screen-card">
+                    <h5>Screen 14: Update Dialog (Force)</h5>
+                    <p>Server-enforced version blocking. Triggered by HTTP 426 from backend. Blocking dialog with version info, changelog, download progress bar, auto-install. Cannot be dismissed.</p>
+                </div>
+
+                <div class="screen-card">
+                    <h5>Screen 15: Update Banner (Flexible)</h5>
+                    <p>Non-blocking banner at top of HomeFragment. "Update available: v1.2.0" with dismiss button. Links to download URL. Shown when current version &lt; latestVersion but &ge; minAppVersion.</p>
+                </div>
+
+                <div class="screen-card">
+                    <h5>Screen 16: Subtitle Track Selection</h5>
+                    <p>Bottom sheet dialog listing available subtitle tracks (SRT, VTT, ASS). Toggle subtitles on/off. Language selector. Remember preference in DataStore. Rendered via ExoPlayer SubtitleView.</p>
+                </div>
+
+                <div class="screen-card">
+                    <h5>Screen 17: Screen Lock Overlay</h5>
+                    <p>Lock button in player controls. When locked: all touch input blocked except unlock button. Prevents accidental taps during playback. Unlock button at bottom-center (always visible).</p>
+                </div>
+            </div>
+
+            <!-- VIDEO PLAYER FEATURES -->
+            <div class="uad-section">
+                <h4>&#127916; Video Player Features</h4>
+                <div class="grid-3" style="margin:10px 0;">
+                    <div class="model-card">
+                        <h4 style="color:var(--primary);font-size:13px;">&#127916; Media3 ExoPlayer</h4>
+                        <p>HLS (M3U8), DASH (MPD), Progressive streams. Custom PlayerView controller. Buffer management, error retry with backoff.</p>
+                    </div>
+                    <div class="model-card">
+                        <h4 style="color:var(--orange);font-size:13px;">&#128070; Swipe Gestures</h4>
+                        <p>Horizontal seek, left=brightness, right=volume. Single/double tap. Visual feedback overlays. Custom GestureDetector subclass.</p>
+                    </div>
+                    <div class="model-card">
+                        <h4 style="color:var(--green);font-size:13px;">&#128241; Picture-in-Picture</h4>
+                        <p>API 26+. RemoteActions, aspect ratio, auto-enter on back. Compat skip on API &lt; 26.</p>
+                    </div>
+                    <div class="model-card">
+                        <h4 style="color:var(--purple);font-size:13px;">&#128172; Background Playback</h4>
+                        <p>Foreground service + MediaSession. Notification with play/pause. Audio focus handling.</p>
+                    </div>
+                    <div class="model-card">
+                        <h4 style="color:var(--pink);font-size:13px;">&#128196; Subtitles</h4>
+                        <p>SRT, VTT, ASS parsing. TrackSelectionDialog. Offline subtitles from local file. Remember preference.</p>
+                    </div>
+                    <div class="model-card">
+                        <h4 style="color:var(--blue);font-size:13px;">&#128190; Quality Selection</h4>
+                        <p>Auto/1080p/720p/480p/360p. Default bandwidth meter + manual override. Persist in DataStore.</p>
+                    </div>
+                    <div class="model-card">
+                        <h4 style="color:var(--red);font-size:13px;">&#128274; Screen Lock</h4>
+                        <p>Toggle lock mode. Block all touch except unlock. Prevents accidental interaction during viewing.</p>
+                    </div>
+                    <div class="model-card">
+                        <h4 style="color:var(--primary);font-size:13px;">&#128241; Floating Window</h4>
+                        <p>SYSTEM_ALERT_WINDOW overlay. Draggable 16:9. Minimize/close. Tap to expand. Notification-based.</p>
+                    </div>
+                    <div class="model-card">
+                        <h4 style="color:var(--orange);font-size:13px;">&#9888;&#65039; Error Handling</h4>
+                        <p>Network error, stream unavailable, unsupported format, geo-blocked. Auto-retry next server. Manual server switch.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KEY DEPENDENCIES -->
+            <div class="uad-section">
+                <h4>&#128230; Key Dependencies (build.gradle.kts)</h4>
+                <div class="prompt-box"><span class="comment">// Media Player</span>
+implementation("androidx.media3:media3-exoplayer:1.5.0")
+implementation("androidx.media3:media3-ui:1.5.0")
+implementation("androidx.media3:media3-session:1.5.0")
+implementation("androidx.media3:media3-datasource-okhttp:1.5.0")
+
+<span class="comment">// Networking</span>
+implementation("com.squareup.okhttp3:okhttp:4.12.0")
+implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+<span class="comment">// Firebase (FCM ONLY)</span>
+implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+implementation("com.google.firebase:firebase-messaging")
+
+<span class="comment">// Crash Reporting</span>
+implementation("io.sentry:sentry-android:7.19.0")
+
+<span class="comment">// Local Storage</span>
+implementation("androidx.room:room-runtime:2.6.1")
+implementation("androidx.room:room-ktx:2.6.1")
+kapt("androidx.room:room-compiler:2.6.1")
+implementation("androidx.datastore:datastore-preferences:1.1.2")
+
+<span class="comment">// UI</span>
+implementation("com.google.android.material:material:1.12.0")
+implementation("com.github.bumptech.glide:glide:4.16.0")
+implementation("com.airbnb.android:lottie:6.5.2")
+implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
+<span class="comment">// Navigation</span>
+implementation("androidx.navigation:navigation-fragment-ktx:2.8.5")
+implementation("androidx.navigation:navigation-ui-ktx:2.8.5")
+
+<span class="comment">// Lifecycle</span>
+implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
+implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.7")</div>
+            </div>
+
+            <!-- BUILD TIME ESTIMATE -->
+            <div class="uad-section">
+                <h4>&#9201;&#65039; Estimated Build Time</h4>
+                <table class="api-table">
+                    <tr><th>Phase</th><th>Steps</th><th>Est. Time</th></tr>
+                    <tr><td>Phase 1: Project Setup</td><td>6 steps (project, deps, FCM, Sentry, theme)</td><td>2-3 hours</td></tr>
+                    <tr><td>Phase 2: Core Architecture</td><td>7 steps (models, API, Room, repos, VMs)</td><td>3-4 hours</td></tr>
+                    <tr><td>Phase 3: UI Screens</td><td>7 screens (Splash, Main, Home, Categories, Highlights)</td><td>4-5 hours</td></tr>
+                    <tr><td>Phase 4: Video Player</td><td>7 features (player, gestures, PiP, subtitles, floating)</td><td>4-5 hours</td></tr>
+                    <tr><td>Phase 5: Extra Features</td><td>7 features (favorites, playlists, search, FCM, drawer)</td><td>3-4 hours</td></tr>
+                    <tr><td>Phase 6: Polish &amp; Launch</td><td>5 steps (AdMob, updates, animations, errors, release)</td><td>3-4 hours</td></tr>
+                    <tr><td>Phase 7: Security</td><td>13 steps (encryption, R8, SSL pinning, root detect)</td><td>4-5 hours</td></tr>
+                    <tr><td style="color:#fff;"><strong>Total</strong></td><td style="color:#fff;"><strong>~52 steps, 17 screens</strong></td><td style="color:var(--orange);"><strong>~23-30 hours</strong></td></tr>
+                </table>
+            </div>
+
+            <!-- ANDROID API COMPATIBILITY -->
+            <div class="uad-section">
+                <h4>&#128241; Android 6-17 API Compatibility</h4>
+                <table class="api-table">
+                    <tr><th>Feature</th><th>Min API</th><th>Compat Strategy</th></tr>
+                    <tr><td>Push Notifications (FCM)</td><td>23</td><td>NotificationChannel on API 26+, runtime permission on API 33+</td></tr>
+                    <tr><td>Picture-in-Picture</td><td>26</td><td>Gracefully hidden on API &lt; 26</td></tr>
+                    <tr><td>Biometric Auth</td><td>23</td><td>BiometricPrompt on API 28+, FingerprintManager on 23-27</td></tr>
+                    <tr><td>Dark Theme</td><td>29</td><td>Force dark via AppCompatDelegate on &lt; 29</td></tr>
+                    <tr><td>Photo Picker</td><td>33</td><td>Fallback to ACTION_PICK on &lt; 33</td></tr>
+                    <tr><td>Foreground Service Type</td><td>34</td><td>Declare type on 34+, simple foreground service on &lt; 34</td></tr>
+                    <tr><td>Scoped Storage</td><td>29</td><td>MediaStore on 29+, legacy storage on &lt; 29 with requestLegacyExternalStorage</td></tr>
+                    <tr><td>Notification Permission</td><td>33</td><td>POST_NOTIFICATIONS runtime request on 33+, auto-granted on &lt; 33</td></tr>
+                </table>
+            </div>
+        </div>
+    </section>
+
     <section class="section" id="phase1">
         <div class="phase">
             <div class="phase-header">
@@ -5574,5 +5968,8 @@ Build the final release APK:
     <p style="margin-top:16px;font-size:11px;color:rgba(255,255,255,0.3);">Generated from decompiled APK analysis · Designed for <a href="#">Codebuff</a> AI-powered development</p>
 </footer>
 
+
+    </div>
+    </div>
 </body>
 </html>
