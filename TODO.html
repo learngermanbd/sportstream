@@ -554,14 +554,15 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p><strong>Next:</strong> Step 2.3 — "{@code Room database setup: AppDatabase (v1), FavoriteDao, PlaylistDao, Converters (List<String> <-> JSON), LocalDataSource}".</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
-                <span class="step-num purple">STEP 2.3</span>
+                <span class="step-num green">STEP 2.3</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Room database setup</h4>
-            <p>Done when: <code>AppDatabase</code> (v1), <code>FavoriteDao</code>, <code>PlaylistDao</code>, <code>Converters</code> (<code>List&lt;String&gt;</code> ↔ JSON), <code>LocalDataSource</code>.</p>
+            <p>Done when: ✓ <code>AppDatabase</code> v1 (<code>sportstream.db</code>, <code>@TypeConverters(Converters::class)</code>, lazy via <code>Room.databaseBuilder()</code> + <code>fallbackToDestructiveMigration()</code> until Step 2.7 lands real migrations). ✓ <code>FavoriteEntity</code> (<code>@Entity("favorites")</code>, <code>channelId</code> PK, name/logoUrl?/streamUrl/category/addedAt with <code>Index("addedAt")</code> for DESC-by-addedAt ordering) + <code>FavoriteDao</code> (<code>observeAll(): Flow</code>, <code>findById/sFavorite/upsert(REPLACE)/deleteById/deleteAll</code>). ✓ <code>PlaylistEntity</code> (<code>@Entity("playlists")</code>, <code>id</code> PK, items as <code>List&lt;StreamLink&gt;</code> via TypeConverter, indices on ownerId + createdAt) + <code>PlaylistDao</code> (<code>observeByOwner/upsert/deleteById</code>). ✓ <code>Converters</code> — <code>List&lt;StreamLink&gt; ↔ String</code> AND <code>List&lt;String&gt; ↔ String</code> via shared Gson; empty/null → <code>emptyList()</code> (not <code>[""]</code>). ✓ <code>LocalDataSource</code> — <code>observeFavorites/toggleFavorite/addFavorite/removeFavorite</code> + <code>observePlaylists/upsertPlaylist/deletePlaylist/upsertDomainPlaylist/addStream/removeStream</code>, every write wrapped in <code>withContext(ioDispatcher)</code>. ✓ <code>LocalModule</code> DI seam (lazy <code>database → favoriteDao/playlistDao → localDataSource</code>) instantiated once in <code>SportStreamApp.onCreate</code> as <code>app.local.*</code>; <code>SportStreamApp</code> now imports <code>data.local.LocalModule</code> alongside <code>NetworkModule</code>. ✓ <code>./gradlew :app:compileDebugKotlin --no-daemon</code> BUILD SUCCESSFUL (kapt fired, generated <code>AppDatabase_Impl</code> + <code>FavoriteDao_Impl</code> + <code>PlaylistDao_Impl</code>); spot-fix: dropped dead <code>updateItemsJson</code> DAO entry + unused <code>gson</code> <code>@Suppress("unused")</code> companion in <code>LocalDataSource</code> per code-review.</p>
+            <p><strong>Next:</strong> Step 2.4 — "<code>MainRepository</code>, <code>FavoritesRepository</code>, <code>PlaylistRepository</code> (Dispatchers.IO, error-safe)".</p>
         </div>
 
         <div class="step todo">
