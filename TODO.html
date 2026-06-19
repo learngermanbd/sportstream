@@ -454,16 +454,16 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p><strong>Next:</strong> Step 1.2 (Buff — dependencies).</p>
         </div>
 
-        <!-- 1.2 TODO -->
-        <div class="step todo">
+        <!-- 1.2 DONE -->
+        <div class="step done">
             <div class="step-header">
-                <span class="step-num blue">STEP 1.2</span>
+                <span class="step-num green">STEP 1.2</span>
                 <span class="agent buff">Buff</span>
                 <span class="meta-chip">DEFAULT</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Add all dependencies</h4>
-            <p>Done when: <code>app/build.gradle.kts</code> includes Media3 (player+ui+session+datasource-okhttp), OkHttp+logging, Room (runtime+ktx+kapt), Firebase BoM → <code>firebase-messaging</code> only, Sentry, Lottie, Material 3, navigation-fragment-ktx + navigation-ui-ktx, lifecycle viewmodel-ktx + livedata-ktx, datastore-preferences, Glide 4.16, kotlinx-coroutines-android. <code>./gradlew :app:dependencies --configuration default --no-daemon</code> lists every library above.</p>
+            <p>Done when: ✓ <code>app/build.gradle.kts</code> includes Media3 (player+ui+session+datasource-okhttp), OkHttp+logging, Room (runtime+ktx+kapt), Firebase BoM → <code>firebase-messaging</code> only, Sentry, Lottie, Material 3, navigation-fragment-ktx+navigation-ui-ktx, lifecycle viewmodel-ktx+livedata-ktx, datastore-preferences, Glide 4.16, kotlinx-coroutines-android. ✓ <code>buildFeatures.viewBinding = true</code>. ✓ <code>org.jetbrains.kotlin.kapt</code> + <code>com.google.gms.google-services</code> plugins applied. ✓ placeholder <code>app/google-services.json</code> added (real values land in Step 1.4). ✓ <code>./gradlew :app:dependencies --configuration default --no-daemon</code> resolved the configuration cleanly.</p>
             <p><strong>Next:</strong> Step 1.3 (Basher — run <code>./gradlew build --dry-run</code>).</p>
         </div>
 
