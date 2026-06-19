@@ -723,24 +723,27 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             </div>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num orange">STEP 4.1</span>
                 <span class="agent web">Web Researcher</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Research Media3 APIs</h4>
-            <p>Player controller, PiP, subtitles (SRT/VTT/ASS), HLS/DASH, foreground service.</p>
+            <p>Done when: &#10003; Player controller (ExoPlayer + PlayerView + MediaController &mdash; lifecycle hooks + Player.Listener @Player.State Int state callback). &#10003; PiP (API 26+ <code>supportsPictureInPicture</code> + <code>PictureInPictureParams</code> with <code>setAutoEnterEnabled(true)</code> on API 31+ + onUserLeaveHint manual enter on API 26..30). &#10003; Subtitles (Media3 <code>MediaItem.SubtitleConfiguration</code> supports SRT / WebVTT / SSA / ASS via <code>Cue</code> rendering). &#10003; HLS / DASH (DefaultMediaSourceFactory auto-detects; HLS via HlsMediaSource, DASH via DashMediaSource + OkHttpDataSource shared with the rest of the app). &#10003; Foreground service (MediaSessionService + <code>FOREGROUND_SERVICE_MEDIA_PLAYBACK</code> on API 34+; lands in Step 4.6). &#10003; media3 1.5.1 verified, library aliases <code>media3-exoplayer / media3-ui / media3-session / media3-datasource-okhttp</code> already declared in <code>libs.versions.toml</code> &mdash; no version-bump needed.</p>
+            <p><strong>Next:</strong> Step 4.2 (Buff &mdash; PlayerActivity + custom controller + PiP + 3-Fragment wiring).</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num orange">STEP 4.2</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
-            <h4>Player activity &amp; layout</h4>
-            <p>Top bar (back, title marquee, lock, PiP, resize, settings) + links bar + center rewind/play/forward + bottom seek bar + volume + fullscreen.</p>
+            <h4>Player activity &amp; layout + 3-Fragment wiring</h4>
+            <p>Done when: &#10003; Top bar (back / title marquee / lock / PiP / resize / settings) + links bar (Material 3 Chip Group-as-RecyclerView of StreamLinks) + center controls (rewind 10s / play / forward 10s, 56dp / 72dp / 56dp) + bottom (position text, seek bar, duration text, volume slider, fullscreen toggle) all wired via Material 3 + <code>SportStream.PlayerOverlay</code> glass background. &#10003; ExoPlayer + Media3 PlayerView with <code>use_controller=false</code>. &#10003; OkHttp data-source shares NetworkModule's cached client. &#10003; Three Intent modes (EXTRA_CHANNEL_ID &rarr; PlayerViewModel; EXTRA_VIDEO_URL + EXTRA_TITLE &rarr; direct HLS/DASH; EXTRA_EVENT_ID &rarr; Phase 4.x placeholder). &#10003; PiP: supportsPictureInPicture + FOREGROUND_SERVICE_MEDIA_PLAYBACK perms + setAutoEnterEnabled(true) on API 31+; manual enterPip on API 26..30; onPictureInPictureModeChanged hides chrome. &#10003; Lifecycle-correct: build on onStart, pause on onPause (except PiP), release on onStop+onDestroy with playWhenReady/currentPlaybackPosition carryover. &#10003; All three Fragment click handlers route through <code>com.sportstream.app.ui.util.PlayerNavigation</code> companion-object factory (startPlayerForChannel / startPlayerForVideo / startPlayerForEvent). &#10003; <code>./gradlew :app:compileDebugKotlin --no-daemon</code> BUILD SUCCESSFUL (1m 21s). &#10003; 4 compile errors fixed in successive passes (Player.Listener @Player.State Int overload, PlayerView.resizeMode camelCase, RESIZE_MODE_* via AspectRatioFrameLayout parent, removed non-existent PlayerView.cancelTimeout()). &#10003; STATE_POS/STATE_PWR constants wired through all 4 call sites. &#10003; 28 player_* string keys.</p>
+            <p>&#9207; <strong>Documented deviations</strong> (resolved at Step 4.7 / Code Review): (1) Plain SeekBar instead of Media3 DefaultTimeBar (pollPlaybackState at 2 Hz provides equivalent UX; swap during 4.7 polish). (2) Volume slider instead of plan-mandated Volume button (slider is functional; button lands in 4.7). (3) Optional media3-1.5.x PlayerView XML attrs (<code>app:show_shutter</code> / <code>app:show_buffering</code>) are stripped because processDebugResources rejects them in this snapshot.</p>
+            <p><strong>Next:</strong> Step 4.3 (Thinker/Max &mdash; swipe-gesture overlay).</p>
         </div>
 
         <div class="step todo">

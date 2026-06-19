@@ -7,6 +7,9 @@
     <!-- POST_NOTIFICATIONS is runtime-requested at API 33+ but must be declared. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Phase 4 · Step 4.2 — Media3 / ExoPlayer requirements (Step 4.6 foreground service also uses this). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
     <application
         android:name=".SportStreamApp"
@@ -31,9 +34,15 @@
             android:name=".ui.activities.MainActivity"
             android:exported="false" />
 
-        <!-- Step 4.2 will implement PlayerActivity for Media3 ExoPlayer playback. -->
+        <!-- Phase 4 · Step 4.2 — PlayerActivity implements Media3 ExoPlayer
+             playback with custom controls overlay, PiP support (API 26+),
+             and immersive mode. The android:configChanges avoids a full
+             Activity recreate on rotation / PiP entry/exit (the activity
+             listens to onPictureInPictureModeChanged directly). -->
         <activity
             android:name=".ui.activities.PlayerActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:supportsPictureInPicture="true"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout" />
     </application>
 </manifest>

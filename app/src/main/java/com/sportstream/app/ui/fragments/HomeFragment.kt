@@ -134,9 +134,17 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Phase 4 · Step 4.2 — Event row tap fires the PlayerActivity with
+        // the Event's id routed through EXTRA_EVENT_ID. PlayerActivity
+        // distinguishes this branch (Phase 4.x task: resolve Event ->
+        // first Channel; for v1 the activity shows a friendly "Loading…"
+        // placeholder rather than crashing).
         adapter = EventAdapter(onClick = { event ->
-            // Step 4.2 wires the PlayerActivity intent here. Until then
-            // taps are a no-op so the row doesn't visually respond.
+            com.sportstream.app.ui.util.PlayerNavigation.startPlayerForEvent(
+                context = requireContext(),
+                eventId = event.id.orEmpty(),
+                title = event.title
+            )
         })
         binding.homeRv.layoutManager = LinearLayoutManager(requireContext())
         binding.homeRv.adapter = adapter

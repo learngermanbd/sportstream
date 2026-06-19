@@ -83,9 +83,16 @@ class CategoriesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = CategoryAdapter(onClick = { _channel ->
-            // Step 4.2 wires the PlayerActivity intent here. For now this
-            // is a no-op so taps don't crash.
+        // Phase 4 · Step 4.2 — Channel card tap fires PlayerActivity with
+        // EXTRA_CHANNEL_ID. The Activity's PlayerViewModel resolves the
+        // Channel from /api/channels asynchronously and populates the
+        // links bar from `Channel.streamUrl`.
+        adapter = CategoryAdapter(onClick = { channel ->
+            com.sportstream.app.ui.util.PlayerNavigation.startPlayerForChannel(
+                context = requireContext(),
+                channelId = channel.id,
+                fallbackTitle = channel.name
+            )
         })
         binding.channelsRv.layoutManager = GridLayoutManager(requireContext(), 3)
         binding.channelsRv.adapter = adapter

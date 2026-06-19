@@ -92,4 +92,32 @@
     <string name="drawer_exit">Exit</string>
     <string name="drawer_coming_soon_template">%1$s — Coming in Step %2$s</string>
     <string name="drawer_share_message">Check out SportStream — live sports streaming in HLS / DASH.</string>
+
+    <!-- Phase 4 · Step 4.2 — Player screen strings. -->
+    <string name="player_top_back">Back</string>
+    <string name="player_top_lock">Lock controls</string>
+    <string name="player_top_lock_unlocked">Unlock controls</string>
+    <string name="player_top_pip">Picture in picture</string>
+    <string name="player_top_resize">Resize</string>
+    <string name="player_top_settings">Settings</string>
+    <string name="player_links_label">Sources</string>
+    <string name="player_links_empty">Auto</string>
+    <string name="player_controls_rewind">Rewind 10 seconds</string>
+    <string name="player_controls_play">Play</string>
+    <string name="player_controls_pause">Pause</string>
+    <string name="player_controls_forward">Forward 10 seconds</string>
+    <string name="player_position_label">Position</string>
+    <string name="player_duration_label">Duration</string>
+    <string name="player_volume_label">Volume</string>
+    <string name="player_fullscreen_enter">Enter fullscreen</string>
+    <string name="player_fullscreen_exit">Exit fullscreen</string>
+    <string name="player_resize_fit">Fit</string>
+    <string name="player_resize_fill">Fill</string>
+    <string name="player_resize_zoom">Zoom</string>
+    <string name="player_loading">Loading stream…</string>
+    <string name="player_channel_loading">Loading channel…</string>
+    <string name="player_error_no_url">No stream URL available</string>
+    <string name="player_error_codec">Player can’t decode this stream</string>
+    <string name="player_error_network">Network error contacting stream source</string>
+    <string name="player_title_extra">Live channel</string>
 </resources>

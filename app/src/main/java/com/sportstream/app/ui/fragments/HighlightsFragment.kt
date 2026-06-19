@@ -84,9 +84,15 @@ class HighlightsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Phase 4 · Step 4.2 — Highlight thumbnail tap fires PlayerActivity
+        // with the resolved `Highlight.videoUrl` and title. The Activity
+        // short-circuits the channel lookup and starts ExoPlayer directly.
         adapter = HighlightAdapter(onClick = { highlight ->
-            // Step 4.2 wires the PlayerActivity intent here. Until then
-            // taps are a no-op so the row doesn't visually respond.
+            com.sportstream.app.ui.util.PlayerNavigation.startPlayerForVideo(
+                context = requireContext(),
+                videoUrl = highlight.videoUrl,
+                title = highlight.title
+            )
         })
         binding.highlightsRv.layoutManager = LinearLayoutManager(requireContext())
         binding.highlightsRv.adapter = adapter
