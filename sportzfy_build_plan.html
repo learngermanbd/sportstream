@@ -334,6 +334,7 @@
         <div class="meta-item">🤖 <strong>7 Agent Types</strong></div>
         <div class="meta-item">🛡️ <strong>20+ Security Layers</strong></div>
         <div class="meta-item">📱 <strong>Android 6-17</strong></div>
+        <div class="meta-item">🤖 <strong>AI Agent Guide</strong></div>
     </div>
 </header>
 
@@ -366,6 +367,7 @@
 
     <!-- TOC -->
     <nav class="toc">
+        <a href="#ai-guide">AI Agent Guide</a>
         <a href="#phase1">Phase 1: Project Setup</a>
         <a href="#phase2">Phase 2: Core Architecture</a>
         <a href="#phase3">Phase 3: Home & Events</a>
@@ -434,7 +436,556 @@
         </div>
     </section>
 
-    <!-- ============================================================ -->
+    <!-- AI MODEL GUIDE -->
+    <style>
+        /* AI Guide */
+        .ai-guide {background:linear-gradient(135deg,rgba(28,203,212,0.06),rgba(167,139,250,0.04));border:1px solid rgba(28,203,212,0.15);border-radius:16px;padding:28px;margin-bottom:30px;}
+        .ai-guide h3 {color:#fff;font-size:18px;margin-bottom:8px;}
+        .ai-guide p {color:var(--text-muted);font-size:13px;margin-bottom:16px;}
+        .model-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:16px 0;}
+        .model-card {background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;transition:all 0.2s;}
+        .model-card:hover {border-color:rgba(28,203,212,0.3);transform:translateY(-2px);}
+        .model-card .mc-icon {font-size:22px;margin-bottom:6px;}
+        .model-card h4 {color:#fff;font-size:13px;font-weight:700;margin-bottom:4px;}
+        .model-card p {font-size:11px;color:var(--text-muted);line-height:1.4;margin:0;}
+        .model-card .mc-tag {display:inline-block;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;margin-top:6px;}
+        .mc-tag.best {background:rgba(34,197,94,0.2);color:var(--green);}
+        .mc-tag.good {background:rgba(59,130,246,0.2);color:var(--blue);}
+        .mc-tag.optional {background:rgba(245,158,11,0.2);color:var(--orange);}
+        .workflow-step {display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03);}
+        .workflow-step:last-child {border-bottom:none;}
+        .ws-num {width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;background:rgba(28,203,212,0.15);color:var(--primary);border:1px solid rgba(28,203,212,0.25);}
+        .ws-info h5 {color:#fff;font-size:13px;margin-bottom:2px;}
+        .ws-info p {font-size:11px;color:var(--text-muted);margin:0;}
+        .phase-guide {background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:12px;padding:18px;margin:16px 0;}
+        .phase-guide h4 {color:var(--primary);font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+        .phase-guide .pg-steps {margin-top:10px;}
+    </style>
+    <section class="section" id="ai-guide">
+        <div class="ai-guide">
+            <h3>&#129302; Codebuff AI Agent &amp; Model Guide</h3>
+            <p>This guide tells you exactly which Codebuff agent to use for each task, the optimal workflow order, and step-by-step prompts for every phase.</p>
+
+            <h4 style="color:#fff;font-size:15px;margin:20px 0 12px;">&#128202; Available Agents &amp; When to Use Them</h4>
+            <div class="model-grid">
+                <div class="model-card">
+                    <div class="mc-icon">&#129302;</div>
+                    <h4>Buff (Main AI)</h4>
+                    <p>The default Codebuff agent. Writes code, creates files, makes edits. Uses mimo-v2.5-pro model. Your go-to for 80% of tasks.</p>
+                    <span class="mc-tag best">Primary</span>
+                </div>
+                <div class="model-card">
+                    <div class="mc-icon">&#129504;</div>
+                    <h4>Thinker (Gemini)</h4>
+                    <p>Deep reasoning with file access. Best for complex bugs, architecture decisions, and tricky problems. Very smart, reads your files.</p>
+                    <span class="mc-tag best">Complex Tasks</span>
+                </div>
+                <div class="model-card">
+                    <div class="mc-icon">&#127760;</div>
+                    <h4>Web Researcher</h4>
+                    <p>Browses the web for documentation, tutorials, and API references. Use BEFORE coding to research libraries and best practices.</p>
+                    <span class="mc-tag best">Research First</span>
+                </div>
+                <div class="model-card">
+                    <div class="mc-icon">&#128193;</div>
+                    <h4>File Picker</h4>
+                    <p>Finds relevant files in your codebase using fuzzy search. Use before editing to understand existing code structure.</p>
+                    <span class="mc-tag good">Context Gathering</span>
+                </div>
+                <div class="model-card">
+                    <div class="mc-icon">&#128269;</div>
+                    <h4>Code Searcher</h4>
+                    <p>Searches code patterns using ripgrep. Find all references to a function, class, or variable. Essential for refactoring.</p>
+                    <span class="mc-tag good">Refactoring</span>
+                </div>
+                <div class="model-card">
+                    <div class="mc-icon">&#9000;&#65039;</div>
+                    <h4>Basher (Terminal)</h4>
+                    <p>Runs terminal commands: gradle builds, npm installs, git operations. Use for building, testing, and deployment tasks.</p>
+                    <span class="mc-tag good">Build &amp; Deploy</span>
+                </div>
+                <div class="model-card">
+                    <div class="mc-icon">&#128270;</div>
+                    <h4>Code Reviewer</h4>
+                    <p>Reviews code changes for bugs, style issues, and improvements. Use AFTER making significant changes to catch problems.</p>
+                    <span class="mc-tag good">Quality Check</span>
+                </div>
+                <div class="model-card">
+                    <div class="mc-icon">&#128161;</div>
+                    <h4>Docs Researcher</h4>
+                    <p>Reads official documentation for libraries (ExoPlayer, Prisma, Supabase, etc.). Use for API-specific questions and examples.</p>
+                    <span class="mc-tag optional">Deep Dives</span>
+                </div>
+            </div>
+
+            <h4 style="color:#fff;font-size:15px;margin:24px 0 12px;">&#128640; Universal 5-Step Workflow (Use for Every Step)</h4>
+            <div class="phase-guide">
+                <h4>&#9889; The Codebuff Workflow</h4>
+                <div class="pg-steps">
+                    <div class="workflow-step">
+                        <div class="ws-num">1</div>
+                        <div class="ws-info">
+                            <h5>Research (Web Researcher + Docs Researcher)</h5>
+                            <p>Before writing any code, research the APIs, libraries, and best practices. This prevents mistakes and saves time.</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="ws-num">2</div>
+                        <div class="ws-info">
+                            <h5>Explore (File Picker + Code Searcher)</h5>
+                            <p>Find existing files and patterns in your codebase. Understand what already exists before creating new code.</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="ws-num">3</div>
+                        <div class="ws-info">
+                            <h5>Implement (Buff / Main AI)</h5>
+                            <p>Write the code. Buff handles file creation, editing, and implementation. Give it detailed prompts from this plan.</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="ws-num">4</div>
+                        <div class="ws-info">
+                            <h5>Build &amp; Test (Basher)</h5>
+                            <p>Run gradle build, check for errors, run tests. Fix any issues found.</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="ws-num">5</div>
+                        <div class="ws-info">
+                            <h5>Review (Code Reviewer)</h5>
+                            <p>Review all changes for bugs, style issues, and improvements. Fix problems before moving to next step.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PHASE-BY-PHASE GUIDE -->
+            <h4 style="color:#fff;font-size:15px;margin:24px 0 12px;">&#128218; Phase-by-Phase Agent &amp; Prompt Guide</h4>
+
+            <!-- PHASE 1 GUIDE -->
+            <div class="phase-guide">
+                <h4>&#128310; Phase 1: Project Setup &amp; Foundation</h4>
+                <p style="color:var(--text-muted);font-size:12px;margin-bottom:12px;">Recommended model: <strong style="color:var(--primary);">Buff (default)</strong> for all steps. Use <strong style="color:var(--green);">Basher</strong> for build verification.</p>
+                <div class="prompt-box"><span class="comment">// STEP 1.1 — Create Project (Agent: Buff)</span>
+Paste this prompt in Codebuff:
+
+Create a new Android project with Kotlin for a sports streaming app called "SportStream".
+Package: com.sportstream.app
+Min SDK: 23 (Android 6.0), Target SDK: 35 (Android 16)
+Use Gradle Kotlin DSL (build.gradle.kts)
+Set up the following package structure:
+- ui/activities/ (SplashActivity, MainActivity, PlayerActivity)
+- ui/fragments/ (HomeFragment, CategoriesFragment, HighlightsFragment)
+- ui/adapters/ (EventAdapter, ChannelAdapter, HighlightAdapter)
+- data/models/ (Event, Channel, Highlight, Category)
+- data/viewmodels/
+- data/repository/
+- data/local/ (Room database)
+- data/remote/ (API service)
+- utils/
+- services/
+Create all files with basic skeleton code.
+Apply the SportStream theme: dark glassmorphism, primary #1CCBD4, bg #0A0F1A.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 1.2 — Add Dependencies (Agent: Buff)</span>
+Paste this in Codebuff:
+
+Add these dependencies to build.gradle.kts (app level):
+- androidx.media3:media3-exoplayer + media3-ui (video player)
+- com.squareup.okhttp3:okhttp + logging-interceptor (networking)
+- androidx.room:room-runtime + room-ktx + room-compiler (database)
+- com.google.firebase:firebase-bom + firebase-messaging (FCM ONLY - push notifications)
+- io.sentry:sentry-android (crash reporting, replaces Crashlytics)
+- com.airbnb.android:lottie (animations)
+- com.google.android.material:material (Material 3)
+- androidx.navigation:navigation-fragment-ktx + navigation-ui-ktx
+- androidx.lifecycle:lifecycle-viewmodel-ktx + livedata-ktx
+- androidx.datastore:datastore-preferences (for config cache)
+- com.github.bumptech.glide:glide (image loading)
+- org.jetbrains.kotlinx:kotlinx-coroutines-android
+- com.github.PhilJay:MPAndroidChart:v3.1.0 (admin analytics charts)
+Enable ViewBinding in build.gradle.kts
+Apply google-services plugin (for FCM only).</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 1.3 — Build Verify (Agent: Basher)</span>
+Run: ./gradlew build --dry-run
+Fix any version conflicts.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 1.4 — FCM + Sentry + API Config (Agent: Buff)</span>
+Paste this in Codebuff:
+
+1. Create placeholder google-services.json with dummy values
+2. Create SportStreamApp.kt extending Application:
+   - Initialize Firebase Messaging ONLY (FCM)
+   - Initialize Sentry SDK: Sentry.init { dsn = "your-dsn" }
+   - Initialize Supabase client for storage
+3. Create RemoteConfigHelper.kt that fetches config from YOUR API:
+   - GET /api/config returns JSON with: apiBaseUrl, updateUrl, telegramLink, noticeText, maintenanceMode, featureFlags
+   - Cache config in DataStore preferences (offline fallback)
+   - Refresh on app launch + every 30 minutes
+4. Register Application class in AndroidManifest.xml
+5. Add permissions: INTERNET, ACCESS_NETWORK_STATE, POST_NOTIFICATIONS, WAKE_LOCK</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 1.5 — Design System (Agent: Buff)</span>
+Paste this in Codebuff:
+
+Create the design system for a dark-themed sports streaming app:
+1. res/values/colors.xml: primary #1CCBD4, secondary #131931, card_bg #121A27, dark_bg #0A0F1A
+2. res/values/themes.xml: Material 3 dark theme, NoActionBar, transparent status bar
+3. res/values/styles.xml: Glass cards (rounded 12dp, stroke, translucent bg), bottom nav, player controls
+4. Create drawables: bg_glass_card.xml, bg_splash.xml, bg_player_controls.xml
+5. Add Poppins font to res/font/</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 1.6 — Review (Agent: Code Reviewer)</span>
+Paste this in Codebuff:
+
+Review all project setup files. Check:
+- build.gradle.kts has all correct dependencies (FCM only, Sentry, no Crashlytics)
+- AndroidManifest.xml has all permissions and activity declarations
+- Theme colors and styles are consistent
+- Application class initializes FCM + Sentry correctly
+- Package structure is correct
+Fix any issues found.</div>
+            </div>
+
+            <!-- PHASE 2 GUIDE -->
+            <div class="phase-guide">
+                <h4>&#128311; Phase 2: Core Architecture &amp; Data Layer</h4>
+                <p style="color:var(--text-muted);font-size:12px;margin-bottom:12px;">Recommended model: <strong style="color:var(--primary);">Buff</strong> for code, <strong style="color:var(--red);">Thinker (Gemini)</strong> for architecture review, <strong style="color:var(--green);">Basher</strong> for build.</p>
+                <div class="prompt-box"><span class="comment">// STEP 2.1 — Data Models (Agent: Buff)</span>
+Create Kotlin data classes in data/models/:
+Event(id, title, teamA: Team, teamB: Team, date, time, isLive, category, streams: List of StreamLink, status: DRAFT/SCHEDULED/LIVE/ENDED)
+Team(name, logoUrl)
+Channel(id, name, logoUrl, streamUrl, category, isActive, sortOrder)
+Highlight(id, title, thumbnailUrl, videoUrl, date, duration, views)
+Category(id, name, iconUrl, sortOrder, isVisible)
+StreamLink(name, url, quality)
+Banner(id, imageUrl, linkUrl, title, isActive, sortOrder)
+ApiResponse(events, channels, highlights, categories, banners, appVersion, updateUrl)
+Use @SerializedName for JSON. Add Room annotations for local entities.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 2.2 — API Service (Agent: Buff)</span>
+Create networking layer:
+1. ApiClient.kt - OkHttp singleton, 30s timeouts, logging (debug only), cache
+2. ApiService.kt - suspend fun endpoints: getAppData, getEvents, getChannels, getHighlights, getConfig
+3. RemoteDataSource.kt - wraps ApiService, returns Result sealed class
+4. Base URL from RemoteConfigHelper (self-hosted config, NOT Firebase Remote Config)</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 2.3 — Room Database (Agent: Buff)</span>
+Create Room database: FavoriteDao, PlaylistDao, Converters, LocalDataSource.
+Tables: FavoriteChannel, Playlist, CachedEvent.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 2.4 — Repositories (Agent: Buff)</span>
+Create MainRepository, FavoritesRepository, PlaylistRepository.
+Combine remote + local data sources with Dispatchers.IO.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 2.5 — ViewModels (Agent: Buff)</span>
+Create HomeVM, CategoriesVM, HighlightsVM, PlayerVM, MainVM.
+Use StateFlow, UiState sealed class (Loading/Success/Error).
+Use viewModelScope with coroutine exception handler.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 2.6 — Architecture Review (Agent: Thinker/Gemini)</span>
+Review the complete architecture:
+- Check data flow: API to Repository to ViewModel to UI
+- Verify coroutine scope usage and cancellation
+- Ensure proper error handling at each layer
+- Check Room TypeConverters work correctly
+Suggest improvements if any anti-patterns found.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 2.7 — Build Verify (Agent: Basher)</span>
+Run: ./gradlew assembleDebug
+Fix any compilation errors.</div>
+            </div>
+
+            <!-- PHASE 3 GUIDE -->
+            <div class="phase-guide">
+                <h4>&#128312; Phase 3: UI Screens</h4>
+                <p style="color:var(--text-muted);font-size:12px;margin-bottom:12px;">Recommended model: <strong style="color:var(--primary);">Buff</strong> for all UI code. <strong style="color:var(--pink);">Browser Agent</strong> for visual verification.</p>
+                <div class="prompt-box"><span class="comment">// STEP 3.1 — Splash Screen (Agent: Buff)</span>
+Create SplashActivity with layout:
+- ConstraintLayout with dark gradient background
+- App logo in MaterialCardView (180dp, rounded 28dp, glass border)
+- App name "SportStream", tagline, Lottie loading bar
+- Network error card with WiFi/Mobile/Retry buttons
+- SplashActivity.kt: check network, show loading, fetch config from YOUR API, navigate to Main after 2s</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 3.2 — Main Activity &amp; Navigation (Agent: Buff)</span>
+Create MainActivity with DrawerLayout + BottomNavigationView (3 tabs: Home, Categories, Highlights).
+Drawer menu: Network Stream, Playlists, Floating Player, Video Quality, Notice, Join Us, Share, Update, Exit.
+Set up Navigation Component with nav_graph.xml.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 3.3 — Home Fragment (Agent: Buff)</span>
+Create Home screen: SwipeRefreshLayout, Banner ViewPager2 (auto-scroll 5s), Live Events section with animated LIVE dot, Events RecyclerView with team logos + VS layout. EventAdapter with DiffUtil, Glide for images.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 3.4 — Categories Fragment (Agent: Buff)</span>
+Create Categories: ChipGroup filters, GridLayoutManager (3 cols) of channel cards. CategoryAdapter with Glide.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 3.5 — Highlights Fragment (Agent: Buff)</span>
+Create Highlights: RecyclerView with thumbnail (16:9), play overlay, title, date, duration. HighlightAdapter.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 3.6 — UI Review (Agent: Code Reviewer)</span>
+Review all UI code: DiffUtil, ViewBinding, Glide placeholders, click listeners, navigation, SwipeRefreshLayout.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 3.7 — Visual Test (Agent: Browser)</span>
+Build and run on emulator. Verify all screens render correctly.</div>
+            </div>
+
+            <!-- PHASE 4 GUIDE -->
+            <div class="phase-guide">
+                <h4>&#128313; Phase 4: Video Player</h4>
+                <p style="color:var(--text-muted);font-size:12px;margin-bottom:12px;">Recommended model: <strong style="color:var(--blue);">Docs Researcher</strong> for Media3 research, <strong style="color:var(--primary);">Buff</strong> for implementation, <strong style="color:var(--red);">Thinker (Gemini)</strong> for complex gesture/PiP logic.</p>
+                <div class="prompt-box"><span class="comment">// STEP 4.1 — Research (Agent: Docs Researcher)</span>
+Research Media3 (ExoPlayer) docs:
+- PlayerView custom controller layout
+- Picture-in-Picture support on API 26+
+- Subtitle handling (SRT, VTT, ASS)
+- HLS (M3U8) and DASH (MPD) streaming
+- Foreground service for background playback
+Provide code examples for each.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 4.2 — Player Activity (Agent: Buff)</span>
+Create PlayerActivity with custom controller:
+- Top bar: back, title (marquee), lock, PiP, resize, settings buttons
+- Links bar: stream source switching RecyclerView
+- Center: rewind, play/pause, fast forward (glass bg, 42dp)
+- Bottom: position, seek bar, duration, volume, fullscreen
+- Support HLS, DASH, Progressive streams
+- Handle intent data (stream URL, title)</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 4.3 — Swipe Gestures (Agent: Thinker/Gemini)</span>
+Implement swipe gestures for player:
+- Horizontal: seek forward/backward with time indicator
+- Left vertical: adjust system brightness
+- Right vertical: adjust AudioManager volume
+- Single tap: toggle controls visibility
+- Double tap: rewind/forward based on position
+Show visual feedback during gesture. This needs careful touch event handling - use Thinker for the gesture logic design.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 4.4 — Lock &amp; PiP (Agent: Buff)</span>
+Screen Lock: toggle controls visibility, prevent back, dim screen.
+PiP: enter/exit on API 26+, RemoteActions, supportsPictureInPicture in manifest.
+Compat: on API less than 26, skip PiP gracefully.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 4.5 — Subtitles &amp; Quality (Agent: Buff)</span>
+Subtitle support: SRT, VTT, ASS parsing. TrackSelectionDialog.
+Quality selection: Auto/1080p/720p/480p/360p, remember in DataStore.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 4.6 — Floating Player (Agent: Buff)</span>
+Foreground service with WindowManager overlay, draggable, media notification.
+SYSTEM_ALERT_WINDOW permission, FOREGROUND_SERVICE_MEDIA_PLAYBACK on API 34+.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 4.7 — Review (Agent: Code Reviewer)</span>
+Review player: ExoPlayer lifecycle, PiP on API 26+, memory leaks, subtitle rendering, foreground service notification.</div>
+            </div>
+
+            <!-- PHASE 5 GUIDE -->
+            <div class="phase-guide">
+                <h4>&#128314; Phase 5: Extra Features</h4>
+                <p style="color:var(--text-muted);font-size:12px;margin-bottom:12px;">Recommended model: <strong style="color:var(--primary);">Buff</strong> for all. <strong style="color:var(--green);">Basher</strong> for FCM testing.</p>
+                <div class="prompt-box"><span class="comment">// STEP 5.1 — Favorites (Agent: Buff)</span>
+Favorites with Room: toggle, swipe-to-delete with undo snackbar, heart animation.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 5.2 — Playlists (Agent: Buff)</span>
+CRUD playlists with Room, FAB to add, drag-to-reorder, add-to-playlist from player.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 5.3 — Network Stream (Agent: Buff)</span>
+URL input dialog with paste button, format selector (Auto/HLS/DASH), recent URLs in DataStore.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 5.4 — Push Notifications (Agent: Buff)</span>
+FCM MessagingService: onNewToken sends to your API, onMessageReceived with deep links.
+NotificationHelper: channel "Live Events", priority HIGH for live events.
+RemoteConfigHelper: fetches from YOUR API /api/config (NOT Firebase Remote Config).
+Subscribe to FCM topics based on user preferences.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 5.5-5.7 — Drawer, Search, Review (Agent: Buff + Reviewer)</span>
+Implement drawer menu actions, search with debounced Flow, then review all features.</div>
+            </div>
+
+            <!-- PHASE 6 GUIDE -->
+            <div class="phase-guide">
+                <h4>&#128315; Phase 6: Polish &amp; Launch</h4>
+                <p style="color:var(--text-muted);font-size:12px;margin-bottom:12px;">Recommended model: <strong style="color:var(--primary);">Buff</strong> for all. <strong style="color:var(--green);">Basher</strong> for release build.</p>
+                <div class="prompt-box"><span class="comment">// STEP 6.1 — AdMob (Agent: Buff)</span>
+Integrate AdMob: banner ads between events, interstitials before player (max 1 per 5 min).
+Handle consent (GDPR). Use test IDs during development.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 6.2 — Auto-Update (Agent: Buff)</span>
+Check version against YOUR API /api/config. Download APK via DownloadManager.
+Install with FileProvider. Support force update (blocking dialog).</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 6.3-6.5 — Animations, Errors, Release (Agent: Buff + Basher)</span>
+Add transitions, staggered list animations, Lottie splash, micro-interactions.
+Comprehensive error handling: network, player, global exception handler.
+ProGuard: keep rules for Room, OkHttp, FCM, Sentry, ExoPlayer, Serializable.
+Run: ./gradlew assembleRelease</div>
+            </div>
+
+            <!-- PHASE 7 GUIDE -->
+            <div class="phase-guide">
+                <h4>&#128316; Phase 7: Security &amp; Protection</h4>
+                <p style="color:var(--text-muted);font-size:12px;margin-bottom:12px;">Recommended model: <strong style="color:var(--red);">Thinker (Gemini)</strong> for security architecture, <strong style="color:var(--primary);">Buff</strong> for implementation, <strong style="color:var(--blue);">Web Researcher</strong> for latest techniques.</p>
+                <div class="prompt-box"><span class="comment">// STEP 7.1 — Research (Agent: Web Researcher)</span>
+Research Android security best practices 2025:
+R8/ProGuard, Android Keystore, EncryptedSharedPreferences, Network Security Config,
+Play Integrity API, NDK/JNI protection, RootBeer, Frida/Xposed detection.
+Provide code examples for each.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 7.2-7.9 — Implement Security (Agent: Buff)</span>
+String encryption (AES-256-GCM), R8 aggressive obfuscation, NDK native library,
+APK integrity verification, root/emulator detection, SSL pinning,
+secure key storage (Android Keystore + EncryptedSharedPreferences),
+anti-debugging (ptrace, TracerPid), runtime monitoring, FLAG_SECURE on sensitive screens.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 7.10-7.11 — Advanced (Agent: Buff)</span>
+Play Integrity API, WebView hardening, deep link validation.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 7.12 — Security Review (Agent: Thinker/Gemini)</span>
+STRIDE threat model analysis. Attack surface review. Security checklist verification.
+This is complex reasoning - use Thinker (Gemini) with file access.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 7.13 — Build Verify (Agent: Basher)</span>
+Run: ./gradlew clean assembleRelease
+Verify native library, obfuscation, APK size. Test on rooted device and emulator.</div>
+            </div>
+
+            <!-- PHASE 8 GUIDE -->
+            <div class="phase-guide">
+                <h4>&#128317; Phase 8: Admin Panel (Web + Android Admin App)</h4>
+                <p style="color:var(--text-muted);font-size:12px;margin-bottom:12px;">Recommended model: <strong style="color:var(--primary);">Buff</strong> for all code. <strong style="color:var(--blue);">Web Researcher</strong> for backend tech research. <strong style="color:var(--green);">Basher</strong> for running/testing the backend.</p>
+                <div class="prompt-box"><span class="comment">// STEP 8.1 — Research (Agent: Web Researcher)</span>
+Research admin panel tech stack: Node.js + Express + Prisma + Supabase,
+JWT auth, file uploads with multer, Chart.js for analytics.
+Compare standalone HTML vs Next.js admin. Recommend best approach for solo developer.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 8.2 — Backend Database (Agent: Buff)</span>
+Create backend with Node.js + TypeScript + Express + Prisma:
+Models: Admin, Event, Channel, Highlight, Category, Banner, AppConfig, Notification, AnalyticsEvent.
+Connect to Supabase PostgreSQL. Seed with sample data.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 8.3 — Backend API Routes (Agent: Buff)</span>
+Create REST API routes with JWT auth + role-based access:
+Auth (login/logout), Events CRUD, Channels CRUD, Highlights CRUD,
+Categories CRUD, Banners, Config (/api/config), Notifications (send/schedule),
+Analytics (overview/events/channels/users), File uploads (images/videos).
+Middleware: JWT auth, role check, rate limiter, validator, error handler, CORS.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 8.4-8.5 — Web Admin UI (Agent: Buff)</span>
+Create standalone HTML/CSS/JS admin panel (dark theme matching app):
+Login page, sidebar nav, dashboard with Chart.js (stats, charts, quick actions),
+events manager (data table, CRUD, filters, pagination, image upload),
+channels manager, highlights manager, categories, banners.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 8.6-8.8 — More Admin Pages (Agent: Buff)</span>
+Notification composer with targeting and scheduling.
+App config editor (API URLs, update URLs, social links, maintenance mode, feature flags).
+Admin user management with role-based access (SUPER_ADMIN/EDITOR/VIEWER).
+Analytics page with Chart.js charts, date range filter, CSV export.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 8.9-8.10 — Analytics &amp; Mobile Integration (Agent: Buff)</span>
+Analytics page with line/bar/pie charts, geographic data, device stats.
+Update Android app ApiService to use admin API endpoints.
+Add analytics tracking (POST /api/analytics/events).
+Update RemoteConfigHelper to fetch from admin API /api/config.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 8.13-8.15 — Separate Android Admin App (Agent: Buff)</span>
+Create SEPARATE Android project "SportStream Admin" (com.sportstream.admin):
+Admin login with JWT, role-based UI, events/channels/highlights CRUD screens,
+config editor, notification composer, analytics with MPAndroidChart.
+Completely independent APK, distributed privately to admins only.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 8.16 — Android 6-17 Compat (Agent: Buff)</span>
+VersionCompatHelper: notification permissions (API 23-33+), storage (API 23-33+),
+PiP (API 26+), biometric (API 23-28+), dark mode (API 29+), photo picker (API 33+).
+PermissionManager, NotificationCompatHelper, UI compat for all API levels.
+Testing: API 23, 28, 33, 35 emulators.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 8.17 — Review (Agent: Code Reviewer)</span>
+Review all 3 platforms: web admin, Android admin app, shared API.
+Check: CRUD works, JWT secure, role-based access, file uploads, cross-platform sync.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 8.18 — Notification Targeting (Agent: Buff)</span>
+FCM topics (all_users, cricket, football), token-based targeting for favorites,
+scheduling with node-cron, notification templates, delivery logging.
+Admin panel integration: target selector, preview, delivery stats.</div>
+            </div>
+
+            <!-- PHASE 9 GUIDE -->
+            <div class="phase-guide">
+                <h4>&#128318; Phase 9: Testing &amp; QA</h4>
+                <p style="color:var(--text-muted);font-size:12px;margin-bottom:12px;">Recommended model: <strong style="color:var(--primary);">Buff</strong> for unit tests, <strong style="color:var(--pink);">Browser Agent</strong> for UI testing, <strong style="color:var(--red);">Thinker (Gemini)</strong> for final architecture review.</p>
+                <div class="prompt-box"><span class="comment">// STEP 9.1 — Unit Tests (Agent: Buff)</span>
+Write unit tests: Repository tests (fake data sources), ViewModel tests,
+utility tests (date formatting, URL validation). Run: ./gradlew test</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 9.2 — UI Testing (Agent: Browser)</span>
+Run on emulator. Full user journey: Splash, Home, Categories, Highlights,
+Player controls, Favorites, Playlists, Search, Network Stream.
+Edge cases: rotation, background/foreground, no internet, rapid navigation.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 9.3 — Security Testing (Agent: Browser)</span>
+Test security: verify obfuscation, SSL pinning, root detection, anti-tampering.
+Test on rooted device and emulator.</div>
+
+                <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 9.4 — Final Build (Agent: Basher)</span>
+Run: ./gradlew clean assembleRelease
+Run: ./gradlew lint (fix warnings)
+Create signed AAB for Play Store. Verify APK size under 30MB.</div>
+            </div>
+
+            <!-- TIPS SECTION -->
+            <h4 style="color:#fff;font-size:15px;margin:24px 0 12px;">&#128161; Pro Tips for Best Results</h4>
+            <div class="phase-guide">
+                <div class="pg-steps">
+                    <div class="workflow-step">
+                        <div class="ws-num">1</div>
+                        <div class="ws-info">
+                            <h5>Always Research Before Coding</h5>
+                            <p>Use Web Researcher or Docs Researcher BEFORE implementing any feature. This prevents using deprecated APIs or wrong approaches.</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="ws-num">2</div>
+                        <div class="ws-info">
+                            <h5>Use Thinker for Complex Logic</h5>
+                            <p>For gesture handling, security architecture, data flow design, and tricky bugs - always use Thinker (Gemini). It reads your files and reasons deeply.</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="ws-num">3</div>
+                        <div class="ws-info">
+                            <h5>Build After Every Phase</h5>
+                            <p>Run ./gradlew assembleDebug after each phase to catch errors early. Don't accumulate build errors across phases.</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="ws-num">4</div>
+                        <div class="ws-info">
+                            <h5>Review After Significant Changes</h5>
+                            <p>Use Code Reviewer after every phase. It catches bugs, style issues, and missing imports that you might miss.</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="ws-num">5</div>
+                        <div class="ws-info">
+                            <h5>Give Detailed Context in Prompts</h5>
+                            <p>When asking Buff to implement something, include file paths, class names, and specific requirements. Vague prompts produce vague code.</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="ws-num">6</div>
+                        <div class="ws-info">
+                            <h5>Use Android 6 (API 23) as Baseline</h5>
+                            <p>Always mention "works on API 23+" in your prompts. This ensures Buff uses compat libraries and handles version differences.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+        <!-- ============================================================ -->
     <!-- PHASE 1 -->
     <!-- ============================================================ -->
     <section class="section" id="phase1">
