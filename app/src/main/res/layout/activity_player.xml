@@ -302,4 +302,26 @@
         app:layout_constraintBottom_toBottomOf="parent"
         tools:text="Couldn't load channel" />
 
+    <!--
+        Phase 4 · Step 4.3 — Gesture-feedback overlay. Reused by the
+        SwipeGestureDetector for all three indicator types. Anchored to
+        center; the card slides slightly off-center per direction in
+        PlayerActivity (computed off the player's touch x-zone).
+
+        Placed LAST so the document-order draw places it on top of every
+        other surface in the ConstraintLayout (topBar, centerControls,
+        bottomBar, linksBar). MaterialCardView's `app:cardElevation` is
+        12dp which is greater than any sibling elevation so the OS
+        elevation ordering matches.
+    -->
+    <include
+        android:id="@+id/swipeGestureOverlay"
+        layout="@layout/layout_swipe_gesture"
+        android:layout_width="240dp"
+        android:layout_height="92dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

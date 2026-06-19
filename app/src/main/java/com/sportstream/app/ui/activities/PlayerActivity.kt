@@ -39,10 +39,12 @@ import com.sportstream.app.data.remote.NetworkModule
 import com.sportstream.app.databinding.ActivityPlayerBinding
 import com.sportstream.app.ui.adapters.PlayerLinkAdapter
 import com.sportstream.app.ui.common.UiState
+import com.sportstream.app.ui.gestures.SwipeGestureDetector
 import com.sportstream.app.ui.viewmodels.PlayerSnapshot
 import com.sportstream.app.ui.viewmodels.PlayerViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 /**
  * Phase 4 · Step 4.2 — Video player.
@@ -103,6 +105,66 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var linkAdapter: PlayerLinkAdapter
     private var currentLinks: List<StreamLink> = emptyList()
     private var selectedLinkIndex: Int = 0
+
+    /**
+     * Phase 4 · Step 4.3 — single-touch dispatcher attached to the player
+     * surface via `binding.playerView.setOnTouchListener(detector::onTouch)`.
+     * The callbacks trigger overlay updates (ICON + LABEL + PROGRESS) and
+     * pipe the resolved seek target / brightness / volume back into
+     * ExoPlayer + Window + AudioManager (see [onSeekFinalizeApply] /
+     * [applyBrightnessToWindow] / [applyVolumeSteps]).
+     */
+    private val swipeDetector by lazy {
+        SwipeGestureDetector(
+            context = this,
+            activity = this,
+            exoPlayerProvider = { exoPlayer }
+        ).also { det ->
+            det.isLocked = { isLocked }
+            det.isInPip = {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode
+            }
+            det.onSingleTap = { toggleControlsVisibility() }
+            det.onDoubleTap = { isLeft ->
+                if (isLeft) exoPlayer?.seekBack() else exoPlayer?.seekForward()
+            }
+            det.onSeekPreview = { ms ->
+                // Use ?.let { dur -> ... } to avoid `return` from inside a nested
+                // lambda (Kotlin prohibits non-local return across non-inline lambdas).
+                exoPlayer?.duration?.takeIf { it > 0L }?.let { dur ->
+                    binding.seekBar.progress =
+                        ((ms.toFloat() / dur) * 1000f).toInt().coerceIn(0, 1000)
+                    binding.positionText.text = formatTimestamp(ms)
+                }
+            }
+            det.onSeekFinalize = { ms ->
+                exoPlayer?.let { p ->
+                    if (p.duration > 0L) p.seekTo(ms.coerceIn(0L, p.duration))
+                }
+                hideGestureIndicatorAfterDelay()
+            }
+            det.onIndicatorVisibilityChanged = { visible ->
+                binding.swipeGestureOverlay.swipeGestureCard.visibility =
+                    if (visible) View.VISIBLE else View.INVISIBLE
+            }
+            det.onIndicatorUpdate = { type, progress, label ->
+                bindIndicator(type, progress, label)
+                hideGestureIndicatorAfterDelay()
+            }
+        }
+    }
+
+    /**
+     * Controller chrome visibility state. Flipped by the Step 4.3
+     * single-tap on the player surface. Default = VISIBLE on first entry.
+     * Step 4.2 has lock-control logic which can force-hide when isLocked
+     * flips; this field is independent so singleTap-to-toggle still works
+     * after Step 4.4 ships.
+     */
+    private var controlsVisible: Boolean = true
+
+    /** Hide-after-release coroutine for the gesture indicator card. */
+    private var indicatorHideJob: kotlinx.coroutines.Job? = null
 
     /**
      * Intent contract for opening [PlayerActivity]. Three modes (per the
@@ -202,6 +264,14 @@ class PlayerActivity : AppCompatActivity() {
 
         binding.btnFullscreen.setOnClickListener { cycleFullscreen() }
 
+        // Phase 4 · Step 4.3 — attach the gesture detector. The detector returns
+        // true on ACTION_DOWN, claiming the touch stream for the touch lifetime so
+        // the SeekBar + MaterialButtons in the chrome don't fight us for MOVE/UP.
+        // MINOR #5 — useController=false is REQUIRED here (re-asserted defensively);
+        // if anyone flips it, PlayerView's built-in tap-to-toggle fights us.
+        binding.playerView.useController = false
+        binding.playerView.setOnTouchListener(swipeDetector::onTouch)
+
         // Links bar RecyclerView (horizontal). Empty until PlayerViewModel resolves.
         linkAdapter = PlayerLinkAdapter(onClick = { link -> switchToLink(link) })
         binding.linksBar.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
@@ -284,6 +354,12 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
+        // MAJOR #2 (pass-4 fix) — cancel the indicator hide job so the launched
+        // coroutine doesn't outlive the visible window. lifecycleScope only
+        // cancels on DESTROY by default; between STOP and DESTROY a delay(1000)
+        // could fire and access a frozen View tree.
+        indicatorHideJob?.cancel()
+        indicatorHideJob = null
         exoPlayer?.let {
             currentPlaybackPosition = it.currentPosition
             playWhenReady = it.playWhenReady
@@ -295,6 +371,10 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        // Step 4.3 — cancel the indicator hide timer so the Job + Handler
+        // chain can't leak into the torn-down Activity.
+        indicatorHideJob?.cancel()
+        indicatorHideJob = null
         releasePlayer()
     }
 
@@ -318,8 +398,74 @@ class PlayerActivity : AppCompatActivity() {
         binding.bottomBar.visibility = visibility
         binding.centerControls.visibility = visibility
         binding.linksBar.visibility = visibility
+        // Step 4.3 — also hide the gesture-feedback overlay since it's
+        // chrome on top of PiP's system-bar-less surface.
+        binding.swipeGestureOverlay.swipeGestureCard.visibility = visibility
+        controlsVisible = !isInPictureInPictureMode
         if (!isInPictureInPictureMode) {
             binding.playerView.useController = false
+        }
+    }
+
+    // ----- Step 4.3 gesture helpers -----
+
+    /**
+     * Single-tap toggle. Mirrors the Step 5.5 Dashboard-into-immersive UX
+     * pattern most video apps use: tapping the video surface shows or
+     * hides the chrome.
+     */
+    private fun toggleControlsVisibility() {
+        if (isLocked) return  // Step 4.4: locked state ignored
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode) return
+        controlsVisible = !controlsVisible
+        val v = if (controlsVisible) View.VISIBLE else View.GONE
+        binding.topBar.visibility = v
+        binding.bottomBar.visibility = v
+        binding.centerControls.visibility = v
+        binding.linksBar.visibility = v
+    }
+
+    /**
+     * Bind the indicator card's icon + label + bar progress. Maps the
+     * gesture type to a system drawable since the project's iconography
+     * is intentionally limited (system drawables + a few vector files).
+     */
+    private fun bindIndicator(type: SwipeGestureDetector.Type, progress: Float, label: String) {
+        val card = binding.swipeGestureOverlay
+        when (type) {
+            SwipeGestureDetector.Type.HORIZONTAL_SEEK -> {
+                card.swipeGestureIcon.setImageResource(android.R.drawable.ic_menu_recent_history)
+            }
+            SwipeGestureDetector.Type.VERTICAL_BRIGHTNESS -> {
+                card.swipeGestureIcon.setImageResource(android.R.drawable.ic_menu_view)
+            }
+            SwipeGestureDetector.Type.VERTICAL_VOLUME -> {
+                card.swipeGestureIcon.setImageResource(android.R.drawable.ic_media_play)
+            }
+            SwipeGestureDetector.Type.NONE -> Unit
+        }
+        card.swipeGestureLabel.text = label
+        card.swipeGestureBar.progress = (progress * 1000f).toInt().coerceIn(0, 1000)
+    }
+
+    /**
+     * Auto-hide the indicator card 1.0 s after the last onIndicatorUpdate
+     * or onSeekFinalize. The Job is cancelled in [onDestroy] + each
+     * re-schedule to avoid handler accumulation.
+     */
+    private fun hideGestureIndicatorAfterDelay() {
+        val scope = lifecycleScope
+        indicatorHideJob?.cancel()
+        // MINOR #4 (pass-4 review) — seed the bar so it's not empty for the first MOVE.
+        // 50% is a safe neutral start for brightness / volume / seek; the next
+        // onIndicatorUpdate from the detector refines it within one frame.
+        binding.swipeGestureOverlay.swipeGestureBar.progress = 50
+        indicatorHideJob = scope.launch {
+            delay(1000L)
+            // Re-check visibility guards before hiding: if the user
+            // started a new gesture within the 1 s window, onIndicatorUpdate
+            // will have cancelled this Job already.
+            binding.swipeGestureOverlay.swipeGestureCard.visibility = View.INVISIBLE
         }
     }
 

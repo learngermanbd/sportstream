@@ -120,4 +120,13 @@
     <string name="player_error_codec">Player can’t decode this stream</string>
     <string name="player_error_network">Network error contacting stream source</string>
     <string name="player_title_extra">Live channel</string>
+
+    <!-- Phase 4 · Step 4.3 — Swipe-gesture indicator labels.
+         Icon + label + horizontal progress live in
+         layout_swipe_gesture.xml; only the strings differ per gesture
+         type. -->
+    <string name="player_gesture_generic_label">Gestures</string>
+    <string name="player_gesture_brightness_label">Brightness</string>
+    <string name="player_gesture_volume_label">Volume</string>
+    <string name="player_gesture_seek_label">Seek</string>
 </resources>
