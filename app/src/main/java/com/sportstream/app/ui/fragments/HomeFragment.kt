@@ -12,14 +12,19 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.viewpager2.widget.ViewPager2
 import com.sportstream.app.R
 import com.sportstream.app.SportStreamApp
 import com.sportstream.app.databinding.FragmentHomeBinding
+import com.sportstream.app.ui.adapters.BannerAdapter
 import com.sportstream.app.ui.adapters.EventAdapter
 import com.sportstream.app.ui.common.UiState
 import com.sportstream.app.ui.viewmodels.HomeViewModel
 import com.sportstream.app.ui.viewmodels.MainViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 /**
@@ -84,6 +89,38 @@ class HomeFragment : Fragment() {
     }
 
     private lateinit var adapter: EventAdapter
+    private lateinit var bannerAdapter: BannerAdapter
+
+    /**
+     * Plan Step 3.3: 5 s auto-scroll interval for the banner ViewPager2.
+     * Driven by a [Job] in [viewLifecycleOwner.lifecycleScope] rather than a
+     * Handler+Runnable pair so that lifecycle cancellation replaces the
+     * manual `removeCallbacks` pattern (Code Reviewer major fix).
+     */
+    private val bannerAutoScrollIntervalMs = 5_000L
+    private var autoScrollJob: Job? = null
+
+    /**
+     * ViewPager2 page-change callback — pauses auto-scroll while the user
+     * is actively dragging the carousel. STEP 3.3 reviewer fix #2; without
+     * this, every 5 s the carousel yanks the user mid-flick.
+     */
+    private val pageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
+        override fun onPageScrollStateChanged(state: Int) {
+            // SCROLL_STATE_DRAGGING == 1, IDLE == 0, SETTLING == 2.
+            // We only want to count "user is touching the carousel" — not
+            // programmatic settling (which our own auto-scroll triggers —
+            // we want the timer to keep running across those).
+            if (state == ViewPager2.SCROLL_STATE_DRAGGING) {
+                autoScrollJob?.cancel()
+                autoScrollJob = null
+            } else if (state == ViewPager2.SCROLL_STATE_IDLE) {
+                // Restart the timer so the user gets a full 5 s after
+                // finishing their flick before auto-scroll resumes.
+                restartAutoScroll()
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -103,6 +140,17 @@ class HomeFragment : Fragment() {
         })
         binding.homeRv.layoutManager = LinearLayoutManager(requireContext())
         binding.homeRv.adapter = adapter
+
+        // Step 3.3 — banner carousel. Click is a no-op for v1 (deep-link
+        // wiring lands in Step 4.x). The adapter is bound to the live
+        // Snapshot.banners via the mainVm.state collector below.
+        bannerAdapter = BannerAdapter(onClick = { _banner -> /* Phase 4 deep-link */ })
+        binding.bannerPager.adapter = bannerAdapter
+        binding.bannerPager.offscreenPageLimit = 1
+        // Register the drag-detect callback so auto-scroll pauses while
+        // the user is actively flicking the carousel. unregistered on
+        // destroyView below.
+        binding.bannerPager.registerOnPageChangeCallback(pageChangeCallback)
 
         // Swipe-to-refresh re-triggers the activity-scoped boot fetch.
         // The downstream HomeViewModel re-derives automatically when
@@ -124,6 +172,7 @@ class HomeFragment : Fragment() {
                         @Suppress("UNCHECKED_CAST")
                         val snapshot = state.value as com.sportstream.app.ui.viewmodels.MainSnapshot
                         homeVm.bindFromSnapshot(snapshot)
+                        bindBannersFromSnapshot(snapshot)
                     }
                 }
             }
@@ -141,6 +190,9 @@ class HomeFragment : Fragment() {
                             binding.swipeRefresh.isRefreshing = false
                             adapter.submitList(state.value)
                             binding.emptyState.isVisible = state.value.isEmpty()
+                            // Banners are bound from Collector #1 (mainVm.state)
+                            // — homeVm.state.value is List<Event>, not MainSnapshot,
+                            // so banners stay driven by the activity-scoped snapshot.
                         }
                         is UiState.Error -> {
                             binding.loadingIndicator.isVisible = false
@@ -164,10 +216,57 @@ class HomeFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        // Memory hygiene: drop the adapter reference (so the RecyclerView's
-        // internal ViewHolder pool can be GC'd) and reset the binding.
+        // Step 3.3 — lifecycle cancellation of the auto-scroll coroutine
+        // happens automatically when viewLifecycleOwner.lifecycleScope
+        // is cancelled. We additionally drop the Job reference so a
+        // never-started Job can't leak.
+        autoScrollJob = null
+
+        // Unregister the page-change callback so the lifecycle-bound
+        // bannerPager doesn't keep a reference to a torn-down Fragment.
+        binding.bannerPager.unregisterOnPageChangeCallback(pageChangeCallback)
+
+        // Memory hygiene: drop adapter references (so the RecyclerView's
+        // internal ViewHolder pool + the ViewPager2's offscreen page pool
+        // can be GC'd) and reset the binding.
         binding.homeRv.adapter = null
+        binding.bannerPager.adapter = null
         _binding = null
         super.onDestroyView()
+    }
+
+    /**
+     * Submit the snapshot's banner list to the [BannerAdapter] and start /
+     * restart the 5 s auto-scroll timer. Empty list hides the pager.
+     */
+    private fun bindBannersFromSnapshot(snapshot: com.sportstream.app.ui.viewmodels.MainSnapshot) {
+        val banners = snapshot.banners
+        binding.bannerPager.isVisible = banners.isNotEmpty()
+        bannerAdapter.submitList(banners)
+        restartAutoScroll()
+    }
+
+    /**
+     * Cancel any in-flight auto-scroll Job then start a fresh 5 s loop
+     * tied to the fragment's lifecycle. Lifecycle cancellation handles
+     * tear-down so no manual removeCallbacks is needed.
+     */
+    private fun restartAutoScroll() {
+        autoScrollJob?.cancel()
+        val banners = bannerAdapter.itemCount
+        if (banners <= 1) return
+        autoScrollJob = viewLifecycleOwner.lifecycleScope.launch {
+            // First delay gives the user a full 5 s of idle viewing before
+            // the first auto-advance (so a freshly-bound carousel doesn't
+            // jerk immediately).
+            while (isActive) {
+                delay(bannerAutoScrollIntervalMs)
+                val pager = _binding?.bannerPager ?: return@launch
+                val count = bannerAdapter.itemCount
+                if (count <= 1) return@launch
+                val next = (pager.currentItem + 1) % count
+                pager.setCurrentItem(next, true)
+            }
+        }
     }
 }

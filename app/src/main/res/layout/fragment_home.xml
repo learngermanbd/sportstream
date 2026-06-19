@@ -27,6 +27,24 @@
         android:layout_height="match_parent"
         android:background="@color/dark_bg">
 
+        <!--
+            Phase 3 · Step 3.3 — banner carousel.
+            ViewPager2 hosted above the sectionTitle so the LIVE
+            EVENTS list sits directly under the promo slides.
+            Auto-scroll (5s) is driven from HomeFragment via a Handler
+            posted to the main looper; the runnable is cancelled in
+            `onDestroyView` to avoid leaks.
+        -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/bannerPager"
+            android:layout_width="0dp"
+            android:layout_height="160dp"
+            android:layout_marginTop="14dp"
+            android:contentDescription="@string/fragment_home_banners_a11y"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <TextView
             android:id="@+id/sectionTitle"
             android:layout_width="0dp"
@@ -41,7 +59,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/bannerPager" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/homeRv"

@@ -1,5 +1,6 @@
 package com.sportstream.app.data.repository
 
+import com.sportstream.app.data.models.Banner
 import com.sportstream.app.data.models.Category
 import com.sportstream.app.data.models.Channel
 import com.sportstream.app.data.models.Event
@@ -41,4 +42,12 @@ class MainRepository(
 
     suspend fun fetchPlaylists(ownerId: String): ApiResult<List<Playlist>> =
         remoteDataSource.fetchPlaylists(ownerId)
+
+    /**
+     * Phase 3 · Step 3.3 — banner carousel slides. Mirrors the rest of
+     * MainRepository's thin-facade pattern (no try/catch; structured
+     * concurrency cancels cleanly via [RemoteDataSource.fetchAndParse]).
+     */
+    suspend fun fetchBanners(): ApiResult<List<Banner>> =
+        remoteDataSource.fetchBanners()
 }

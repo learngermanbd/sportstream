@@ -1,5 +1,6 @@
 package com.sportstream.app.data.remote
 
+import com.sportstream.app.data.models.Banner
 import com.sportstream.app.data.models.Category
 import com.sportstream.app.data.models.Channel
 import com.sportstream.app.data.models.Event
@@ -61,6 +62,15 @@ class RemoteDataSource(
     suspend fun fetchPlaylists(ownerId: String): ApiResult<List<Playlist>> = fetchAndParse(
         fetch = { apiService.getPlaylists(ownerId) },
         parse = { Playlist.listFromJsonArray(it) }
+    )
+
+    /**
+     * Phase 3 · Step 3.3 — banner carousel slides. Backed by /api/banners;
+     * inactive banners are excluded server-side so we filter nothing here.
+     */
+    suspend fun fetchBanners(): ApiResult<List<Banner>> = fetchAndParse(
+        fetch = { apiService.getBanners() },
+        parse = { Banner.listFromJsonArray(it) }
     )
 
     /**

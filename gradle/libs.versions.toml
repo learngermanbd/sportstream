@@ -20,6 +20,7 @@ glide = "4.16.0"
 coroutines = "1.9.0"
 gson = "2.10.1"           # Step 2.1 — @SerializedName on data models
 swiperefreshlayout = "1.1.0"   # Step 3.3 — SwipeRefreshLayout host for Home pull-to-refresh
+viewpager2 = "1.1.0"           # Step 3.3 — banner carousel on Home tab
 
 [libraries]
 # Media3 — video player
@@ -72,6 +73,9 @@ gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 
 # SwipeRefreshLayout — Home tab's pull-to-refresh host (Phase 3 · Step 3.3)
 swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
+
+# ViewPager2 — Home tab banner carousel (Phase 3 · Step 3.3)
+viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "viewpager2" }
 
 [plugins]
 android-application = { id = "com.android.application",                  version.ref = "agp" }

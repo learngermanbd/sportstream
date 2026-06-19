@@ -93,4 +93,7 @@ dependencies {
 
     // ── SwipeRefreshLayout — Home tab pull-to-refresh host (Phase 3 · Step 3.3) ──
     implementation(libs.swiperefreshlayout)
+
+    // ── ViewPager2 — Home tab banner auto-scroll carousel (Phase 3 · Step 3.3) ──
+    implementation(libs.viewpager2)
 }

@@ -57,6 +57,10 @@
     <string name="view_item_highlight_default_title">Highlight</string>
     <string name="view_item_highlight_default_duration">00:00</string>
 
+    <!-- view_item_banner.xml + ViewPager2 carousel (Step 3.3). -->
+    <string name="view_item_banner_default_title">Promo</string>
+    <string name="fragment_home_banners_a11y">Promotional banner carousel</string>
+
     <!-- Nav graph label for the Categories destination (used by toolbars, action labels). -->
     <string name="main_nav_categories">CATEGORIES</string>
 

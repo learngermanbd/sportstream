@@ -4,7 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * Phase 2 \u00b7 Step 2.2 \u2014 Raw endpoint catalog. Returns response bodies as
+ * Phase 2 · Step 2.2 — Raw endpoint catalog. Returns response bodies as
  * String, parser-agnostic. [RemoteDataSource] sits one layer on top and turns
  * these strings into typed [ApiResult] values for the 8 models.
  *
@@ -38,13 +38,21 @@ class ApiService(
 
     /**
      * Returns the user's playlists. For v1 [ownerId] is the device-local user
-     * id; multi-account lands in Phase 8 \u00b7 Step 8.x.
+     * id; multi-account lands in Phase 8 Step 8.x.
      */
     suspend fun getPlaylists(ownerId: String): String = withContext(Dispatchers.IO) {
         apiClient.get(
             path = PATH_PLAYLISTS,
             queryParams = mapOf("ownerId" to ownerId)
         )
+    }
+
+    /**
+     * Phase 3 · Step 3.3 — Returns the active banner carousel slide list.
+     * Backed by `/api/banners`; inactive banners are filtered server-side.
+     */
+    suspend fun getBanners(): String = withContext(Dispatchers.IO) {
+        apiClient.get(PATH_BANNERS)
     }
 
     companion object {
@@ -54,5 +62,6 @@ class ApiService(
         const val PATH_CATEGORIES = "/api/categories"
         const val PATH_HIGHLIGHTS = "/api/highlights"
         const val PATH_PLAYLISTS = "/api/playlists"
+        const val PATH_BANNERS = "/api/banners"
     }
 }
