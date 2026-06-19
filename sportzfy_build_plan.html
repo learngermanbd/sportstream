@@ -374,6 +374,7 @@
         <a href="#ai-guide">AI Agent Guide</a>
         <a href="#backend-architecture">Backend Architecture</a>
         <a href="#admin-app-plan">Admin App Plan</a>
+        <a href="#inapp-update">In-App Update</a>
         <a href="#phase1">Phase 1: Project Setup</a>
         <a href="#phase2">Phase 2: Core Architecture</a>
         <a href="#phase3">Phase 3: Home & Events</a>
@@ -1978,6 +1979,357 @@ com.google.accompanist:accompanist-permissions:0.34.0</div>
                     <tr><td>Security (biometric, root detect)</td><td>&mdash;</td><td>2 hours</td></tr>
                     <tr><td>Android 6-17 compat layer</td><td>&mdash;</td><td>2 hours</td></tr>
                     <tr><td><strong style="color:#fff;">Total</strong></td><td><strong style="color:#fff;">~19 screens</strong></td><td><strong style="color:#fff;">~28 hours</strong></td></tr>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    
+    <!-- IN-APP UPDATE SYSTEM -->
+    <style>
+        .inapp-update-section {background:linear-gradient(135deg,rgba(34,197,94,0.06),rgba(28,203,212,0.04));border:1px solid rgba(34,197,94,0.15);border-radius:16px;padding:28px;margin-bottom:30px;}
+        .inapp-update-section h3 {color:#fff;font-size:18px;margin-bottom:8px;}
+        .inapp-update-section>p {color:var(--text-muted);font-size:13px;margin-bottom:16px;}
+        .iau-section {background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px;margin:14px 0;}
+        .iau-section h4 {color:var(--green);font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+        .iau-section h5 {color:#fff;font-size:13px;margin:12px 0 6px;}
+        .iau-section p,.iau-section li {font-size:12px;color:var(--text-muted);line-height:1.6;}
+        .iau-section ul {margin:6px 0 6px 18px;}
+        .iau-section code {background:rgba(34,197,94,0.1);padding:1px 6px;border-radius:4px;font-size:11px;color:var(--green);}
+        .iau-table {width:100%;border-collapse:collapse;margin:10px 0;font-size:11px;}
+        .iau-table th {background:rgba(34,197,94,0.15);color:var(--green);padding:6px 10px;text-align:left;font-weight:700;border-bottom:1px solid rgba(255,255,255,0.1);}
+        .iau-table td {padding:5px 10px;border-bottom:1px solid rgba(255,255,255,0.03);color:var(--text-muted);}
+        .iau-table tr:hover td {background:rgba(255,255,255,0.02);}
+        .iau-flow {background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px;margin:12px 0;font-family:'Courier New',monospace;font-size:11px;color:var(--green);white-space:pre;line-height:1.5;overflow-x:auto;}
+        .iau-wireframe {background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;margin:10px 0;font-family:'Courier New',monospace;font-size:10px;color:var(--green);white-space:pre;line-height:1.4;overflow-x:auto;}
+</style>
+    <section class="section" id="inapp-update">
+        <div class="inapp-update-section">
+            <h3>&#128260; In-App Update System &mdash; Custom APK Update Mechanism</h3>
+            <p>SportStream is distributed via APK sideload (not Play Store). This section covers the custom in-app update system that checks the backend for new versions and handles download + installation.</p>
+
+            <!-- UPDATE FLOW -->
+            <div class="iau-section">
+                <h4>&#128260; Update Flow Architecture</h4>
+                <div class="iau-flow">App Launch (SplashActivity)
+    |
+    +-- 1. Fetch /api/config
+    |       Response includes:
+    |       +-- minAppVersion: "1.0.0"   (FORCE update threshold)
+    |       +-- latestVersion: "1.2.0"   (FLEXIBLE update)
+    |       +-- updateUrl: APK download URL
+    |       +-- updateHash: SHA-256 hash (integrity check)
+    |       +-- updateChangelog: "What's new..."
+    |
+    +-- 2. Compare versions
+    |       +-- current < minAppVersion --> FORCE UPDATE (blocking dialog)
+    |       +-- current < latestVersion --> FLEXIBLE UPDATE (banner)
+    |       +-- current >= latestVersion --> No update needed
+    |
+    +-- 3. Download &amp; Install
+            +-- Download APK via DownloadManager
+            +-- Show progress notification
+            +-- Verify APK SHA-256 hash
+            +-- Install via FileProvider + ACTION_INSTALL_PACKAGE</div>
+            </div>
+
+            <!-- TWO UPDATE MODES -->
+            <div class="iau-section">
+                <h4>&#128279; Two Update Modes</h4>
+                <h5>Mode 1: Force Update (Blocking)</h5>
+                <p>When <code>currentVersion &lt; minAppVersion</code> &mdash; user CANNOT use the app until they update.</p>
+                <div class="iau-wireframe">+--------------------------------------+
+|                                      |
+|           Update Required            |
+|                                      |
+|  A new version of SportStream is     |
+|  required to continue.               |
+|                                      |
+|  Current: 1.0.0                      |
+|  Required: 1.1.0                     |
+|                                      |
+|  +--------------------------------+  |
+|  | ########______     45%         |  |
+|  | Downloading... 12.5 MB / 28 MB |  |
+|  +--------------------------------+  |
+|                                      |
+|  [    Download &amp; Update    ]         |
+|                                      |
+|  "You must update to continue"       |
+|                                      |
++--------------------------------------+</div>
+                <ul>
+                    <li>Dialog <strong>cannot be dismissed</strong> (no back button, no tap outside)</li>
+                    <li>Shows version info + changelog from API</li>
+                    <li>Shows download progress bar with MB count</li>
+                    <li>Auto-installs after download completes</li>
+                    <li>If download fails &rarr; show retry button</li>
+                    <li>If no internet &rarr; show network error, block app</li>
+                </ul>
+
+                <h5>Mode 2: Flexible Update (Non-Blocking)</h5>
+                <p>When <code>currentVersion &lt; latestVersion</code> but <code>&gt;= minAppVersion</code> &mdash; user CAN skip.</p>
+                <div class="iau-wireframe">+--------------------------------------+
+| SportStream             search  menu |
++--------------------------------------+
+| +----------------------------------+ |
+| | Update available: v1.2.0     [X] | |
+| | New features &amp; bug fixes         | |
+| +----------------------------------+ |
+|                                      |
+|  [Banner auto-scroll]                |
+|                                      |
+|  LIVE Events                         |
+|  +--------------------------------+  |
+|  | IPL Final                      |  |
+|  | MI vs CSK                      |  |
+|  +--------------------------------+  |
+|                                      |
++--------------------------------------+</div>
+                <ul>
+                    <li>Banner at top of Home screen (dismissible with X)</li>
+                    <li>"Update" button in drawer menu always visible</li>
+                    <li>Shows changelog (what's new)</li>
+                    <li>Download happens in background via DownloadManager</li>
+                    <li>Notification shows download progress</li>
+                    <li>After download &rarr; prompt to install</li>
+                    <li>User can dismiss and continue using app</li>
+                    <li>Banner reappears on next app launch (if not updated)</li>
+                </ul>
+            </div>
+
+            <!-- VERSION COMPARISON -->
+            <div class="iau-section">
+                <h4>&#128270; Version Comparison Logic</h4>
+                <div class="prompt-box"><span class="comment">// VersionUtils.kt</span>
+fun isVersionLower(current: String, target: String): Boolean {
+    val currentParts = current.split(".").map { it.toInt() }
+    val targetParts = target.split(".").map { it.toInt() }
+
+    for (i in 0 until maxOf(currentParts.size, targetParts.size)) {
+        val c = currentParts.getOrElse(i) { 0 }
+        val t = targetParts.getOrElse(i) { 0 }
+        if (c < t) return true
+        if (c > t) return false
+    }
+    return false
+}</div>
+                <p>Supports semantic versioning: <code>1.0.0</code>, <code>1.2.3</code>, <code>2.0.0-beta</code></p>
+            </div>
+
+            <!-- DOWNLOAD MANAGER -->
+            <div class="iau-section">
+                <h4>&#11015;&#65039; Download via DownloadManager</h4>
+                <div class="prompt-box"><span class="comment">// UpdateManager.kt</span>
+class UpdateManager(private val context: Context) {
+
+    private val downloadManager = context.getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+
+    fun downloadUpdate(apkUrl: String): Long {
+        val request = DownloadManager.Request(Uri.parse(apkUrl))
+            .setTitle("SportStream Update")
+            .setDescription("Downloading new version...")
+            .setNotificationVisibility(VISIBILITY_VISIBLE)
+            .setDestinationInExternalFilesDir(context, DIRECTORY_DOWNLOADS, "update.apk")
+            .setAllowedOverMetered(true)  // Allow on mobile data
+            .setAllowedOverRoaming(true)
+
+        return downloadManager.enqueue(request)
+    }
+
+    fun observeDownload(downloadId: Long): Flow&lt;DownloadStatus&gt; = flow {
+        while (true) {
+            val cursor = downloadManager.query(Query().setFilterById(downloadId))
+            if (cursor.moveToFirst()) {
+                val status = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_STATUS))
+                val downloaded = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_BYTES_DOWNLOADED_SO_FAR))
+                val total = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TOTAL_SIZE_BYTES))
+
+                when (status) {
+                    STATUS_RUNNING -> {
+                        val progress = if (total > 0) (downloaded * 100 / total) else 0
+                        emit(DownloadStatus.Downloading(progress, downloaded, total))
+                    }
+                    STATUS_SUCCESSFUL -> {
+                        val uri = downloadManager.getUriForDownloadedFile(downloadId)
+                        emit(DownloadStatus.Completed(uri))
+                        return@flow
+                    }
+                    STATUS_FAILED -> {
+                        emit(DownloadStatus.Failed("Download failed"))
+                        return@flow
+                    }
+                }
+            }
+            cursor.close()
+            delay(500) // Poll every 500ms
+        }
+    }
+}
+
+sealed class DownloadStatus {
+    data class Downloading(val progress: Int, val downloaded: Int, val total: Int)
+    data class Completed(val uri: Uri)
+    data class Failed(val message: String)
+}</div>
+            </div>
+
+            <!-- INSTALL VIA FILEPROVIDER -->
+            <div class="iau-section">
+                <h4>&#128230; Install via FileProvider</h4>
+                <div class="prompt-box"><span class="comment">// UpdateInstaller.kt</span>
+fun installUpdate(context: Context, apkUri: Uri) {
+    val intent = Intent(ACTION_INSTALL_PACKAGE).apply {
+        data = apkUri
+        flags = FLAG_GRANT_READ_URI_PERMISSION or FLAG_ACTIVITY_NEW_TASK
+    }
+    context.startActivity(intent)
+}</div>
+                <h5>AndroidManifest.xml</h5>
+                <div class="prompt-box"><span class="comment">// FileProvider for APK installation</span>
+&lt;provider
+    android:name="androidx.core.content.FileProvider"
+    android:authorities="${applicationId}.fileprovider"
+    android:exported="false"
+    android:grantUriPermissions="true"&gt;
+    &lt;meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/file_paths" /&gt;
+&lt;/provider&gt;
+
+<span class="comment">// res/xml/file_paths.xml</span>
+&lt;paths&gt;
+    &lt;external-files-path name="downloads" path="Download/" /&gt;
+&lt;/paths&gt;</div>
+            </div>
+
+            <!-- APK INTEGRITY -->
+            <div class="iau-section">
+                <h4>&#128274; APK Integrity Verification</h4>
+                <div class="prompt-box"><span class="comment">// ApkVerifier.kt - SHA-256 hash check before install</span>
+fun verifyApk(context: Context, apkUri: Uri, expectedHash: String): Boolean {
+    val inputStream = context.contentResolver.openInputStream(apkUri) ?: return false
+    val digest = MessageDigest.getInstance("SHA-256")
+    val buffer = ByteArray(8192)
+    var bytesRead: Int
+
+    while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+        digest.update(buffer, 0, bytesRead)
+    }
+    inputStream.close()
+
+    val actualHash = digest.digest().joinToString("") { "%02x".format(it) }
+    return actualHash.equals(expectedHash, ignoreCase = true)
+}</div>
+                <h5>Backend /api/config response includes hash:</h5>
+                <div class="prompt-box"><span class="comment">// GET /api/config response</span>
+{
+  "latestVersion": "1.2.0",
+  "minAppVersion": "1.1.0",
+  "updateUrl": "https://github.com/.../app-v1.2.0.apk",
+  "updateHash": "a1b2c3d4e5f6...",
+  "updateChangelog": "- Fixed stream buffering\n- Added PiP mode\n- Performance improvements"
+}</div>
+            </div>
+
+            <!-- API COMPAT -->
+            <div class="iau-section">
+                <h4>&#128241; Android Version Compatibility</h4>
+                <table class="iau-table">
+                    <tr><th>Feature</th><th>API Level</th><th>Notes</th></tr>
+                    <tr><td>DownloadManager</td><td>23+</td><td>Works on all supported versions</td></tr>
+                    <tr><td>FileProvider</td><td>23+</td><td>Required for APK install on API 24+</td></tr>
+                    <tr><td>Install permission</td><td>23-25</td><td>REQUEST_INSTALL_PACKAGES not needed</td></tr>
+                    <tr><td>Install permission</td><td>26+</td><td>Need REQUEST_INSTALL_PACKAGES permission</td></tr>
+                    <tr><td>Unknown sources</td><td>23-24</td><td>Global "Unknown sources" toggle</td></tr>
+                    <tr><td>Unknown sources</td><td>25+</td><td>Per-app "Install unknown apps" setting</td></tr>
+                    <tr><td>Notification channels</td><td>26+</td><td>Create "Updates" channel</td></tr>
+                    <tr><td>Scoped storage</td><td>29+</td><td>Use externalFilesDir (no permission needed)</td></tr>
+                </table>
+            </div>
+
+            <!-- NOTIFICATIONS -->
+            <div class="iau-section">
+                <h4>&#128276; Download Notifications</h4>
+                <div class="iau-wireframe">Download in progress:
++--------------------------------------+
+| SportStream Update                   |
+| Downloading v1.2.0... 45%           |
+| ################################____ |
++--------------------------------------+
+
+Download complete:
++--------------------------------------+
+| SportStream Update Ready             |
+| Tap to install v1.2.0               |
++--------------------------------------+</div>
+                <table class="iau-table">
+                    <tr><th>Notification</th><th>Channel</th><th>Priority</th></tr>
+                    <tr><td>Download progress</td><td><code>app_updates</code></td><td>LOW (no sound)</td></tr>
+                    <tr><td>Download complete</td><td><code>app_updates</code></td><td>DEFAULT (tap to install)</td></tr>
+                    <tr><td>Download failed</td><td><code>app_updates</code></td><td>DEFAULT (tap to retry)</td></tr>
+                </table>
+            </div>
+
+            <!-- SECURITY -->
+            <div class="iau-section">
+                <h4>&#128737;&#65039; Security Considerations</h4>
+                <table class="iau-table">
+                    <tr><th>Risk</th><th>Mitigation</th></tr>
+                    <tr><td>MITM on APK download</td><td>HTTPS only, certificate pinning on update URL</td></tr>
+                    <tr><td>Tampered APK</td><td>SHA-256 hash verification before install</td></tr>
+                    <tr><td>Rollback attack</td><td>Server enforces minimum version, APK signed with same key</td></tr>
+                    <tr><td>Fake update server</td><td>SSL pinning on /api/config endpoint</td></tr>
+                    <tr><td>APK signature mismatch</td><td>Verify APK signature matches original signing key</td></tr>
+                </table>
+            </div>
+
+            <!-- ADMIN PANEL -->
+            <div class="iau-section">
+                <h4>&#128736;&#65039; Admin Panel Integration</h4>
+                <p>The admin panel controls updates via the <strong>Config Editor</strong> screen:</p>
+                <div class="iau-wireframe">Config Editor (Admin Web/App):
++--------------------------------------+
+|  Update Configuration                |
+|  ------------------------------------|
+|  Update URL                          |
+|  [https://github.com/.../v1.2.0.apk]|
+|                                      |
+|  Latest Version                      |
+|  [1.2.0]                             |
+|                                      |
+|  Minimum Version (force update)      |
+|  [1.1.0]                             |
+|                                      |
+|  Update Changelog                    |
+|  [- Fixed stream buffering          ]|
+|  [- Added PiP mode                  ]|
+|  [- Performance improvements        ]|
+|                                      |
+|  [    Save Configuration    ]        |
++--------------------------------------+</div>
+                <h5>Workflow</h5>
+                <ul>
+                    <li><strong>1.</strong> Developer builds new APK version</li>
+                    <li><strong>2.</strong> Uploads APK to GitHub Releases (or any hosting)</li>
+                    <li><strong>3.</strong> Admin opens Config Editor &rarr; sets new latestVersion + updateUrl + changelog</li>
+                    <li><strong>4.</strong> All users see update banner on next app launch</li>
+                    <li><strong>5.</strong> If minVersion is bumped &rarr; force update dialog blocks app</li>
+                </ul>
+            </div>
+
+            <!-- KEY CLASSES -->
+            <div class="iau-section">
+                <h4>&#128196; Key Classes Summary</h4>
+                <table class="iau-table">
+                    <tr><th>Class</th><th>Package</th><th>Purpose</th></tr>
+                    <tr><td><code>UpdateManager</code></td><td>utils/</td><td>Download APK via DownloadManager, observe progress</td></tr>
+                    <tr><td><code>UpdateInstaller</code></td><td>utils/</td><td>Install APK via FileProvider + Intent</td></tr>
+                    <tr><td><code>ApkVerifier</code></td><td>utils/</td><td>SHA-256 hash verification</td></tr>
+                    <tr><td><code>VersionUtils</code></td><td>utils/</td><td>Semantic version comparison</td></tr>
+                    <tr><td><code>UpdateDialogFragment</code></td><td>ui/components/</td><td>Force update blocking dialog</td></tr>
+                    <tr><td><code>UpdateBannerView</code></td><td>ui/components/</td><td>Flexible update banner (home screen)</td></tr>
+                    <tr><td><code>RemoteConfigHelper</code></td><td>utils/</td><td>Fetches /api/config (includes update info)</td></tr>
                 </table>
             </div>
         </div>
