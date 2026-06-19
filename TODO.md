@@ -108,8 +108,8 @@ Premium session budget: 5/season (Steps 2.6, 4.3, 7.12, 8.17). Do NOT use MAX mo
 ## Phase 3 — UI Screens (Home, Categories, Highlights)  · Est: 4–5 hours · Section: `#phase3`
 
 - [ ] **Step 3.0 — UI reference assets pre-flight**
-  - Agent: Buff or any | Mode: DEFAULT | Premium: No
-  - Done when: `sportstream/ui-reference/screenshots.zip` extracted to a known folder AND `ui-demo-video.mp4` reviewed, so subsequent Buff/MiMo 2.5 prompts can reference them.
+  - Agent: any | Mode: DEFAULT | Premium: No
+  - Done when: ✅ `sportstream/ui-reference/screenshots.zip` extracted locally to **<code>sportstream/ui-reference/screenshots/</code>** (17 JPGs, 11 MB — gitignored, not tracked) AND ✅ `sportstream/ui-reference/ui-demo-video.mp4` (6 MB, ISO MP4) confirmed present, so subsequent Buff / MiMo 2.5 multimodal prompts can attach individual JPGs by absolute path (example: `sportstream/ui-reference/screenshots/Screenshot_2026-06-18-00-14-49-053_app.blaze.spofficial.jpg`).
   - Next: Step 3.1.
 
 - [ ] **Step 3.1 — Splash screen** (Buff) · §3.1 · Done when: `activity_splash.xml` + `SplashActivity.kt` with ConstraintLayout, glass logo card (180 dp, rounded 28 dp), Lottie loading bar, network error card, version text; navigate to Main after 2 s. Next: Step 3.2.

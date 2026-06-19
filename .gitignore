@@ -40,3 +40,6 @@ crashlytics/
 # Decompiled APK files (removed from repo)
 resources/
 sources/
+
+# Local-only UI reference screenshots (extracted for MiMo 2.5 multimodal prompts in Phase 3; not versioned).
+ui-reference/screenshots/
