@@ -5,6 +5,8 @@
     <string name="splash_loading">Connecting…</string>
     <string name="splash_error_title">NETWORK ERROR</string>
     <string name="splash_retry">RETRY</string>
+    <string name="splash_open_wifi">WiFi</string>
+    <string name="splash_open_mobile">Mobile Net</string>
     <string name="splash_version_template">v%1$s</string>
     <!-- Main placeholder (Step 3.1) — kept for backwards compat with any
          code reference; superseded by the tab labels below. -->

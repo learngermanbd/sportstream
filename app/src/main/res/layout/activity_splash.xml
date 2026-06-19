@@ -134,15 +134,51 @@
                 android:textSize="13sp"
                 tools:text="Couldn’t reach server" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/retryButton"
-                android:layout_width="wrap_content"
+            <!--
+                Phase 3 · Step 3.1 plan-aligned network error card CTA row.
+                Plan line 3250: "Network error card (hidden by default) with
+                WiFi/Mobile/Retry buttons". WiFi opens
+                Settings.ACTION_WIFI_SETTINGS (always available, API 1+).
+                Mobile opens Settings.ACTION_DATA_USAGE_SETTINGS (API 16+, +
+                on devices where it is omitted in Android 11+ the OS routes
+                to the equivalent Network & Internet page automatically).
+                Retry re-runs the splash nav cycle (Step 3.1 original).
+            -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end"
                 android:layout_marginTop="14dp"
-                android:text="@string/splash_retry"
-                android:textColor="@color/white"
-                app:backgroundTint="@color/primary" />
+                android:gravity="end"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/wifiButton"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="@string/splash_open_wifi"
+                    android:textColor="@color/primary"
+                    app:strokeColor="@color/primary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/mobileButton"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="@string/splash_open_mobile"
+                    android:textColor="@color/primary"
+                    app:strokeColor="@color/primary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/retryButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/splash_retry"
+                    android:textColor="@color/white"
+                    app:backgroundTint="@color/primary" />
+            </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

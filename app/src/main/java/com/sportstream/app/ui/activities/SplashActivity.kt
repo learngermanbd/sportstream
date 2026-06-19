@@ -1,10 +1,12 @@
 package com.sportstream.app.ui.activities
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -79,6 +81,20 @@ class SplashActivity : AppCompatActivity() {
             handler.postDelayed(navigateRunnable, navDelayMs)
         }
 
+        // WiFi button — plan Step 3.1 says the offline card offers
+        // WiFi/Mobile/Retry. Open the system WiFi settings so the user
+        // can flip a network on without leaving the app for the Settings
+        // launcher. ACTION_WIFI_SETTINGS is API 1+, available on every
+        // device we ship on (minSdk 23). We catch ActivityNotFoundException
+        // (rare OEM stripping) and fall back to the main Settings screen.
+        binding.wifiButton.setOnClickListener { openSettingsOrFallback(Settings.ACTION_WIFI_SETTINGS) }
+
+        // Mobile button — same idea; open the data usage settings. The
+        // alias is API 16+ (we ship minSdk 23) and the OS routes to the
+        // equivalent Network & Internet page on Android 11+ where the
+        // raw alias is omitted.
+        binding.mobileButton.setOnClickListener { openSettingsOrFallback(Settings.ACTION_DATA_USAGE_SETTINGS) }
+
         // Kick off the home-screen data fetch so Main's first frame already
         // has data. The viewModelScope cancels automatically when this
         // Activity finishes via [navigateRunnable].
@@ -92,5 +108,22 @@ class SplashActivity : AppCompatActivity() {
         // Structured cancellation — never navigate a destroyed Activity.
         handler.removeCallbacks(navigateRunnable)
         super.onDestroy()
+    }
+
+    /**
+     * Open a system Settings screen by action; if the OEM has stripped the
+     * specific alias (rare), fall back to the main Settings page so the
+     * user can still recover. Both branches use FLAG_ACTIVITY_NEW_TASK
+     * because Settings are launched from an Activity context and the new
+     * task keeps them outside our own back-stack.
+     */
+    private fun openSettingsOrFallback(action: String) {
+        try {
+            startActivity(Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        } catch (_: ActivityNotFoundException) {
+            startActivity(
+                Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+        }
     }
 }
