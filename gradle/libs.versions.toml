@@ -20,6 +20,7 @@ glide = "4.16.0"
 coroutines = "1.9.0"
 gson = "2.10.1"           # Step 2.1 — @SerializedName on data models
 swiperefreshlayout = "1.1.0"   # Step 3.3 — SwipeRefreshLayout host for Home pull-to-refresh
+supabase = "2.5.4"             # Step 1.4 retro-fix — Supabase Kotlin SDK for storage (plan-aligned)
 
 [libraries]
 # Media3 — video player
@@ -72,6 +73,12 @@ gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 
 # SwipeRefreshLayout — Home tab's pull-to-refresh host (Phase 3 · Step 3.3)
 swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
+
+# Supabase — Kotlin SDK (jan-tennert). Plan Step 1.4 retro-fix — Initialize
+# Supabase client for storage so admin-uploaded assets (logos, thumbnails,
+# banners) land in a Supabase Storage bucket the user app can read.
+supabase-core        = { module = "io.github.jan-tennert.supabase:core",         version.ref = "supabase" }
+supabase-storage-ktx = { module = "io.github.jan-tennert.supabase:storage-ktx",  version.ref = "supabase" }
 
 [plugins]
 android-application = { id = "com.android.application",                  version.ref = "agp" }
