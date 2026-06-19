@@ -29,4 +29,16 @@
     <string name="fragment_favorites_subtitle">Step 5.1 incoming</string>
     <string name="fragment_settings_title">SETTINGS</string>
     <string name="fragment_settings_subtitle">Step 5.5 incoming</string>
+
+    <!-- Home tab (Step 3.3) — section header + empty-state copy. -->
+    <string name="fragment_home_header">LIVE EVENTS</string>
+    <string name="fragment_home_empty">No live matches right now</string>
+
+    <!-- view_item_match.xml row content (Step 3.3). -->
+    <string name="view_item_match_vs">VS</string>
+    <string name="view_item_match_live">LIVE</string>
+    <string name="view_item_match_default_team">TBD</string>
+    <string name="view_item_match_default_title">Match</string>
+    <string name="view_item_match_team_a_desc">Team A logo</string>
+    <string name="view_item_match_team_b_desc">Team B logo</string>
 </resources>

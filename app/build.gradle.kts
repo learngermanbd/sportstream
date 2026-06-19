@@ -90,4 +90,7 @@ dependencies {
 
     // ── Gson — @SerializedName annotations on Phase 2 data models (parse via org.json for now) ──
     implementation(libs.gson)
+
+    // ── SwipeRefreshLayout — Home tab pull-to-refresh host (Phase 3 · Step 3.3) ──
+    implementation(libs.swiperefreshlayout)
 }
