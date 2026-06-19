@@ -63,4 +63,29 @@
     <!-- view_item_channel.xml row content (Step 3.4). -->
     <string name="view_item_channel_default_name">Channel</string>
     <string name="view_item_channel_logo_desc">Channel logo</string>
+
+    <!--
+        Drawer menu (Step 3.2 retro-fix).
+        Plan Step 3.2 prompt box lists 9 items: Network Stream,
+        Playlists, Floating Player, Video Quality, Notice, Join Us,
+        Share, Update, Exit. This block ships those 9 + Highlights (the
+        10th Drawer-top entry, the canonical surface for Highlights now
+        that the post-realignment BottomNav is 4 tabs not 3).
+
+        drawer_coming_soon_template is a printf-style placeholder used
+        by MainActivity.upcomingStepFor(itemId) to render Snackbar
+        messages like "Playlists — Coming in Step 5.2".
+    -->
+    <string name="drawer_highlights">Highlights</string>
+    <string name="drawer_network_stream">Network Stream</string>
+    <string name="drawer_playlists">Playlists</string>
+    <string name="drawer_floating_player">Floating Player</string>
+    <string name="drawer_video_quality">Video Quality</string>
+    <string name="drawer_notice">Notice</string>
+    <string name="drawer_join_us">Join Us</string>
+    <string name="drawer_share">Share</string>
+    <string name="drawer_update">Update</string>
+    <string name="drawer_exit">Exit</string>
+    <string name="drawer_coming_soon_template">%1$s — Coming in Step %2$s</string>
+    <string name="drawer_share_message">Check out SportStream — live sports streaming in HLS / DASH.</string>
 </resources>

@@ -1,42 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Phase 3 · Step 3.2 — MainActivity layout (replaces Step 3.1 placeholder).
-    Hosts a NavHostFragment + a Material 3 BottomNavigationView styled with
-    @style/SportStream.BottomNav (defined in styles.xml since Step 1.5).
-    The DrawerLayout + Toolbar + Search scaffold lands in Steps 5.5 / 5.6
-    and will be wrapped around this root.
+    Phase 3 · Step 3.2 — MainActivity layout.
+
+    Plan Step 3.2 prompt box: "MainActivity with DrawerLayout +
+    BottomNavigationView (3 tabs: Home, Categories, Highlights).
+    Drawer menu: Network Stream, Playlists, Floating Player, Video Quality,
+    Notice, Join Us, Share, Update, Exit.".
+
+    Post-Step-3.2-realignment the BottomNav is 4 tabs (Home / Categories /
+    Favorites / Settings). This file ships the plan-required DrawerLayout
+    scaffold (added retroactively after the audit in this branch) and
+    preserves the existing ConstraintLayout (NavHost + BottomNav) by
+    nesting it as the DrawerLayout's main content (first child).
+
+    The DrawerLayout becomes the ViewBinding "root", so existing
+    ActivityMainBinding consumers that referred to binding.bottomNav /
+    binding.navHostFragment still resolve (those IDs live inside the
+    nested ConstraintLayout now).
+
+    The NavigationView anchors to drawer_menu.xml (9 plan items +
+    Highlights as a 10th Drawer-top entry).
 -->
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawerRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_splash">
 
-    <!-- NavHostFragment hosts res/navigation/main_nav_graph.xml (4 destinations). -->
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/navHostFragment"
-        android:name="androidx.navigation.fragment.NavHostFragment"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:defaultNavHost="true"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/bottomNav"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:navGraph="@navigation/main_nav_graph" />
+    <!-- Main content — existing ConstraintLayout with NavHost + BottomNav. -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <!-- Bottom navigation. Style gives it glass-primary active indicator
-         + text_muted item icon/text tint + card_bg background. -->
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNav"
-        style="@style/SportStream.BottomNav"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:menu="@menu/bottom_nav_menu" />
+        <!-- NavHostFragment hosts res/navigation/main_nav_graph.xml
+             (5 destinations: Home / Categories / Favorites / Settings / Highlights). -->
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/navHostFragment"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:defaultNavHost="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/bottomNav"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:navGraph="@navigation/main_nav_graph" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNav"
+            style="@style/SportStream.BottomNav"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:menu="@menu/bottom_nav_menu" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Drawer pane — 9 plan items + Highlights as the canonical surface
+         for the Step 3.5 Highlights screen. -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/navView"
+        android:layout_width="280dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="@color/secondary"
+        app:itemIconTint="@color/primary"
+        app:itemTextColor="@color/text"
+        app:menu="@menu/drawer_menu" />
+</androidx.drawerlayout.widget.DrawerLayout>

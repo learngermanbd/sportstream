@@ -1,5 +1,6 @@
 package com.sportstream.app.ui.activities
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -106,6 +107,49 @@ class MainActivity : AppCompatActivity() {
         val navController = navHost.navController
         binding.bottomNav.setupWithNavController(navController)
 
+        // Drawer <-> NavController wiring (plan Step 3.2 retro-fix).
+        // Most items are placeholders (the real screens land in their
+        // drawn plans — 5.3 Network Stream, 5.2 Playlists, 4.6 Floating
+        // Player, 4.5 Video Quality, 5.5 Notice, 8.x Join Us, 6.2 Update)
+        // — those taps show a Snackbar with the future-step hint via
+        // `upcomingStepFor`. Highlights is the one item that has a real
+        // destination today (it's the Step 3.5 nav-graph entry); the Tap
+        // navigates to it. Share fires an ACTION_SEND chooser so the user
+        // can blast the current store link from any installed app. Exit
+        // closes the drawer then finishAffinity() takes the app out of
+        // the Recents stack (the user can re-open from the launcher).
+        binding.navView.setNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.drawer_highlights -> {
+                    navController.navigate(R.id.highlightsFragment)
+                    binding.drawerRoot.closeDrawers()
+                    true
+                }
+                R.id.drawer_share -> {
+                    binding.drawerRoot.closeDrawers()
+                    shareAppLink()
+                    true
+                }
+                R.id.drawer_exit -> {
+                    binding.drawerRoot.closeDrawers()
+                    finishAffinity()
+                    true
+                }
+                else -> {
+                    val msg = getString(
+                        R.string.drawer_coming_soon_template,
+                        item.title.toString(),
+                        upcomingStepFor(item.itemId)
+                    )
+                    Snackbar.make(binding.root, msg, Snackbar.LENGTH_SHORT)
+                        .setAnchorView(binding.bottomNav)
+                        .show()
+                    binding.drawerRoot.closeDrawers()
+                    true
+                }
+            }
+        }
+
         // **Wire StateViewModel.launch** for the initial repository fetch.
         // MainViewModel.load() is defined as:
         //   fun load() = launch(io) { … repository.fetchEvents/Live/Categories/Highlights … }
@@ -142,5 +186,37 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    /**
+     * Map a Drawer item id to the plan-listed step where its real screen
+     * ships. The hint appears in the Snackbar shown when the user taps a
+     * placeholder item (e.g. "Playlists — Coming in Step 5.2"). Keeping
+     * this map next to the listener keeps the drawer menu and the plan's
+     * step numbers in sync.
+     */
+    private fun upcomingStepFor(itemId: Int): String = when (itemId) {
+        R.id.drawer_network_stream   -> "5.3"
+        R.id.drawer_playlists        -> "5.2"
+        R.id.drawer_floating_player  -> "4.6"
+        R.id.drawer_video_quality    -> "4.5"
+        R.id.drawer_notice           -> "5.5"
+        R.id.drawer_join_us          -> "8.x"
+        R.id.drawer_update           -> "6.2"
+        else                          -> "TBD"
+    }
+
+    /**
+     * "Share this app" intent — opens the system share-sheet
+     * (Intent.ACTION_SEND) populated with [R.string.drawer_share_message].
+     * `Intent.createChooser` ensures the chooser shows even if the user
+     * has set a default share target.
+     */
+    private fun shareAppLink() {
+        val sendIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, getString(R.string.drawer_share_message))
+        }
+        startActivity(Intent.createChooser(sendIntent, getString(R.string.drawer_share)))
     }
 }
