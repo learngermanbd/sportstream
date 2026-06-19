@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Step 1.5 will add: primary #1CCBD4, secondary #131931, card_bg #121A27, dark_bg #0A0F1A, etc. -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

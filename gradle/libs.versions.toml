@@ -1,0 +1,12 @@
+[versions]
+# Step 1.1: plugin versions so the project structure is recognized.
+# Step 1.2 will add Media3 / OkHttp / Room / Firebase-messaging / Sentry / Lottie /
+# Material 3 / Navigation / Lifecycle / DataStore / Glide / kotlinx-coroutines deps.
+agp = "8.7.3"
+kotlin = "2.0.21"
+google-services = "4.4.2"
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }

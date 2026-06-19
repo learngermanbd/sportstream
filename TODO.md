@@ -51,11 +51,11 @@ Premium session budget: 5/season (Steps 2.6, 4.3, 7.12, 8.17). Do NOT use MAX mo
 
 ## Phase 1 — Project Setup & Foundation  · Est: 2–3 hours · Section: `#phase1`
 
-- [ ] **Step 1.1 — Create Android project structure**
+- [x] **Step 1.1 — Create Android project structure**
   - Agent: Buff | Mode: DEFAULT | Premium: No
   - Prompt: see `sportzfy_build_plan.html` → `#phase1` → step 1.1
-  - Done when: `com.sportstream.app` project scaffolded with package tree `ui/{activities,fragments,adapters}`, `data/{models,viewmodels,repository,local,remote}`, `utils`, `services`
-  - Next: spawn Step 1.2 (Buff). Tell it: "Project skeleton is at `<repo>`. Add every dep from §1.2 to `app/build.gradle.kts` and enable ViewBinding + google-services."
+  - Done when: ✓ `com.sportstream.app` project scaffolded with full package tree (`ui/{activities,fragments,adapters}`, `data/{models,viewmodels,repository,local,remote}`, `utils`, `services`). AGP 8.7.3 · Kotlin 2.0.21 · Gradle wrapper 8.11.1 · JDK 17 · compileSdk 35 · minSdk 23. `AndroidManifest.xml` has launcher `<activity android:exported="true">` for API 31+. Validated via `./gradlew projects --no-daemon` (exit 0). Fragments kept as plain Kotlin classes (no Fragment superclass yet) to avoid compile failure before Step 1.2 lands androidx.fragment. Launcher `SplashActivity` registered with intent-filter.
+  - Next: spawn Step 1.2 (Buff). Tell it: "Project skeleton is at `<repo>`. Add every dep from §1.2 of `sportzfy_build_plan.html` to `app/build.gradle.kts` (Media3, OkHttp+logging, Room runtime+ktx+kapt, Firebase BoM → firebase-messaging only, Sentry, Lottie, Material 3, navigation-fragment-ktx+navigation-ui-ktx, lifecycle viewmodel-ktx+livedata-ktx, datastore-preferences, Glide 4.16, kotlinx-coroutines-android), enable `buildFeatures.viewBinding = true`, and apply the `google-services` plugin from §1.2."
 
 - [ ] **Step 1.2 — Add all dependencies**
   - Agent: Buff | Mode: DEFAULT | Premium: No
