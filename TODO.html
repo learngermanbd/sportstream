@@ -506,17 +506,17 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p><strong>Next:</strong> Step 1.6 (Code Reviewer) + run <code>./gradlew assembleDebug</code> (Basher) in parallel.</p>
         </div>
 
-        <!-- 1.6 TODO -->
-        <div class="step todo">
+        <!-- 1.6 DONE -->
+        <div class="step done">
             <div class="step-header">
-                <span class="step-num blue">STEP 1.6</span>
+                <span class="step-num green">STEP 1.6</span>
                 <span class="agent review">Code Reviewer</span>
                 <span class="meta-chip">DEFAULT</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Review foundation</h4>
-            <p>Done when: reviewer returns clean feedback OR all flagged issues fixed.</p>
-            <p><strong>Next:</strong> Phase 1 complete. Move to Phase 2 step 2.1.</p>
+            <p>Done when: ✓ cross-file coherence review: AGP 8.7.3 / Kotlin 2.0.21 / JDK 17 / Gradle 8.11.1 / compileSdk 35 / minSdk 23 triad coherent. ✓ AndroidManifest correct (4 runtime permissions + SplashActivity launcher + 2 non-exported activities + SportStreamApp registered). ✓ Theme inheriting <code>Theme.Material3.DayNight.NoActionBar</code>. ✓ SportStreamApp init order correct (Sentry first, then FCM). ✓ RemoteConfigHelper coroutine + IO + cache + 30-min refresh + fan-out error handling. ✓ All 16+ libs routed through <code>libs.versions.toml</code>. ✓ Empty SportStream / SportStream.Text dot-inheritance anchors documented. ✓ <code>./gradlew assembleDebug --no-daemon</code> produced <code>app-debug.apk</code> (17.8 MB) under <code>app/build/outputs/apk/debug/</code>. ⚠ Reviewer-flagged future-phase items recorded: FCM <code>MessagingService</code> lands in Step 5.4; KSP migration lands in Step 2.3; real Poppins TTF lands in Step 7.x; launcher icon swap lands in branding polish.</p>
+            <p><strong>Next:</strong> Phase 1 complete. Move to Phase 2 step 2.1 (data models).</p>
         </div>
     </section>
 
