@@ -912,6 +912,24 @@
         </section>
     </main>
 
+        <section class="turn role-commit" id="turn-27">
+            <div class="step-header">
+                <span class="step-num">027</span>
+                <span class="agent commit">Shipped</span>
+                <span class="ts">turn 96-100</span>
+            </div>
+            <h4>STEP 7.11 SHIPPED - WebView &amp; Deep Link Hardening</h4>
+            <div class="response-body">
+                <p><strong>Components delivered</strong> (Step 7.11 - WebView &amp; Deep Link Hardening):</p>
+                <ul>
+                    <li><strong>SecureWebView.kt</strong> (new) — WebView hardening: JavaScript disabled, file/content access disabled, MIXED_CONTENT_NEVER_ALLOW, saveFormData/savePassword false, LOAD_NO_CACHE. URL whitelist (learngermanwith.fun domains). Clean when-expression for scheme validation (HTTPS allowed, HTTP only in debug). shouldOverrideUrlLoading validates all navigations. clearSensitiveData clears history/cache/cookies. WebView debugging disabled in release.</li>
+                    <li><strong>DeepLinkValidator.kt</strong> (new) — Deep link validation for sportstream:// and https:// schemes. Allowed hosts (main/player/category/notice/settings/update/search). 2048 char max URI length. Dangerous character detection including host. Path traversal prevention (.., %2e%2e variants). URL-encoded double-decoding re-validation. Open redirect prevention (url/redirect/next/return/continue/target params). sanitize() method. DeepLinkResult sealed class.</li>
+                    <li><strong>IntentFilterSecurity.kt</strong> (new) — Intent validation: source validation (referrer/callingActivity check). Extras validation (max 20 count, max 4096 length, script injection patterns). Action validation (blocks ACTION_DELETE/UNINSTALL). Data URI validation via DeepLinkValidator. Type-safe sanitize() with when-expression for String/Int/Long/Boolean/Float/Double/Parcelable/Serializable. isInternalCaller() for sensitive ops.</li>
+                </ul>
+                <p><strong>Build:</strong> ./gradlew :app:compileDebugKotlin — BUILD SUCCESSFUL (58s)</p>
+            </div>
+        </section>
+
         <section class="turn role-commit" id="turn-26">
             <div class="step-header">
                 <span class="step-num">026</span>
