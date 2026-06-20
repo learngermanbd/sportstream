@@ -34,9 +34,9 @@ console.log('TODO.html fixed:', doneCount, 'done,', todoCount, 'todo,', pctLeft 
 
 // ── Fix code TODOs referencing step 7.13 ──
 const fixes = [
-  { file: 'app/src/main/java/com/sportstream/app/security/IntegrityChecker.kt', old: 'TODO(step 7.13): wire from EncryptedConstants or BuildConfig.', new: 'TODO(Phase 7): wire from EncryptedConstants or BuildConfig.' },
-  { file: 'app/src/main/java/com/sportstream/app/security/RequestSigner.kt', old: 'TODO(step 7.13): wire from EncryptedConstants.', new: 'TODO(Phase 7): wire from EncryptedConstants.' },
-  { file: 'app/src/main/java/com/sportstream/app/security/SSLPinner.kt', old: 'TODO(step 7.13): replace placeholder pins with real values', new: 'TODO(Phase 7): replace placeholder pins with real production cert pins' },
+  { file: 'app/src/main/java/com/streamify/app/security/IntegrityChecker.kt', old: 'TODO(step 7.13): wire from EncryptedConstants or BuildConfig.', new: 'TODO(Phase 7): wire from EncryptedConstants or BuildConfig.' },
+  { file: 'app/src/main/java/com/streamify/app/security/RequestSigner.kt', old: 'TODO(step 7.13): wire from EncryptedConstants.', new: 'TODO(Phase 7): wire from EncryptedConstants.' },
+  { file: 'app/src/main/java/com/streamify/app/security/SSLPinner.kt', old: 'TODO(step 7.13): replace placeholder pins with real values', new: 'TODO(Phase 7): replace placeholder pins with real production cert pins' },
   { file: 'app/src/main/res/xml/network_security_config.xml', old: 'TODO(step 7.13): replace with real pin from production cert.', new: 'TODO(Phase 7): replace with real pin from production cert.' },
 ];
 

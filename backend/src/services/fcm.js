@@ -57,7 +57,7 @@ async function sendToTopic({ title, body, topic, deepLink, imageUrl }) {
     android: {
       priority: 'high',
       notification: {
-        channelId: 'sportstream_events',
+        channelId: 'streamify_events',
         clickAction: 'FLUTTER_NOTIFICATION_CLICK',
         ...(imageUrl && { imageUrl })
       }
@@ -98,7 +98,7 @@ async function sendToToken({ title, body, token, deepLink, imageUrl }) {
     android: {
       priority: 'high',
       notification: {
-        channelId: 'sportstream_events',
+        channelId: 'streamify_events',
         clickAction: 'FLUTTER_NOTIFICATION_CLICK',
         ...(imageUrl && { imageUrl })
       }
@@ -165,7 +165,7 @@ async function sendMulticast({ title, body, tokens, deepLink, imageUrl }) {
     android: {
       priority: 'high',
       notification: {
-        channelId: 'sportstream_events',
+        channelId: 'streamify_events',
         clickAction: 'FLUTTER_NOTIFICATION_CLICK',
         ...(imageUrl && { imageUrl })
       }

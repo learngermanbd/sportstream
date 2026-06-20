@@ -1,6 +1,6 @@
 // Phase 8 * Step 8.13 -- Android Admin app module.
 //
-//   applicationId = "com.sportstream.admin"
+//   applicationId = "com.streamify.admin"
 //   orange Material3 theme (distinct from the cyan user app)
 //   ViewBinding on, but NO google-services plugin (no FCM for admins),
 //   NO kapt (no Room yet), NO Media3 (no player UI in admin).
@@ -22,7 +22,7 @@ plugins {
 import java.util.Properties
 
 android {
-    namespace = "com.sportstream.admin"
+    namespace = "com.streamify.admin"
     compileSdk = 35
 
     // Step 6.5 — same hoisted properties pattern as :app.
@@ -32,7 +32,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.sportstream.admin"
+        applicationId = "com.streamify.admin"
         minSdk = 23
         targetSdk = 35
         versionCode = 1

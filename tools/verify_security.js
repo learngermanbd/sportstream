@@ -27,7 +27,7 @@ function info(msg) { console.log(`  ${INFO} ${msg}`); }
 // LAYER 1: String Encryption (Step 7.2)
 // ───────────────────────────────────────────────────────────────────
 console.log('\n━━━ LAYER 1: String Encryption ━━━');
-const strEnc = path.join(ROOT, 'app/src/main/java/com/sportstream/app/security/StringEncryptor.kt');
+const strEnc = path.join(ROOT, 'app/src/main/java/com/streamify/app/security/StringEncryptor.kt');
 check('StringEncryptor.kt exists', fs.existsSync(strEnc));
 if (fs.existsSync(strEnc)) {
   const content = fs.readFileSync(strEnc, 'utf8');
@@ -57,7 +57,7 @@ if (fs.existsSync(proguard)) {
 // LAYER 3: Native Library Protection (Step 7.4)
 // ───────────────────────────────────────────────────────────────────
 console.log('\n━━━ LAYER 3: Native Library Protection ━━━');
-const nativeSec = path.join(ROOT, 'app/src/main/java/com/sportstream/app/security/NativeSecurityManager.kt');
+const nativeSec = path.join(ROOT, 'app/src/main/java/com/streamify/app/security/NativeSecurityManager.kt');
 check('NativeSecurityManager.kt exists', fs.existsSync(nativeSec));
 if (fs.existsSync(nativeSec)) {
   const content = fs.readFileSync(nativeSec, 'utf8');
@@ -71,8 +71,8 @@ if (fs.existsSync(nativeSec)) {
 // LAYER 4: APK Integrity & Anti-Tampering (Step 7.5)
 // ───────────────────────────────────────────────────────────────────
 console.log('\n━━━ LAYER 4: APK Integrity & Anti-Tampering ━━━');
-const tamper = path.join(ROOT, 'app/src/main/java/com/sportstream/app/security/TamperDetector.kt');
-const integrity = path.join(ROOT, 'app/src/main/java/com/sportstream/app/security/IntegrityChecker.kt');
+const tamper = path.join(ROOT, 'app/src/main/java/com/streamify/app/security/TamperDetector.kt');
+const integrity = path.join(ROOT, 'app/src/main/java/com/streamify/app/security/IntegrityChecker.kt');
 check('TamperDetector.kt exists', fs.existsSync(tamper));
 check('IntegrityChecker.kt exists', fs.existsSync(integrity));
 if (fs.existsSync(tamper) && fs.existsSync(integrity)) {
@@ -89,7 +89,7 @@ if (fs.existsSync(tamper) && fs.existsSync(integrity)) {
 // LAYER 5: Root & Emulator Detection (Step 7.6)
 // ───────────────────────────────────────────────────────────────────
 console.log('\n━━━ LAYER 5: Root & Emulator Detection ━━━');
-const root = path.join(ROOT, 'app/src/main/java/com/sportstream/app/security/RootDetector.kt');
+const root = path.join(ROOT, 'app/src/main/java/com/streamify/app/security/RootDetector.kt');
 check('RootDetector.kt exists', fs.existsSync(root));
 if (fs.existsSync(root)) {
   const content = fs.readFileSync(root, 'utf8');
@@ -105,7 +105,7 @@ if (fs.existsSync(root)) {
 // LAYER 6: SSL Pinning & Network Security (Step 7.7)
 // ───────────────────────────────────────────────────────────────────
 console.log('\n━━━ LAYER 6: SSL Pinning & Network Security ━━━');
-const ssl = path.join(ROOT, 'app/src/main/java/com/sportstream/app/security/SSLPinner.kt');
+const ssl = path.join(ROOT, 'app/src/main/java/com/streamify/app/security/SSLPinner.kt');
 const netSec = path.join(ROOT, 'app/src/main/res/xml/network_security_config.xml');
 check('SSLPinner.kt exists', fs.existsSync(ssl));
 check('network_security_config.xml exists', fs.existsSync(netSec));
@@ -126,7 +126,7 @@ if (fs.existsSync(netSec)) {
 // LAYER 7: Request Signing (Step 7.7b)
 // ───────────────────────────────────────────────────────────────────
 console.log('\n━━━ LAYER 7: Request Signing ━━━');
-const signer = path.join(ROOT, 'app/src/main/java/com/sportstream/app/security/RequestSigner.kt');
+const signer = path.join(ROOT, 'app/src/main/java/com/streamify/app/security/RequestSigner.kt');
 check('RequestSigner.kt exists', fs.existsSync(signer));
 if (fs.existsSync(signer)) {
   const content = fs.readFileSync(signer, 'utf8');
@@ -139,9 +139,9 @@ if (fs.existsSync(signer)) {
 // LAYER 8: Secure Key Storage & Data (Step 7.8)
 // ───────────────────────────────────────────────────────────────────
 console.log('\n━━━ LAYER 8: Secure Key Storage ━━━');
-const keystore = path.join(ROOT, 'app/src/main/java/com/sportstream/app/security/KeystoreManager.kt');
-const secureFile = path.join(ROOT, 'app/src/main/java/com/sportstream/app/security/SecureFileStorage.kt');
-const tokenMgr = path.join(ROOT, 'app/src/main/java/com/sportstream/app/security/TokenManager.kt');
+const keystore = path.join(ROOT, 'app/src/main/java/com/streamify/app/security/KeystoreManager.kt');
+const secureFile = path.join(ROOT, 'app/src/main/java/com/streamify/app/security/SecureFileStorage.kt');
+const tokenMgr = path.join(ROOT, 'app/src/main/java/com/streamify/app/security/TokenManager.kt');
 check('KeystoreManager.kt exists', fs.existsSync(keystore));
 check('SecureFileStorage.kt exists', fs.existsSync(secureFile));
 check('TokenManager.kt exists', fs.existsSync(tokenMgr));
@@ -165,7 +165,7 @@ if (fs.existsSync(tokenMgr)) {
 // LAYER 9: Anti-Debugging & Runtime Protection (Step 7.9)
 // ───────────────────────────────────────────────────────────────────
 console.log('\n━━━ LAYER 9: Anti-Debugging ━━━');
-const antiDbg = path.join(ROOT, 'app/src/main/java/com/sportstream/app/security/AntiDebug.kt');
+const antiDbg = path.join(ROOT, 'app/src/main/java/com/streamify/app/security/AntiDebug.kt');
 check('AntiDebug.kt exists', fs.existsSync(antiDbg));
 if (fs.existsSync(antiDbg)) {
   const content = fs.readFileSync(antiDbg, 'utf8');
@@ -183,7 +183,7 @@ if (fs.existsSync(antiDbg)) {
 // LAYER 10: Play Integrity API (Step 7.10)
 // ───────────────────────────────────────────────────────────────────
 console.log('\n━━━ LAYER 10: Play Integrity ━━━');
-const deviceAttest = path.join(ROOT, 'app/src/main/java/com/sportstream/app/security/DeviceAttestation.kt');
+const deviceAttest = path.join(ROOT, 'app/src/main/java/com/streamify/app/security/DeviceAttestation.kt');
 check('DeviceAttestation.kt exists', fs.existsSync(deviceAttest));
 if (fs.existsSync(deviceAttest)) {
   const content = fs.readFileSync(deviceAttest, 'utf8');
@@ -196,7 +196,7 @@ if (fs.existsSync(deviceAttest)) {
 // LAYER 11: WebView & Deep Link Hardening (Step 7.11)
 // ───────────────────────────────────────────────────────────────────
 console.log('\n━━━ LAYER 11: Deep Link Hardening ━━━');
-const deepLink = path.join(ROOT, 'app/src/main/java/com/sportstream/app/security/DeepLinkValidator.kt');
+const deepLink = path.join(ROOT, 'app/src/main/java/com/streamify/app/security/DeepLinkValidator.kt');
 check('DeepLinkValidator.kt exists', fs.existsSync(deepLink));
 if (fs.existsSync(deepLink)) {
   const content = fs.readFileSync(deepLink, 'utf8');
@@ -210,7 +210,7 @@ if (fs.existsSync(deepLink)) {
 // LAYER 12: Screen Capture Protection
 // ───────────────────────────────────────────────────────────────────
 console.log('\n━━━ LAYER 12: Screen Capture Protection ━━━');
-const antiScreen = path.join(ROOT, 'app/src/main/java/com/sportstream/app/security/AntiScreenCapture.kt');
+const antiScreen = path.join(ROOT, 'app/src/main/java/com/streamify/app/security/AntiScreenCapture.kt');
 check('AntiScreenCapture.kt exists', fs.existsSync(antiScreen));
 if (fs.existsSync(antiScreen)) {
   const content = fs.readFileSync(antiScreen, 'utf8');
@@ -222,7 +222,7 @@ if (fs.existsSync(antiScreen)) {
 // LAYER 13: Code Obfuscation Runtime
 // ───────────────────────────────────────────────────────────────────
 console.log('\n━━━ LAYER 13: Code Obfuscation Runtime ━━━');
-const codeObf = path.join(ROOT, 'app/src/main/java/com/sportstream/app/security/CodeObfuscationRuntime.kt');
+const codeObf = path.join(ROOT, 'app/src/main/java/com/streamify/app/security/CodeObfuscationRuntime.kt');
 check('CodeObfuscationRuntime.kt exists', fs.existsSync(codeObf));
 if (fs.existsSync(codeObf)) {
   const content = fs.readFileSync(codeObf, 'utf8');
@@ -234,7 +234,7 @@ if (fs.existsSync(codeObf)) {
 // LAYER 14: Self-Healing / Gradual Degradation
 // ───────────────────────────────────────────────────────────────────
 console.log('\n━━━ LAYER 14: Self-Healing ━━━');
-const selfHeal = path.join(ROOT, 'app/src/main/java/com/sportstream/app/security/SelfHealing.kt');
+const selfHeal = path.join(ROOT, 'app/src/main/java/com/streamify/app/security/SelfHealing.kt');
 check('SelfHealing.kt exists', fs.existsSync(selfHeal));
 if (fs.existsSync(selfHeal)) {
   const content = fs.readFileSync(selfHeal, 'utf8');
@@ -247,7 +247,7 @@ if (fs.existsSync(selfHeal)) {
 // LAYER 15: Runtime String Provider
 // ───────────────────────────────────────────────────────────────────
 console.log('\n━━━ LAYER 15: Runtime String Provider ━━━');
-const rtString = path.join(ROOT, 'app/src/main/java/com/sportstream/app/security/RuntimeStringProvider.kt');
+const rtString = path.join(ROOT, 'app/src/main/java/com/streamify/app/security/RuntimeStringProvider.kt');
 check('RuntimeStringProvider.kt exists', fs.existsSync(rtString));
 if (fs.existsSync(rtString)) {
   const content = fs.readFileSync(rtString, 'utf8');
@@ -259,7 +259,7 @@ if (fs.existsSync(rtString)) {
 // LAYER 16: SecurityModule (DI Seam)
 // ───────────────────────────────────────────────────────────────────
 console.log('\n━━━ LAYER 16: Security Module (Orchestration) ━━━');
-const secMod = path.join(ROOT, 'app/src/main/java/com/sportstream/app/security/SecurityModule.kt');
+const secMod = path.join(ROOT, 'app/src/main/java/com/streamify/app/security/SecurityModule.kt');
 check('SecurityModule.kt exists', fs.existsSync(secMod));
 if (fs.existsSync(secMod)) {
   const content = fs.readFileSync(secMod, 'utf8');
@@ -267,10 +267,10 @@ if (fs.existsSync(secMod)) {
 }
 
 // ───────────────────────────────────────────────────────────────────
-// LAYER 17: SportStreamApp Security Init
+// LAYER 17: StreamifyApp Security Init
 // ───────────────────────────────────────────────────────────────────
 console.log('\n━━━ LAYER 17: App-Level Security Init ━━━');
-const appKt = path.join(ROOT, 'app/src/main/java/com/sportstream/app/SportStreamApp.kt');
+const appKt = path.join(ROOT, 'app/src/main/java/com/streamify/app/StreamifyApp.kt');
 if (fs.existsSync(appKt)) {
   const content = fs.readFileSync(appKt, 'utf8');
   check('SecurityModule.init() called', content.includes('SecurityModule.init'));
@@ -308,7 +308,7 @@ if (fs.existsSync(manifest)) {
 // LAYER 20: Crash Handler (Security resilience)
 // ───────────────────────────────────────────────────────────────────
 console.log('\n━━━ LAYER 20: Crash Resilience ━━━');
-const crashHandler = path.join(ROOT, 'app/src/main/java/com/sportstream/app/data/crash/CrashHandler.kt');
+const crashHandler = path.join(ROOT, 'app/src/main/java/com/streamify/app/data/crash/CrashHandler.kt');
 check('CrashHandler.kt exists', fs.existsSync(crashHandler));
 if (fs.existsSync(crashHandler)) {
   const content = fs.readFileSync(crashHandler, 'utf8');
@@ -324,7 +324,7 @@ if (fs.existsSync(appKt)) {
   const content = fs.readFileSync(appKt, 'utf8');
   check('HoneyPotManager.init() called', content.includes('HoneyPotManager'));
   if (content.includes('HoneyPotManager')) {
-    const hpFile = path.join(ROOT, 'app/src/main/java/com/sportstream/app/security');
+    const hpFile = path.join(ROOT, 'app/src/main/java/com/streamify/app/security');
     const hasHp = fs.readdirSync(hpFile).some(f => f.includes('HoneyPot') || f.includes('honeypot'));
     if (hasHp) warn('HoneyPotManager class referenced but separate file may be needed', 'Verify HoneyPotManager is implemented');
     else check('HoneyPotManager referenced (may be internal)', true);

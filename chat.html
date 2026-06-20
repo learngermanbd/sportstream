@@ -270,7 +270,7 @@
             </div>
             <h4>Pre-Phase-4 inherited state &mdash; the repo Buffy opened this session on top of</h4>
             <div class="response-body">
-                <p>When this Codebuff session opened, the <code>C:\Users\RDP\Desktop\sportstream</code> working tree already contained Phases 1&ndash;3 of the SportStream Android app, each fused to <code>origin/main</code> by an earlier session. The commits Buffy could see as ground-truth &mdash; the floor this session would build on &mdash; were:</p>
+                <p>When this Codebuff session opened, the <code>C:\Users\RDP\Desktop\streamify</code> working tree already contained Phases 1&ndash;3 of the SportStream Android app, each fused to <code>origin/main</code> by an earlier session. The commits Buffy could see as ground-truth &mdash; the floor this session would build on &mdash; were:</p>
                 <ul>
                     <li><code>492ac6b</code> &mdash; feat(phase3/step3.0): hero banner with autoplay muted preview.</li>
                     <li><code>964c4d7</code> &mdash; fix(phase3/step3.0): banner animation reverts to Phase 1 merged commit hash.</li>
@@ -432,7 +432,7 @@
                 </ul>
                 <p>Resolution:</p>
                 <ul>
-                    <li>Drop <code>@OptIn(DelicateCoroutinesApi::class)</code> from <code>SportStreamApp.bootstrapBlocking()</code>.</li>
+                    <li>Drop <code>@OptIn(DelicateCoroutinesApi::class)</code> from <code>StreamifyApp.bootstrapBlocking()</code>.</li>
                     <li>Replace its boot-strapping <code>runBlocking</code> with a <code>lifecycleScope.launch { withContext(Dispatchers.IO) }</code> that re-applies bootstrap state on the next cold start.</li>
                     <li>This sidesteps the kapt stub path entirely &mdash; the project's only kapt consumer was the now-deleted annotation processor.</li>
                 </ul>
@@ -456,13 +456,13 @@
                 <span class="ts">turn 13</span>
             </div>
             <p class="prompt-box"><span class="lbl">USER PROMPT (verbatim)</span>use this url as a backend server url and set the endpoint which requred https://learngermanwith.fun/ then try tofix the issue again</p>
-            <h4>URL PIVOT &mdash; backend changes from <code>sportstream.example.com</code> to <code>learngermanwith.fun</code></h4>
+            <h4>URL PIVOT &mdash; backend changes from <code>streamify.example.com</code> to <code>learngermanwith.fun</code></h4>
             <div class="response-body">
                 <p>Buffy acknowledged two parallel tasks: the URL pivot and the retried fix. Inventory was first &mdash; 5 substitutions across 3 files:</p>
                 <ul>
-                    <li><code>ApiClient.kt</code> &mdash; <code>DEFAULT_BASE_URL = "https://sportstream.example.com"</code> &rarr; <code>"https://learngermanwith.fun/"</code> (trailing <code>/</code> for Retrofit baseUrl convention) + KDoc example.</li>
-                    <li><code>AppConfig.kt</code> &mdash; <code>apiBaseUrl = "https://sportstream.example.com/api"</code> &rarr; <code>"https://learngermanwith.fun/api"</code> (no trailing slash &mdash; intentional asymmetry) + <code>updateUrl</code>.</li>
-                    <li><code>RemoteConfigHelper.kt</code> &mdash; <code>DEFAULT_API_URL = "https://sportstream.example.com/api/config"</code> &rarr; <code>"https://learngermanwith.fun/api/config"</code>.</li>
+                    <li><code>ApiClient.kt</code> &mdash; <code>DEFAULT_BASE_URL = "https://streamify.example.com"</code> &rarr; <code>"https://learngermanwith.fun/"</code> (trailing <code>/</code> for Retrofit baseUrl convention) + KDoc example.</li>
+                    <li><code>AppConfig.kt</code> &mdash; <code>apiBaseUrl = "https://streamify.example.com/api"</code> &rarr; <code>"https://learngermanwith.fun/api"</code> (no trailing slash &mdash; intentional asymmetry) + <code>updateUrl</code>.</li>
+                    <li><code>RemoteConfigHelper.kt</code> &mdash; <code>DEFAULT_API_URL = "https://streamify.example.com/api/config"</code> &rarr; <code>"https://learngermanwith.fun/api/config"</code>.</li>
                 </ul>
                 <p>The trailing-slash asymmetry is deliberate:</p>
                 <blockquote>Retrofit's <code>baseUrl</code> requires a trailing <code>/</code> so the relative-path <code>@GET("/api/events")</code> resolves to <code>https://learngermanwith.fun/api/events</code>. But code that does string-concat like <code>"${apiBaseUrl}${"</code><code>/api/events"}"</code> would yield <code>https://learngermanwith.fun/api/api/events</code> &mdash; and conversely, leaving the trailing slash off Retrofit baseUrl is invalid. So the two constants serve different consumers and must look different. Comment in <code>AppConfig.kt</code> flags this.</blockquote>
@@ -544,7 +544,7 @@
                     <li>AppConfig trailing-slash comment + revert (turn 9).</li>
                     <li>lifecycleScope.launch safety re-apply at the end of <code>initializePlayer()</code> (replacing the kapt-killed <code>runBlocking</code> path).</li>
                 </ul>
-                <p>Compile: <code>./gradlew :app:compileDebugKotlin</code> &rarr; BUILD SUCCESSFUL (UP-TO-DATE). All 0 stray <code>sportstream.example.com</code> refs remain zero across <code>app/src/main/</code>.</p>
+                <p>Compile: <code>./gradlew :app:compileDebugKotlin</code> &rarr; BUILD SUCCESSFUL (UP-TO-DATE). All 0 stray <code>streamify.example.com</code> refs remain zero across <code>app/src/main/</code>.</p>
                 <p>Push: <code>b5bcd68</code> now on <code>origin/main</code>.</p>
                 <div class="warn"><strong>Token reuse warning.</strong> Same <code>ghp_9mTFr&hellip;ajun</code> PAT was used inline across 4+ pushes this session. <strong>Revoke it now</strong> at <a href="https://github.com/settings/tokens" class="token-warn-link">github.com/settings/tokens</a>. The leaked token can publish to any repo the account can access.</div>
             </div>
@@ -562,10 +562,10 @@
                 <span class="agent buff">Buffy</span>
                 <span class="ts">turn 19</span>
             </div>
-            <h4>Smoke-test visibility &mdash; one-line <code>Log.i</code> in <code>SportStreamApp.onCreate</code></h4>
+            <h4>Smoke-test visibility &mdash; one-line <code>Log.i</code> in <code>StreamifyApp.onCreate</code></h4>
             <div class="response-body">
-                <p>To make manual device verification of the new backend URL possible without a curl loop, Buffy added a single line to <code>SportStreamApp.kt</code>:</p>
-                <pre>android.util.Log.i("SportStreamApp", "Resolved API Base URL: " + AppConfig.defaults().apiBaseUrl)</pre>
+                <p>To make manual device verification of the new backend URL possible without a curl loop, Buffy added a single line to <code>StreamifyApp.kt</code>:</p>
+                <pre>android.util.Log.i("StreamifyApp", "Resolved API Base URL: " + AppConfig.defaults().apiBaseUrl)</pre>
                 <p>A fresh cold launch will print the resolved URL once to logcat. This is the minimum smoke-test the project gets without a running emulator in this session.</p>
             </div>
             <div class="turn-footer">
@@ -615,7 +615,7 @@
             <div class="response-body">
                 <p>Buffy did a quick audit before answering. Two parallel subagent calls:</p>
                 <ul>
-                    <li><code>code-searcher</code> &mdash; grepped the Kotlin sources for <code>UncaughtExceptionHandler</code>, <code>setDefaultUncaughtExceptionHandler</code>, <code>Sentry</code>/<code>CatchAllDriver</code>/<code>RecoverActivity</code> markers. Returned: <strong>zero matches</strong> for the first 4 patterns. Only <code>Sentry</code> hits &mdash; 16 of them &mdash; across <code>SportStreamApp.kt</code> + <code>SportStreamAdminApp.kt</code> + FCM service + NoticeRepo + UpdatePrefs.</li>
+                    <li><code>code-searcher</code> &mdash; grepped the Kotlin sources for <code>UncaughtExceptionHandler</code>, <code>setDefaultUncaughtExceptionHandler</code>, <code>Sentry</code>/<code>CatchAllDriver</code>/<code>RecoverActivity</code> markers. Returned: <strong>zero matches</strong> for the first 4 patterns. Only <code>Sentry</code> hits &mdash; 16 of them &mdash; across <code>StreamifyApp.kt</code> + <code>StreamifyAdminApp.kt</code> + FCM service + NoticeRepo + UpdatePrefs.</li>
                     <li><code>basher</code> &mdash; grepped <code>TODO.html</code> + sibling plans for <code>crash</code>/<code>exception handler</code>/<code>Phase 7</code> mentions. Returned: planned &mdash; line 964 lists <em>"network, player, global crash handler"</em> as the scope of Step 6.4; <em>"comprehensive error handling: network, player, global exception handler"</em> at <code>sportzfy_build_plan.html:919</code>; Sentry replacing Crashlytics at L414 + L2942.</li>
                 </ul>
                 <p>Verdict: yes &mdash; <strong>Step 6.4 in <code>TODO.html</code> is "Error handling &amp; edge cases"</strong> with scope <code>network, player, global crash handler</code>. Sentry is wired at Application.onCreate (placeholder DSN), but no in-process last-chance handler existed &mdash; so a dying app today ships its exception to Sentry then dies silently with no recovery UI and no local dump. That gap is what Step 6.4 must close.</p>
@@ -646,8 +646,8 @@
             <div class="response-body">
                 <p><strong>Components delivered</strong> (Step 6.4 &mdash; "Error handling &amp; edge cases"):</p>
                 <ul>
-                    <li><strong>Theming &amp; dark/light toggle</strong> &mdash; <code>data/prefs/ThemePrefs.kt</code> DataStore wrapper, <code>SportStreamApp.onCreate</code> applies <code>AppCompatDelegate.setDefaultNightMode</code> via <code>runBlocking { themePrefs.currentMode() }</code> (auto-recreates started Activities &mdash; no manual <code>recreate()</code> flicker); <code>values/colors.xml</code> defaults + <code>values-night/colors.xml</code> dark override; <code>@color/on_primary</code> fixed-dark token keeps cyan-button text readable in both modes; <code>Theme.SportStream</code> flips <code>windowLightStatusBar</code> per qualifier; <code>SettingsFragment</code> 3-chip picker (System / Light / Dark); <code>bg_splash.xml</code> gradient hardcoded to dark hex so OLED brand identity holds in light mode.</li>
-                    <li><strong>Global crash handler</strong> &mdash; <code>data/crash/CrashHandler.kt</code> chained <code>Thread.UncaughtExceptionHandler</code> (install AFTER Sentry so SDK's sync-flush runs); atomic temp+rename dump to <code>filesDir/crash/crash-report-current.log</code>; <code>AtomicBoolean</code> re-entry guard; double-checked-locking <code>install()</code>. <code>ui/crash/CrashActivity.kt</code> recovery UI (Restart = MainActivity with NewTask|ClearTask, Copy details = clipboard). Manifest declares the activity in <code>android:process=":crash"</code> with <code>excludeFromRecents</code> for process isolation. <code>SportStreamApp.onCreate</code> short-circuits on <code>Process.myProcessName().endsWith(":crash")</code> to skip Sentry init + themePrefs + repository graphing in the recovery fork.</li>
+                    <li><strong>Theming &amp; dark/light toggle</strong> &mdash; <code>data/prefs/ThemePrefs.kt</code> DataStore wrapper, <code>StreamifyApp.onCreate</code> applies <code>AppCompatDelegate.setDefaultNightMode</code> via <code>runBlocking { themePrefs.currentMode() }</code> (auto-recreates started Activities &mdash; no manual <code>recreate()</code> flicker); <code>values/colors.xml</code> defaults + <code>values-night/colors.xml</code> dark override; <code>@color/on_primary</code> fixed-dark token keeps cyan-button text readable in both modes; <code>Theme.Streamify</code> flips <code>windowLightStatusBar</code> per qualifier; <code>SettingsFragment</code> 3-chip picker (System / Light / Dark); <code>bg_splash.xml</code> gradient hardcoded to dark hex so OLED brand identity holds in light mode.</li>
+                    <li><strong>Global crash handler</strong> &mdash; <code>data/crash/CrashHandler.kt</code> chained <code>Thread.UncaughtExceptionHandler</code> (install AFTER Sentry so SDK's sync-flush runs); atomic temp+rename dump to <code>filesDir/crash/crash-report-current.log</code>; <code>AtomicBoolean</code> re-entry guard; double-checked-locking <code>install()</code>. <code>ui/crash/CrashActivity.kt</code> recovery UI (Restart = MainActivity with NewTask|ClearTask, Copy details = clipboard). Manifest declares the activity in <code>android:process=":crash"</code> with <code>excludeFromRecents</code> for process isolation. <code>StreamifyApp.onCreate</code> short-circuits on <code>Process.myProcessName().endsWith(":crash")</code> to skip Sentry init + themePrefs + repository graphing in the recovery fork.</li>
                 </ul>
                 <p><strong>Subagent chain</strong>:</p>
                 <ul>
@@ -655,11 +655,11 @@
                     <li><code>code-reviewer-minimax-m3</code> &mdash; post-implementation flag of MAJOR-2 (drawable audit &mdash; <code>bg_splash.xml</code> was referencing <code>@color/dark_bg</code> that flips white in light mode), MAJOR-1 (latent StrictMode on the main-thread DataStore read), MAJOR-3 (atomic-write race + finishAffinity race). Stamped BLOCKED, then SHIP-READY after 3 fixes.</li>
                     <li><code>basher</code> &mdash; ran <code>./gradlew :app:compileDebugKotlin</code> after each fix round. BUILD SUCCESSFUL in both rounds.</li>
                 </ul>
-                <p><strong>Commits shipped</strong> (commit chain on <code>learngermanbd/sportstream:main</code>):</p>
+                <p><strong>Commits shipped</strong> (commit chain on <code>learngermanbd/streamify:main</code>):</p>
                 <ul>
-                    <li><code>08ea36c</code> &mdash; <code>feat(sportstream): Phase 6 Step 6.4 &mdash; theming &amp; dark/light toggle</code> (10 files: ThemePrefs + values-night + flipped values/colors.xml + Theme.SportStream dark variant + Splash hardcoded gradient + SettingsFragment chip picker).</li>
+                    <li><code>08ea36c</code> &mdash; <code>feat(streamify): Phase 6 Step 6.4 &mdash; theming &amp; dark/light toggle</code> (10 files: ThemePrefs + values-night + flipped values/colors.xml + Theme.Streamify dark variant + Splash hardcoded gradient + SettingsFragment chip picker).</li>
                     <li><code>c549e47</code> &mdash; <code>docs(TODO.html): Step 6.4 status badges Done, ship summary</code>.</li>
-                    <li><code>ab51587</code> &mdash; <code>feat(sportstream): Step 6.4 &mdash; global crash handler</code> (6 files: CrashHandler + CrashActivity + activity_crash.xml + AndroidManifest declaration + SportStreamApp install + crash strings).</li>
+                    <li><code>ab51587</code> &mdash; <code>feat(streamify): Step 6.4 &mdash; global crash handler</code> (6 files: CrashHandler + CrashActivity + activity_crash.xml + AndroidManifest declaration + StreamifyApp install + crash strings).</li>
                     <li><code>df874b1</code> &mdash; <code>docs(TODO.html): Step 6.4 ship summary, Done badges, deferred fields</code>.</li>
                     <li><code>802f23c</code> &mdash; <code>docs(TODO.html): Step 6.4 status badges aligned with the wrapping span class</code> (inner <code>Todo</code> -&gt; <code>Done</code> text inside <code>&lt;span class="check done"&gt;</code>).</li>
                 </ul>
@@ -691,7 +691,7 @@
                 <span class="agent commit">Shipped</span>
                 <span class="ts">turn 28&ndash;29</span>
             </div>
-            <p class="prompt-box"><span class="lbl">USER PROMPT (verbatim)</span>Wire the real Sentry DSN in SportStreamApp.kt + SportStreamAdminApp.kt so crashes actually report</p>
+            <p class="prompt-box"><span class="lbl">USER PROMPT (verbatim)</span>Wire the real Sentry DSN in StreamifyApp.kt + StreamifyAdminApp.kt so crashes actually report</p>
             <h4>STEP 6.5 SHIPPED &mdash; real Sentry DSN wired + mapping.txt auto-upload on release</h4>
             <div class="response-body">
                 <p><strong>Architecture validated by <code>thinker-with-files-gemini</code> BEFORE implementation</strong> &mdash; verdict OVERHAUL because the original plan missed the mapping-upload task. Five MAJOR fixes applied:</p>
@@ -707,9 +707,9 @@
                     <li><code>gradle/libs.versions.toml</code> &mdash; <code>sentry-gradle-plugin = "5.7.0"</code> alias + <code>sentry-android = { id = "io.sentry.android.gradle", version.ref = "sentry-gradle-plugin" }</code> plugin entry.</li>
                     <li><code>signing.properties.example</code> &mdash; new template documenting <code>APP_SENTRY_DSN</code> / <code>ADMIN_SENTRY_DSN</code> / <code>SENTRY_AUTH_TOKEN</code> keys.</li>
                     <li><code>app/build.gradle.kts</code> &mdash; hoisted <code>rootSigningProps</code> from single <code>signingConfigs.create("release")</code> block to top-level <code>val</code>; <code>buildConfigField("String", "SENTRY_DSN", "\"${props.getProperty("APP_SENTRY_DSN") ?: ""}\"")</code>; <code>sentry {}</code> extension with <code>autoProguardConfig = true</code> + <code>includeSourceContext = true</code> + <code>uploadNativeSymbols = false</code> (we don't depend on <code>sentry-android-ndk</code>); blank <code>SENTRY_AUTH_TOKEN</code> causes upload task to no-op cleanly.</li>
-                    <li><code>admin/build.gradle.kts</code> &mdash; mirror of the above with <code>ADMIN_SENTRY_DSN</code> + <code>projectName = "sportstream-admin-android"</code>; separate keystore overrides for admin when supplied.</li>
-                    <li><code>app/src/main/java/com/sportstream/app/SportStreamApp.kt</code> &mdash; imports <code>com.sportstream.app.BuildConfig</code> + <code>io.sentry.SentryEvent</code> + <code>io.sentry.SentryOptions</code>; deleted old <code>private const val SENTRY_DSN</code> companion placeholder; replaced <code>initSentry()</code> with hardened config (sampleRate = 1.0, tracesSampleRate = 0.0, sessionTracking off in release, debug-toggled isDebug, attachStacktrace + attachThreads on, attachViewHierarchy OFF = privacy); added <code>private fun scrubPii(event: SentryEvent)</code> with 4 regex patterns; <code>beforeSend</code> wired via <code>SentryOptions.BeforeSendCallback</code>. <code>:crash</code> process short-circuit preserved (validates MAJOR-5d &mdash; no double Sentry init).</li>
-                    <li><code>admin/src/main/java/com/sportstream/admin/SportStreamAdminApp.kt</code> &mdash; same hardening mirrored with admin-specific <code>setTag("process", "admin-main")</code> + extra <code>Authorization</code> regex for JWT cookie in Authorization headers.</li>
+                    <li><code>admin/build.gradle.kts</code> &mdash; mirror of the above with <code>ADMIN_SENTRY_DSN</code> + <code>projectName = "streamify-admin-android"</code>; separate keystore overrides for admin when supplied.</li>
+                    <li><code>app/src/main/java/com/streamify/app/StreamifyApp.kt</code> &mdash; imports <code>com.streamify.app.BuildConfig</code> + <code>io.sentry.SentryEvent</code> + <code>io.sentry.SentryOptions</code>; deleted old <code>private const val SENTRY_DSN</code> companion placeholder; replaced <code>initSentry()</code> with hardened config (sampleRate = 1.0, tracesSampleRate = 0.0, sessionTracking off in release, debug-toggled isDebug, attachStacktrace + attachThreads on, attachViewHierarchy OFF = privacy); added <code>private fun scrubPii(event: SentryEvent)</code> with 4 regex patterns; <code>beforeSend</code> wired via <code>SentryOptions.BeforeSendCallback</code>. <code>:crash</code> process short-circuit preserved (validates MAJOR-5d &mdash; no double Sentry init).</li>
+                    <li><code>admin/src/main/java/com/streamify/admin/StreamifyAdminApp.kt</code> &mdash; same hardening mirrored with admin-specific <code>setTag("process", "admin-main")</code> + extra <code>Authorization</code> regex for JWT cookie in Authorization headers.</li>
                     <li><code>chat.html</code> &mdash; this turn's doc flip (turn 13/14/15 appends + stats/header bump).</li>
                 </ul>
                 <p><strong>What was deliberately NOT done in this turn</strong>: <code>./gradlew :app:compileDebugKotlin</code> compile check + <code>code-reviewer-minimax-m3</code> review pass. Wired through user explicit instruction (<em>"you don't have to build the sentry just update the chat.html and push the all changes"</em>) to keep this turn on the PATH=commit-and-ship critical path. Compile + review deferred to next session so the Sentry wire-up source lands without delay.</p>
@@ -746,10 +746,10 @@
             <div class="response-body">
                 <p><strong>Components delivered</strong> (Step 6.2 - Auto-update system):</p>
                 <ul>
-                    <li><strong>UpdateWorker.kt</strong> (new) - WorkManager CoroutineWorker, 24h PeriodicWorkRequest, KEEP policy. Posts local notification with PendingIntent to MainActivity when update available. Creates "App Updates" NotificationChannel. Enqueued from SportStreamApp.onCreate via UpdateWorker.enqueue(this).</li>
+                    <li><strong>UpdateWorker.kt</strong> (new) - WorkManager CoroutineWorker, 24h PeriodicWorkRequest, KEEP policy. Posts local notification with PendingIntent to MainActivity when update available. Creates "App Updates" NotificationChannel. Enqueued from StreamifyApp.onCreate via UpdateWorker.enqueue(this).</li>
                     <li><strong>WorkManager dependency</strong> - workmanager 2.10.0 added to libs.versions.toml + app/build.gradle.kts.</li>
                     <li><strong>String resources</strong> - update_channel_name + update_channel_description added to strings.xml.</li>
-                    <li><strong>SportStreamApp.kt</strong> - Added UpdateWorker.enqueue() in onCreate + fixed isEnableAutoSessionTracking (Sentry SDK 7.16.0 rename) + fixed scrubbed nullability.</li>
+                    <li><strong>StreamifyApp.kt</strong> - Added UpdateWorker.enqueue() in onCreate + fixed isEnableAutoSessionTracking (Sentry SDK 7.16.0 rename) + fixed scrubbed nullability.</li>
                     <li><strong>APK size limit raised</strong> - All references to 30MB cap updated to 50MB in TODO.html (lines 621, 655, 974).</li>
                 </ul>
                 <p><strong>Build-script fixes (pre-existing Step 6.5 issues that were never compile-verified):</strong></p>
@@ -757,7 +757,7 @@
                     <li><strong>MAJOR-1</strong> - import java.util.Properties moved AFTER plugins {} block in both build.gradle.kts files. Gradle's java {} extension shadows the root java package (thinker-gemini diagnosis).</li>
                     <li><strong>MAJOR-2</strong> - autoProguardConfig renamed to autoUploadProguardMapping in app (Sentry Gradle plugin 5.x property name).</li>
                     <li><strong>MAJOR-3</strong> - Sentry plugin deferred in admin module (Phase 8 work, not active).</li>
-                    <li><strong>MAJOR-4</strong> - isSessionTrackingEnabled renamed to isEnableAutoSessionTracking in SportStreamApp.kt (Sentry SDK 7.16.0 property).</li>
+                    <li><strong>MAJOR-4</strong> - isSessionTrackingEnabled renamed to isEnableAutoSessionTracking in StreamifyApp.kt (Sentry SDK 7.16.0 property).</li>
                 </ul>
                 <p><strong>Compile:</strong> ./gradlew :app:compileDebugKotlin BUILD SUCCESSFUL (1m 53s).</p>
                 <p><strong>Commit:</strong> 054a7ef pushed to origin/main.</p>
@@ -790,7 +790,7 @@
                     <li><strong>SecurityModule.kt</strong> - DI seam. init(context) registers ComponentCallbacks2 for onTrimMemory/onLowMemory cache clearing. Idempotent with boolean guard.</li>
                     <li><strong>AppConfig.kt</strong> - defaults() uses RuntimeStringProvider.getString() for all URL fields.</li>
                     <li><strong>ApiClient.kt / RemoteConfigHelper.kt / NetworkModule.kt</strong> - Plaintext URL constants replaced with RuntimeStringProvider functions.</li>
-                    <li><strong>SportStreamApp.kt</strong> - SecurityModule.init(this) in onCreate.</li>
+                    <li><strong>StreamifyApp.kt</strong> - SecurityModule.init(this) in onCreate.</li>
                     <li><strong>proguard-rules.pro</strong> - Keep rules for EncryptedConstants, Gson, Room, Sentry, data models.</li>
                     <li><strong>secrets.properties.example</strong> + .gitignore updated (secrets.properties + generated source excluded).</li>
                 </ul>
@@ -856,7 +856,7 @@
                     <li><strong>IntegrityChecker.kt</strong> (new) - Runtime APK integrity verification: signing certificate SHA-256 verification (GET_SIGNING_CERTIFICATES API 28+ / GET_SIGNATURES legacy), SHA-256 file integrity for APK ZipFile entries (classes.dex, resources.arsc), installer source validation (Play Store, Galaxy Store, Amazon, null for ADB). TamperResult sealed class with 9 subtypes.</li>
                     <li><strong>TamperDetector.kt</strong> (new) - META-INF inspection for suspicious entries (apktool, lucky, patcher, crack, hack), entry count anomaly check (>10 entries), native environment checks via NativeSecurityManager (Frida/Xposed/Substrate hooks + root), debuggable flag check (FLAG_DEBUGGABLE in release builds = repackaged).</li>
                     <li><strong>SelfHealing.kt</strong> (new) - Gradual degradation strategy: NONE → LOGGING → FEATURES_DISABLED → FINAL. Silent Sentry reporting, feature flag disabling (premium_streaming, favorites, playlists, push, PiP, subtitles, quality), deceptive error messages (never reveals tamper detection), random 30-120s delay before exitProcess to prevent attacker correlation.</li>
-                    <li><strong>SportStreamApp.kt</strong> - Integrity checks run on background Thread after UpdateWorker.enqueue. IntegrityChecker first, then TamperDetector if clean. SelfHealing.onTamperDetected on failure.</li>
+                    <li><strong>StreamifyApp.kt</strong> - Integrity checks run on background Thread after UpdateWorker.enqueue. IntegrityChecker first, then TamperDetector if clean. SelfHealing.onTamperDetected on failure.</li>
                     <li><strong>proguard-rules.pro</strong> - Comment noting no additional keep rules needed for integrity/tamper/selfhealing classes.</li>
                 </ul>
                 <p><strong>Known limitation:</strong> IntegrityChecker.expectedSignatureSha256 and expectedEntryHashes are not yet populated (deferred to Step 7.13 — Security build &amp; verify pipeline). Installer source check is fully functional.</p>
@@ -880,7 +880,7 @@
                     <li><strong>EmulatorDetector.kt</strong> (new) - Build property matching (FINGERPRINT, MODEL, MANUFACTURER, BRAND, DEVICE, HARDWARE, PRODUCT), emulator file detection (/dev/qemu_pipe, /dev/goldfish_pipe, etc.), score-based approach with threshold >= 4. isLikelyEmulator() quick check. DetectionResult data class.</li>
                     <li><strong>HookDetector.kt</strong> (new) - Xposed/LSPosed class loader inspection (Class.forName), Frida port 27042 probe with 1s timeout, hooking framework file checks, stack trace analysis for XposedBridge/Frida/LSPosed frames. Score-based with threshold >= 5.</li>
                     <li><strong>SecurityGate.kt</strong> (new) - Risk-scoring orchestrator running 6 check layers: native root/debug/emulator/hook + Kotlin root + Kotlin emulator + Kotlin hook + integrity + tamper. AtomicBoolean hasRun flag. Score thresholds: CLEAN (0), SOFT (1-4), HARD (5-9), CRITICAL (10+). Integrates with SelfHealing.</li>
-                    <li><strong>SportStreamApp.kt</strong> - Replaced direct IntegrityChecker/TamperDetector calls with SecurityGate.runChecks() for unified risk scoring.</li>
+                    <li><strong>StreamifyApp.kt</strong> - Replaced direct IntegrityChecker/TamperDetector calls with SecurityGate.runChecks() for unified risk scoring.</li>
                 </ul>
                 <p><strong>Code review fixes:</strong> Frida port probe now uses Socket.connect with 1s timeout (was blocking indefinitely). SecurityGate.hasRun changed to AtomicBoolean with compareAndSet (was non-atomic @Volatile check).</p>
                 <p><strong>Build:</strong> ./gradlew :app:compileDebugKotlin BUILD SUCCESSFUL (53s).</p>
@@ -923,7 +923,7 @@
                 <p><strong>Components delivered</strong> (Step 7.11 - WebView &amp; Deep Link Hardening):</p>
                 <ul>
                     <li><strong>SecureWebView.kt</strong> (new) — WebView hardening: JavaScript disabled, file/content access disabled, MIXED_CONTENT_NEVER_ALLOW, saveFormData/savePassword false, LOAD_NO_CACHE. URL whitelist (learngermanwith.fun domains). Clean when-expression for scheme validation (HTTPS allowed, HTTP only in debug). shouldOverrideUrlLoading validates all navigations. clearSensitiveData clears history/cache/cookies. WebView debugging disabled in release.</li>
-                    <li><strong>DeepLinkValidator.kt</strong> (new) — Deep link validation for sportstream:// and https:// schemes. Allowed hosts (main/player/category/notice/settings/update/search). 2048 char max URI length. Dangerous character detection including host. Path traversal prevention (.., %2e%2e variants). URL-encoded double-decoding re-validation. Open redirect prevention (url/redirect/next/return/continue/target params). sanitize() method. DeepLinkResult sealed class.</li>
+                    <li><strong>DeepLinkValidator.kt</strong> (new) — Deep link validation for streamify:// and https:// schemes. Allowed hosts (main/player/category/notice/settings/update/search). 2048 char max URI length. Dangerous character detection including host. Path traversal prevention (.., %2e%2e variants). URL-encoded double-decoding re-validation. Open redirect prevention (url/redirect/next/return/continue/target params). sanitize() method. DeepLinkResult sealed class.</li>
                     <li><strong>IntentFilterSecurity.kt</strong> (new) — Intent validation: source validation (referrer/callingActivity check). Extras validation (max 20 count, max 4096 length, script injection patterns). Action validation (blocks ACTION_DELETE/UNINSTALL). Data URI validation via DeepLinkValidator. Type-safe sanitize() with when-expression for String/Int/Long/Boolean/Float/Double/Parcelable/Serializable. isInternalCaller() for sensitive ops.</li>
                 </ul>
                 <p><strong>Build:</strong> ./gradlew :app:compileDebugKotlin — BUILD SUCCESSFUL (58s)</p>
@@ -967,7 +967,7 @@
                     <li><strong>AntiScreenCapture.kt</strong> (new) - FLAG_SECURE management delegating to MemoryProtection. Screen recording detection via suspicious package check. Recents protection. Memory-trim callback for re-applying protection. PROTECTED_ACTIVITY_NAMES set.</li>
                     <li><strong>HoneyPotManager.kt</strong> (new) - Fake API endpoints (admin/debug/metrics/export), decoy encryption keys, canary system (premium_unlock, admin_access, debug_config, key_export). Dead code paths that trigger canaries. ConcurrentHashMap for thread safety. Sentry reporting on trigger.</li>
                     <li><strong>SecurityGate.kt</strong> (modified) - Added 3 new check layers: Layer 7 AntiDebug (+4), Layer 8 RuntimeMonitor (+3), Layer 9 HoneyPotManager canaries (+6).</li>
-                    <li><strong>SportStreamApp.kt</strong> (modified) - Added HoneyPotManager.init() before SecurityGate.runChecks().</li>
+                    <li><strong>StreamifyApp.kt</strong> (modified) - Added HoneyPotManager.init() before SecurityGate.runChecks().</li>
                 </ul>
                 <p><strong>Build:</strong> ./gradlew :app:compileDebugKotlin — BUILD SUCCESSFUL (50s)</p>
             </div>

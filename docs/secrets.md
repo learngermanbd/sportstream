@@ -3,12 +3,12 @@
 ## Layout
 
 * `signing.properties` &mdash; lives at **repo root** (next to `settings.gradle.kts`), **GITIGNORED**. Consumes by both `:app` and `:admin` via `rootProject.file("signing.properties")`.
-* `*.keystore` / `*.jks` &mdash; also gitignored; conventional name `sportstream-release.jks` placed at `~/keystores/` or any out-of-repo path the properties file references.
+* `*.keystore` / `*.jks` &mdash; also gitignored; conventional name `streamify-release.jks` placed at `~/keystores/` or any out-of-repo path the properties file references.
 
 ## `signing.properties` schema
 
 ```properties
-RELEASE_STORE_FILE=/absolute/path/to/sportstream-release.jks
+RELEASE_STORE_FILE=/absolute/path/to/streamify-release.jks
 RELEASE_STORE_PASSWORD=...
 RELEASE_KEY_ALIAS=...
 RELEASE_KEY_PASSWORD=...
@@ -18,11 +18,11 @@ RELEASE_KEY_PASSWORD=...
 
 ```bash
 keytool -genkeypair \
-  -alias sportstream-release \
+  -alias streamify-release \
   -keyalg RSA \
   -keysize 4096 \
   -validity 25000 \
-  -keystore ~/keystores/sportstream-release.jks \
+  -keystore ~/keystores/streamify-release.jks \
   -storepass "$STORE_PASS" \
   -keypass "$KEY_PASS" \
   -dname "CN=SportStream, OU=Mobile, O=learngermanbd, L=BD, S=, C=BD"
@@ -41,7 +41,7 @@ Both `:app` and `:admin` declare the same `signingConfigs.release` block because
 
 ## Operator checklist before a Play upload
 
-1. `keytool -list -v -keystore ~/keystores/sportstream-release.jks` &mdash; confirm alias + validity dates.
+1. `keytool -list -v -keystore ~/keystores/streamify-release.jks` &mdash; confirm alias + validity dates.
 2. `./gradlew :app:assembleRelease -PenableR8.fullMode=true` &mdash; re-build with R8 full mode for tighter obfuscation.
 3. Decompile with `jadx` and grep for non-obfuscated sensitive class names.
 4. Test the signed APK on a real device before upload (Play Integrity won't catch a mis-aligned signature on install).

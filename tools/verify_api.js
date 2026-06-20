@@ -54,12 +54,12 @@ async function main() {
     // ─── HEALTH ───
     { name: 'GET /api/health', fn: async () => {
       const r = await req('GET', '/api/health');
-      if (r.status === 200 && r.body.name === 'sportstream-admin-backend') return '✅ 200 OK';
+      if (r.status === 200 && r.body.name === 'streamify-admin-backend') return '✅ 200 OK';
       return `❌ ${r.status} | ${JSON.stringify(r.body).substring(0,100)}`;
     }},
     // ─── AUTH: LOGIN ───
     { name: 'POST /api/admin/auth/login', fn: async () => {
-      const r = await req('POST', '/api/admin/auth/login', { email: 'admin@sportstream.app', password: 'admin123' });
+      const r = await req('POST', '/api/admin/auth/login', { email: 'admin@streamify.app', password: 'admin123' });
       if (r.status === 200 && r.body.accessToken) {
         accessToken = r.body.accessToken;
         const u = r.body.user;

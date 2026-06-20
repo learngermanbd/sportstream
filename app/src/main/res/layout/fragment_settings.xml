@@ -5,7 +5,7 @@
     Step 6.4 fills the placeholder that Stepm 5.5 (Drawer) + 5.6
     (Toolbar) wrapped with a real Settings form. Layout hosts the
     THEME picker (System / Light / Dark) wired to
-    [com.sportstream.app.data.prefs.ThemePrefs]. Future settings rows
+    [com.streamify.app.data.prefs.ThemePrefs]. Future settings rows
     (Playback defaults, Notification preferences, etc.) append below
     the theme-help-text chain anchor by adding more ConstraintLayout
     rows.

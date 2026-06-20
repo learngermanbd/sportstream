@@ -75,8 +75,8 @@
 # it automatically.  However, the field names serve as the encryption key
 # lookup table — if R8 renames them the app crashes at runtime.  We keep
 # the class and its fields but allow method-level obfuscation.
--keep class com.sportstream.app.security.EncryptedConstants { *; }
--keep class com.sportstream.app.security.EncryptedConstants$Entry { *; }
+-keep class com.streamify.app.security.EncryptedConstants { *; }
+-keep class com.streamify.app.security.EncryptedConstants$Entry { *; }
 
 # RuntimeStringProvider's ENTRIES keys are string literals, not reflection.
 # KeystoreManager, StringEncryptor, SecurityModule — direct calls only.
@@ -84,18 +84,18 @@
 
 # ── Data models (Phase 2) ────────────────────────────────────────────────
 # Keep all data classes that are deserialized from JSON via org.json.
--keep class com.sportstream.app.data.models.** { *; }
+-keep class com.streamify.app.data.models.** { *; }
 
 # ── Crash handler ────────────────────────────────────────────────────────
 # CrashActivity is launched via Intent from the UncaughtExceptionHandler.
--keep class com.sportstream.app.data.crash.CrashActivity { *; }
+-keep class com.streamify.app.data.crash.CrashActivity { *; }
 
 # ── Phase 7 · Step 7.4 — Native JNI bridge ───────────────────────────────
 # NativeSecurityManager's companion static method bytesToHex is called
 # from JNI (RegisterNatives).  The class and its native methods must
 # survive R8 renaming.  The actual JNI bindings use RegisterNatives in
 # JNI_OnLoad, so the standard JNI naming convention does not apply.
--keep class com.sportstream.app.security.NativeSecurityManager {
+-keep class com.streamify.app.security.NativeSecurityManager {
     native <methods>;
     static java.lang.String bytesToHex(byte[]);
 }

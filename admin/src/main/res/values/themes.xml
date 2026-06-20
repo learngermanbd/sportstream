@@ -7,7 +7,7 @@
 -->
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Theme.SportStreamAdmin" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.StreamifyAdmin" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">@color/secondary</item>
         <item name="colorPrimaryVariant">@color/primary_dark</item>
@@ -25,7 +25,7 @@
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
     </style>
 
-    <style name="Theme.SportStreamAdmin.NoActionBar" parent="Theme.SportStreamAdmin">
+    <style name="Theme.StreamifyAdmin.NoActionBar" parent="Theme.StreamifyAdmin">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>

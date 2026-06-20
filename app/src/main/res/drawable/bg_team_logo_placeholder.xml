@@ -3,7 +3,7 @@
     Phase 3 · Step 3.3 — Team-logo placeholder shown by Glide before the
     real logo URL finishes loading. Oval (circle-ish) shape with the
     glass-primary fill + 1 dp glass-primary-border stroke. Visually
-    consistent with the SportStream.GlassCard style from Step 1.5.
+    consistent with the Streamify.GlassCard style from Step 1.5.
 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">

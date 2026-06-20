@@ -17,7 +17,7 @@
         with the dark-mode equivalent; only the 2 system-bar flags
         differ between the two qualifiers.
     -->
-    <style name="Theme.SportStream" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.Streamify" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Brand palette -->
         <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">@color/on_primary</item>

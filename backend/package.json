@@ -1,5 +1,5 @@
 {
-  "name": "sportstream-admin-backend",
+  "name": "streamify-admin-backend",
   "version": "0.1.0",
   "description": "SportStream admin backend — REST API + remote config + push notifications",
   "main": "src/server.js",

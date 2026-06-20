@@ -40,7 +40,7 @@ if (process.env.NODE_ENV === 'production') {
     throw new Error('JWT_SECRET must be set in production');
   }
   if (JWT_REFRESH_SECRET === (JWT_SECRET + '-refresh')) {
-    console.warn('[sportstream-backend] WARNING: JWT_REFRESH_SECRET is derived from JWT_SECRET. Set a separate JWT_REFRESH_SECRET in production.');
+    console.warn('[streamify-backend] WARNING: JWT_REFRESH_SECRET is derived from JWT_SECRET. Set a separate JWT_REFRESH_SECRET in production.');
   }
 }
 
@@ -101,7 +101,7 @@ app.use('/api/devices', devicesRoute);
 // --- Root sanity check ---
 app.get('/', (_req, res) => {
   res.json({
-    name: 'sportstream-admin-backend',
+    name: 'streamify-admin-backend',
     version: process.env.npm_package_version || '0.1.0',
     docs: '/api/health for liveness',
     phase: 'Phase 8.3 — backend REST API',
@@ -156,13 +156,13 @@ app.use((err, req, res, _next) => {
 if (require.main === module) {
   if (process.env.NODE_ENV !== 'production') {
     if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_PASSWORD) {
-      console.warn('[sportstream-backend] DEV mode — set DB_HOST, DB_USER, DB_PASSWORD in .env (direct pg connection)');
+      console.warn('[streamify-backend] DEV mode — set DB_HOST, DB_USER, DB_PASSWORD in .env (direct pg connection)');
     }
   }
   app.listen(PORT, () => {
-    console.log(`[sportstream-backend] listening on :${PORT}`);
-    console.log(`[sportstream-backend] health:  http://localhost:${PORT}/api/health`);
-    console.log(`[sportstream-backend] config: http://localhost:${PORT}/api/config`);
+    console.log(`[streamify-backend] listening on :${PORT}`);
+    console.log(`[streamify-backend] health:  http://localhost:${PORT}/api/health`);
+    console.log(`[streamify-backend] config: http://localhost:${PORT}/api/config`);
 
     // Step 8.18: Start notification scheduler
     startScheduler();

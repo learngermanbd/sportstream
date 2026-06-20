@@ -12,6 +12,6 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "SportStream"
+rootProject.name = "Streamify"
 include(":app")
 include(":admin")

@@ -2,7 +2,7 @@
 
 > The canonical, human-readable build checklist lives at **[`TODO.html`](TODO.html)** (dark glassmorphism, styled phase + step cards, status badges, premium budget table, cheat-sheet).
 >
-> This file is kept as a thin redirect so any downstream agent that reads `sportstream/TODO.md` still gets pointed to the source of truth. It is auto-synced to GitHub via the post-commit hook (`learngermanbd/sportstream:main`).
+> This file is kept as a thin redirect so any downstream agent that reads `streamify/TODO.md` still gets pointed to the source of truth. It is auto-synced to GitHub via the post-commit hook (`learngermanbd/streamify:main`).
 
 ## Where to look
 

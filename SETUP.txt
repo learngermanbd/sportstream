@@ -45,7 +45,7 @@
   ─────────────────────────────────────
     1. Go to: https://supabase.com/dashboard
     2. Click "New project"
-    3. Choose organization, name it "sportstream"
+    3. Choose organization, name it "streamify"
     4. Set a strong database password (SAVE IT!)
     5. Choose region (e.g., ap-south-1 for India)
     6. Click "Create project" — wait ~2 minutes
@@ -72,7 +72,7 @@
     1. In your Supabase dashboard, click "SQL Editor" (left sidebar)
     2. Click "New query"
     3. Open this file on your computer:
-       sportstream/backend/prisma/supabase_migration.sql
+       streamify/backend/prisma/supabase_migration.sql
     4. Copy ALL contents and paste into the SQL Editor
     5. Click "Run" (green button, bottom-right)
     6. Verify: Go to "Table Editor" — you should see 11 tables:
@@ -80,7 +80,7 @@
        Banner, AppConfig, Notification, DeviceToken, AnalyticsEvent
 
     This also seeds the first admin user:
-      Email:    admin@sportstream.app
+      Email:    admin@streamify.app
       Password: admin123
 
 
@@ -90,12 +90,12 @@
 
   Step 3.1 — Install dependencies
   ────────────────────────────────
-    cd sportstream/backend
+    cd streamify/backend
     npm install
 
   Step 3.2 — Configure environment variables
   ───────────────────────────────────────────
-    The .env file already exists at: sportstream/backend/.env
+    The .env file already exists at: streamify/backend/.env
 
     Update these values with YOUR PostgreSQL credentials from Step 2.2:
 
@@ -111,7 +111,7 @@
 
   Step 3.3 — Start the backend server
   ────────────────────────────────────
-    cd sportstream/backend
+    cd streamify/backend
     npm run dev
 
     Server starts on: http://localhost:4000
@@ -127,7 +127,7 @@
     # Login as admin
     curl -X POST http://localhost:4000/api/admin/auth/login \
       -H "Content-Type: application/json" \
-      -d '{"email":"admin@sportstream.app","password":"admin123"}'
+      -d '{"email":"admin@streamify.app","password":"admin123"}'
 
     # Get events (public)
     curl http://localhost:4000/api/events
@@ -143,12 +143,12 @@
   Step 4.1 — Open in Android Studio
   ──────────────────────────────────
     1. Open Android Studio
-    2. File → Open → select: sportstream/ (root folder)
+    2. File → Open → select: streamify/ (root folder)
     3. Wait for Gradle sync to complete
 
   Step 4.2 — Configure API base URL
   ──────────────────────────────────
-    Open: app/src/main/java/com/sportstream/app/data/remote/ApiClient.kt
+    Open: app/src/main/java/com/streamify/app/data/remote/ApiClient.kt
     Update BASE_URL to point to your backend:
       const val BASE_URL = "http://YOUR_COMPUTER_IP:4000/api/"
 
@@ -163,7 +163,7 @@
 
   Step 4.4 — Run unit tests
   ──────────────────────────
-    cd sportstream
+    cd streamify
     ./gradlew :app:testDebugUnitTest
 
     Expected: 22 tests passing, BUILD SUCCESSFUL
@@ -180,15 +180,15 @@
     Access it at: http://localhost:4000/admin/
 
     Login with:
-      Email:    admin@sportstream.app
+      Email:    admin@streamify.app
       Password: admin123
 
   5.2 — Android Admin App
   ─────────────────────────
-    The admin Android app is in: sportstream/admin/
+    The admin Android app is in: streamify/admin/
 
     Open in Android Studio as a separate project:
-    File → Open → select: sportstream/admin/
+    File → Open → select: streamify/admin/
     Build and run on a device/emulator.
 
 
@@ -200,7 +200,7 @@
 
   To enable push notifications:
     1. Go to: https://console.firebase.google.com
-    2. Create a project named "sportstream-app"
+    2. Create a project named "streamify-app"
     3. Go to: Project Settings → Service accounts
     4. Click "Generate new private key" → download JSON
     5. Update these in .env:
@@ -217,19 +217,19 @@
   ────────────────────────────────
 
     Terminal 1 — Backend:
-      cd sportstream/backend
+      cd streamify/backend
       npm run dev
 
     Terminal 2 — Start ngrok (optional, for external access):
       ngrok http 4000
 
     Android Studio 1 — User App:
-      Open sportstream/ (root)
+      Open streamify/ (root)
       Update ApiClient.kt BASE_URL
       Click Run
 
     Android Studio 2 — Admin App:
-      Open sportstream/admin/
+      Open streamify/admin/
       Click Run
 
   7.2 — Verify everything
@@ -245,12 +245,12 @@
   8. CREDENTIALS & ACCOUNTS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  GitHub:       https://github.com/learngermanbd/sportstream
+  GitHub:       https://github.com/learngermanbd/streamify
   Supabase:     https://supabase.com/dashboard
   Firebase:     https://console.firebase.google.com (optional)
 
   Default admin login (after SQL migration):
-    Email:       admin@sportstream.app
+    Email:       admin@streamify.app
     Password:    admin123
 
   ⚠️  CHANGE the admin password after first login!

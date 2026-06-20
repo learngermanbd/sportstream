@@ -671,7 +671,7 @@
 Paste this prompt in Codebuff:
 
 Create a new Android project with Kotlin for a sports streaming app called "SportStream".
-Package: com.sportstream.app
+Package: com.streamify.app
 Min SDK: 23 (Android 6.0), Target SDK: 35 (Android 16)
 Use Gradle Kotlin DSL (build.gradle.kts)
 Set up the following package structure:
@@ -716,7 +716,7 @@ Fix any version conflicts.</div>
 Paste this in Codebuff:
 
 1. Create placeholder google-services.json with dummy values
-2. Create SportStreamApp.kt extending Application:
+2. Create StreamifyApp.kt extending Application:
    - Initialize Firebase Messaging ONLY (FCM)
    - Initialize Sentry SDK: Sentry.init { dsn = "<YOUR_SENTRY_DSN>" }
    - Initialize Supabase client for storage
@@ -989,7 +989,7 @@ Add analytics tracking (POST /api/analytics/events).
 Update RemoteConfigHelper to fetch from admin API /api/config.</div>
 
                 <div class="prompt-box" style="margin-top:10px;"><span class="comment">// STEP 8.13-8.15 — Separate Android Admin App (Agent: Buff)</span>
-Create SEPARATE Android project "SportStream Admin" (com.sportstream.admin):
+Create SEPARATE Android project "SportStream Admin" (com.streamify.admin):
 Admin login with JWT, role-based UI, events/channels/highlights CRUD screens,
 config editor, notification composer, analytics with MPAndroidChart.
 Completely independent APK, distributed privately to admins only.</div>
@@ -1144,7 +1144,7 @@ Create signed AAB for Play Store. Verify APK size under 30MB.</div>
             <!-- PROJECT STRUCTURE -->
             <div class="bdd-section">
                 <h4>&#128193; Project Structure</h4>
-                <div class="arch-diagram">sportstream-admin-backend/
+                <div class="arch-diagram">streamify-admin-backend/
 &#9500;&#9472;&#9472; prisma/
 &#9474;   &#9500;&#9472;&#9472; schema.prisma          # Full database schema
 &#9474;   &#9500;&#9472;&#9472; seed.js                # Seed admin user + sample data
@@ -1263,7 +1263,7 @@ Create signed AAB for Play Store. Verify APK size under 30MB.</div>
             <div class="bdd-section">
                 <h4>&#128228; File Uploads (Supabase Storage)</h4>
                 <p>Admin uploads images/videos via the panel. Files go directly to <strong>Supabase Storage</strong> (not local disk &mdash; Render has no persistent disk).</p>
-                <div class="arch-diagram">sportstream-assets/           (Supabase Storage bucket)
+                <div class="arch-diagram">streamify-assets/           (Supabase Storage bucket)
 &#9500;&#9472;&#9472; events/               # Team logos, event images
 &#9500;&#9472;&#9472; channels/             # Channel logos
 &#9500;&#9472;&#9472; highlights/           # Thumbnails + video files
@@ -1294,7 +1294,7 @@ Create signed AAB for Play Store. Verify APK size under 30MB.</div>
                 <ul>
                     <li><strong>Immediate:</strong> Admin clicks "Send" &rarr; FCM sends to topic/token instantly</li>
                     <li><strong>Scheduled:</strong> Admin sets future time &rarr; <code>node-cron</code> checks every minute &rarr; FCM sends when time arrives</li>
-                    <li><strong>Data messages:</strong> Include deep links (<code>sportstream://event/123</code>) for direct navigation on tap</li>
+                    <li><strong>Data messages:</strong> Include deep links (<code>streamify://event/123</code>) for direct navigation on tap</li>
                 </ul>
             </div>
 
@@ -1398,7 +1398,7 @@ npx prisma migrate deploy && node src/server.js</div>
                 <h4>&#128268; How the 3 Platforms Connect</h4>
                 <div class="arch-diagram">+-------------------+   +-------------------+   +-------------------+
 | Web Dashboard     |   | Android Admin App |   | Android User App  |
-| (HTML/CSS/JS)     |   | (com.sportstream  |   | (com.sportstream  |
+| (HTML/CSS/JS)     |   | (com.streamify  |   | (com.streamify  |
 |                   |   |    .admin)        |   |    .app)          |
 +--------+----------+   +--------+----------+   +--------+----------+
          |  JWT Auth + REST       |  JWT Auth + REST       |  Public API
@@ -1429,7 +1429,7 @@ npx prisma migrate deploy && node src/server.js</div>
                 <h4>&#127793; Initial Database Seeding</h4>
                 <p>On first deploy, the seed script creates:</p>
                 <ul>
-                    <li><strong>1 Super Admin:</strong> admin@sportstream.com / password (change immediately!)</li>
+                    <li><strong>1 Super Admin:</strong> admin@streamify.com / password (change immediately!)</li>
                     <li><strong>5 Categories:</strong> Cricket, Football, Tennis, Basketball, Other</li>
                     <li><strong>1 AppConfig:</strong> Default config with placeholder URLs</li>
                     <li><strong>0 events/channels/highlights:</strong> Admin adds these via the panel</li>
@@ -1467,7 +1467,7 @@ npx prisma migrate deploy && node src/server.js</div>
     <section class="section" id="admin-app-plan">
         <div class="admin-app-deep-dive">
             <h3>&#128241; Android Admin App &mdash; Complete Screen &amp; Architecture Plan</h3>
-            <p>Detailed plan for the separate <strong style="color:#fff;">SportStream Admin</strong> Android app (com.sportstream.admin). Jetpack Compose + Material 3 + MVVM + Clean Architecture. Orange accent theme to distinguish from the user app.</p>
+            <p>Detailed plan for the separate <strong style="color:#fff;">SportStream Admin</strong> Android app (com.streamify.admin). Jetpack Compose + Material 3 + MVVM + Clean Architecture. Orange accent theme to distinguish from the user app.</p>
 
             <!-- APP IDENTITY -->
             <div class="aadd-section">
@@ -1475,7 +1475,7 @@ npx prisma migrate deploy && node src/server.js</div>
                 <table class="nav-table">
                     <tr><th>Property</th><th>Value</th></tr>
                     <tr><td>App Name</td><td><strong style="color:#fff;">SportStream Admin</strong></td></tr>
-                    <tr><td>Package</td><td><code>com.sportstream.admin</code></td></tr>
+                    <tr><td>Package</td><td><code>com.streamify.admin</code></td></tr>
                     <tr><td>Min SDK</td><td>23 (Android 6.0)</td></tr>
                     <tr><td>Target SDK</td><td>35 (Android 16)</td></tr>
                     <tr><td>UI Framework</td><td>Jetpack Compose + Material 3</td></tr>
@@ -1488,7 +1488,7 @@ npx prisma migrate deploy && node src/server.js</div>
             <!-- PROJECT STRUCTURE -->
             <div class="aadd-section">
                 <h4>&#128193; Project Structure</h4>
-                <div class="prompt-box" style="margin-top:8px;"><span class="comment">// com.sportstream.admin/ package structure</span>
+                <div class="prompt-box" style="margin-top:8px;"><span class="comment">// com.streamify.admin/ package structure</span>
 app/
   AdminApp.kt                     <span class="comment">// Application class</span>
   MainActivity.kt                 <span class="comment">// Single activity (Compose)</span>
@@ -1782,7 +1782,7 @@ app/
 |  Image (optional)            |
 |  [ Upload Image ]            |
 |  Deep Link                   |
-|  [ sportstream://event/5  ]  |
+|  [ streamify://event/5  ]  |
 |                              |
 |  Target Audience *           |
 |  (o) All Users               |
@@ -2531,7 +2531,7 @@ val client = OkHttpClient.Builder()
                 <table class="api-table">
                     <tr><th>Property</th><th>Value</th></tr>
                     <tr><td><strong>App Name</strong></td><td>SportStream</td></tr>
-                    <tr><td><strong>Package</strong></td><td><code>com.sportstream.app</code></td></tr>
+                    <tr><td><strong>Package</strong></td><td><code>com.streamify.app</code></td></tr>
                     <tr><td><strong>Min SDK</strong></td><td>23 (Android 6.0 Marshmallow)</td></tr>
                     <tr><td><strong>Target SDK</strong></td><td>35 (Android 16)</td></tr>
                     <tr><td><strong>UI Framework</strong></td><td>XML Layouts + ViewBinding (Kotlin)</td></tr>
@@ -2544,9 +2544,9 @@ val client = OkHttpClient.Builder()
             <!-- PROJECT STRUCTURE -->
             <div class="uad-section">
                 <h4>&#128193; Project Structure</h4>
-                <div class="wireframe">com.sportstream.app/
-&#9500;&#9472;&#9472; app/src/main/java/com/sportstream/app/
-&#9474;   &#9500;&#9472;&#9472; SportStreamApp.kt              # Application class (FCM + Sentry init)
+                <div class="wireframe">com.streamify.app/
+&#9500;&#9472;&#9472; app/src/main/java/com/streamify/app/
+&#9474;   &#9500;&#9472;&#9472; StreamifyApp.kt              # Application class (FCM + Sentry init)
 &#9474;   &#9500;&#9472;&#9472; ui/
 &#9474;   &#9474;   &#9500;&#9472;&#9472; splash/SplashActivity.kt      # Network check, config fetch, loading
 &#9474;   &#9474;   &#9500;&#9472;&#9472; main/MainActivity.kt          # DrawerLayout + BottomNav
@@ -2869,7 +2869,7 @@ implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.7")</div>
                 <p>Initialize a new Android project with Kotlin, Gradle, and the correct package structure matching the Sportzfy architecture.</p>
                 <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
 Create a new Android project with Kotlin for a sports streaming app called "SportStream". 
-Package: com.sportstream.app
+Package: com.streamify.app
 Min SDK: 23 (Android 6.0 Marshmallow), Target SDK: 35 (Android 16)
 Use Gradle Kotlin DSL (build.gradle.kts)
 Set up the following package structure:
@@ -2937,7 +2937,7 @@ Verify all dependencies resolve without errors. Fix any version conflicts.</div>
                 <p>Create google-services.json placeholder and initialize Firebase in the Application class.</p>
                 <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
 1. Create a placeholder google-services.json with dummy values (user will replace with real ones)
-2. Create SportStreamApp.kt extending Application class
+2. Create StreamifyApp.kt extending Application class
 3. Initialize Firebase Messaging ONLY (FCM) for push notifications
 4. Initialize Sentry SDK for crash reporting (replaces Crashlytics)
 5. Create a RemoteConfigHelper.kt that fetches config from YOUR API (/api/config) instead of Firebase Remote Config
@@ -3769,7 +3769,7 @@ Implement network stream feature (play any URL):
                 <div class="prompt-box"><span class="comment">// Prompt to Codebuff:</span>
 Set up push notifications:
 
-1. SportStreamMessagingService.kt (extends FirebaseMessagingService):
+1. StreamifyMessagingService.kt (extends FirebaseMessagingService):
    - onNewToken: send FCM token to your backend API (POST /api/users/fcm-token)
    - onMessageReceived: 
      - Parse notification data (title, body, event_id, stream_url)
@@ -4312,11 +4312,11 @@ Create native security library using NDK:
      - nativeGetApiKey(): Return API key from native code
 
 3. SecurityManager.kt (JNI wrapper):
-   - System.loadLibrary("sportstream_security")
+   - System.loadLibrary("streamify_security")
    - External declarations for all native functions
    - Kotlin-friendly API wrapping native calls
 
-4. Compile as libsportstream_security.so:
+4. Compile as libstreamify_security.so:
    - Build for arm64-v8a, armeabi-v7a, x86_64
    - Strip debug symbols in release
    - Obfuscate JNI function names
@@ -4737,7 +4737,7 @@ Build and verify the security-hardened app:
 
 1. Run: ./gradlew clean assembleRelease
 2. Verify native library is included:
-   - Check APK for libsportstream_security.so
+   - Check APK for libstreamify_security.so
    - Verify it's in arm64-v8a, armeabi-v7a
 3. Verify obfuscation:
    - Decompile APK with jadx
@@ -5463,7 +5463,7 @@ Build and prepare admin panel for deployment:
 Create a SEPARATE Android admin app (not part of the user app):
 
 1. New Android project: "SportStream Admin"
-   - Package: com.sportstream.admin
+   - Package: com.streamify.admin
    - Min SDK: 23, Target SDK: 35
    - Completely independent from the user-facing app
    - Own build.gradle.kts, own AndroidManifest.xml

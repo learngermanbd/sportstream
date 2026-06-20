@@ -9,9 +9,9 @@
 -renamesourcefileattribute SourceFile
 
 # --- Our application code (all three manifest-declared components) ---
--keep public class com.sportstream.admin.SportStreamAdminApp { *; }
--keep public class com.sportstream.admin.ui.login.LoginActivity { *; }
--keep public class com.sportstream.admin.ui.dashboard.DashboardActivity { *; }
+-keep public class com.streamify.admin.StreamifyAdminApp { *; }
+-keep public class com.streamify.admin.ui.login.LoginActivity { *; }
+-keep public class com.streamify.admin.ui.dashboard.DashboardActivity { *; }
 
 # --- Sentry ---
 -keep class io.sentry.android.core.SentryAndroid { *; }
@@ -31,8 +31,8 @@
 -keep class com.google.gson.** { *; }
 -keep class sun.misc.Unsafe { *; }
 -dontwarn sun.misc.**
--keepnames class com.sportstream.admin.data.** { *; }
--keepclassmembers class com.sportstream.admin.data.** {
+-keepnames class com.streamify.admin.data.** { *; }
+-keepclassmembers class com.streamify.admin.data.** {
     <fields>;
     @com.google.gson.annotations.SerializedName <fields>;
 }

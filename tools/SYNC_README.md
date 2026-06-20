@@ -7,7 +7,7 @@ auto-pushes the SportStream repository to GitHub.
 > ## 🔒 The PAT NEVER lives inside the repo.
 >
 > The rotated GitHub Personal Access Token is placed by **you** (the human)
-> in `~/.sportstream-github-token` with `chmod 600`. The script reads it at
+> in `~/.streamify-github-token` with `chmod 600`. The script reads it at
 > runtime into an ephemeral credential helper file in `/tmp` that is `rm`'d
 > before the script exits. The token never appears in `ps`, in any shell
 > history, in any tracked file, or in the project's HTML documentation.
@@ -22,7 +22,7 @@ going forward is:
 
 1. **Rotate the PAT** if you haven't already
    (<https://github.com/settings/tokens>).
-2. **Place the rotated PAT** in `~/.sportstream-github-token`.
+2. **Place the rotated PAT** in `~/.streamify-github-token`.
 3. **Use the script** for every push. The script enforces:
    - The PAT is loaded from outside the repo, never embedded.
    - The PAT is never echoed to logs (only its length is reported).
@@ -37,31 +37,31 @@ going forward is:
 ```bash
 # 1. Create the credential file. Use printf (NOT echo) so shell
 #    metacharacters in the PAT — rare, but possible — are preserved verbatim.
-printf '%s' '<your-rotated-PAT-here>' > ~/.sportstream-github-token
+printf '%s' '<your-rotated-PAT-here>' > ~/.streamify-github-token
 
 # 2. Lock the file down: 600 = owner read/write only.
-chmod 600 ~/.sportstream-github-token
+chmod 600 ~/.streamify-github-token
 
 # 3. Sanity-check. The PAT itself should NOT echo.
-ls -l ~/.sportstream-github-token
-# Expected:  -rw-------  1 <user>  <group>  40  <date>  ~/.sportstream-github-token
-wc -c  ~/.sportstream-github-token
+ls -l ~/.streamify-github-token
+# Expected:  -rw-------  1 <user>  <group>  40  <date>  ~/.streamify-github-token
+wc -c  ~/.streamify-github-token
 # Expected:  40 <pat-name>  (classic ghp_ is 40 chars; fine-grained github_pat_ is ~90)
 
 # 4. (Optional) Override the username. If unset, defaults to `learngermanbd`.
-printf '%s' 'learngermanbd' > ~/.sportstream-github-username
-chmod 600 ~/.sportstream-github-username
+printf '%s' 'learngermanbd' > ~/.streamify-github-username
+chmod 600 ~/.streamify-github-username
 ```
 
 ---
 
 ## Per-turn usage
 
-From the repo root (`C:\Users\RDP\Desktop\sportstream` on Windows, mounted
-as `/c/Users/RDP/Desktop/sportstream` under Git Bash):
+From the repo root (`C:\Users\RDP\Desktop\streamify` on Windows, mounted
+as `/c/Users/RDP/Desktop/streamify` under Git Bash):
 
 ```bash
-cd /c/Users/RDP/Desktop/sportstream
+cd /c/Users/RDP/Desktop/streamify
 tools/sync-to-github.sh "phase 5 — Step 5.5 Notice + sync automation"
 ```
 
@@ -72,8 +72,8 @@ If you forget to pass a commit message, the script generates
 
 ## What the script does
 
-1. Loads PAT + username from `~/.sportstream-github-token` (and the
-   optional `~/.sportstream-github-username`).
+1. Loads PAT + username from `~/.streamify-github-token` (and the
+   optional `~/.streamify-github-username`).
 2. Warns if the credential file's permissions aren't 600.
 3. Creates an ephemeral `/tmp/sportzfy-cred-helper.XXXXXX.sh` helper
    (chmod 700) that returns `username=<user>` + `password=<pat>` to git
@@ -112,7 +112,7 @@ If you forget to pass a commit message, the script generates
    permissions you actually need.
    - Classic PAT: starts with `ghp_`. Grant the `repo` scope.
    - Fine-grained: starts with `github_pat_`. Grant `Contents: Read+Write`
-     on `learngermanbd/sportstream` only.
+     on `learngermanbd/streamify` only.
 3. **Run the one-time setup steps** above with the new token.
 4. **Re-run `tools/sync-to-github.sh`** to push any backlog.
 
@@ -136,7 +136,7 @@ These are the properties verified by `code-reviewer-minimax-m3`:
 
 | Property                                      | Mechanism                                         |
 |-----------------------------------------------|---------------------------------------------------|
-| PAT never in repo                              | read from `$HOME/.sportstream-github-token` only  |
+| PAT never in repo                              | read from `$HOME/.streamify-github-token` only  |
 | PAT never in argv                              | `printf '%s' "$TOKEN"` to the helper file          |
 | PAT never in `ps`                              | helper file is chmod-700 in `/tmp`, never invoked via `sh -c "..."` |
 | PAT never in shell history                     | credential file written by the human, not by `read` in a script |

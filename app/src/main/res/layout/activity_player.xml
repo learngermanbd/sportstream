@@ -9,7 +9,7 @@
     - Bottom: position, seek bar, duration, volume, fullscreen
 
     Layout uses androidx.media3.ui.PlayerView with `useController="false"`
-    so we can paint our own custom glass overlay (the SportStream.PlayerOverlay
+    so we can paint our own custom glass overlay (the Streamify.PlayerOverlay
     style from Phase 1.5). All controls are styled Material 3 buttons.
 
     `app:resize_mode="fit"` is the default resize. The resize button toggles
@@ -323,7 +323,7 @@
             Sits between the heart and fullscreen in the bottom bar
             so the ordering stays (volume slider → favorite →
             add-to-playlist → fullscreen). Tapping opens
-            [com.sportstream.app.ui.player.AddToPlaylistDialogFragment]
+            [com.streamify.app.ui.player.AddToPlaylistDialogFragment]
             with the currently-playing [StreamLink] as the pending
             single stream to add.
         -->

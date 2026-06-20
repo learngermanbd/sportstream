@@ -9,7 +9,7 @@ const router = express.Router();
 router.get('/', (_req, res) => {
   res.json({
     status: 'ok',
-    service: 'sportstream-admin-backend',
+    service: 'streamify-admin-backend',
     version: process.env.npm_package_version || '0.1.0',
     phase: 'Phase 8.2 skeleton',
     time: new Date().toISOString(),

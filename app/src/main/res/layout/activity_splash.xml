@@ -63,7 +63,7 @@
     <!--
         Phase 6 · Step 6.3 — Lottie loading animation (replaces the Material 3
         CircularProgressIndicator used in Phase 3 · Step 3.1). The 3-dot
-        bouncing loader lives at res/raw/sportstream_loading.json (200×200,
+        bouncing loader lives at res/raw/streamify_loading.json (200×200,
         60 frames, 30 fps, looping). Auto-plays on attach via
         app:lottie_autoPlay="true"; the SDK exposes LottieAnimationView as a
         FrameLayout subclass so the existing SplashActivity binding.loader
@@ -77,7 +77,7 @@
         android:layout_marginTop="32dp"
         app:lottie_autoPlay="true"
         app:lottie_loop="true"
-        app:lottie_rawRes="@raw/sportstream_loading"
+        app:lottie_rawRes="@raw/streamify_loading"
         app:layout_constraintTop_toBottomOf="@id/logoCard"
         app:layout_constraintBottom_toTopOf="@id/statusText"
         app:layout_constraintStart_toStartOf="parent"
