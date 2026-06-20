@@ -912,6 +912,27 @@
         </section>
     </main>
 
+        <section class="turn role-commit" id="turn-24">
+            <div class="step-header">
+                <span class="step-num">024</span>
+                <span class="agent commit">Shipped</span>
+                <span class="ts">turn 76-85</span>
+            </div>
+            <h4>STEP 7.8 SHIPPED - Secure Key Storage &amp; Data Protection</h4>
+            <div class="response-body">
+                <p><strong>Components delivered</strong> (Step 7.8 - Secure Key Storage &amp; Data Protection):</p>
+                <ul>
+                    <li><strong>SecurePreferences.kt</strong> (new) - EncryptedSharedPreferences wrapper using MasterKey with AES256_GCM for auth tokens (access, refresh, session, user_id, device_pin). Thread-safe singleton with synchronized blocks. Token rotation support.</li>
+                    <li><strong>SecureFileStorage.kt</strong> (new) - AES-256-GCM streaming file encryption (8KB buffer). encryptFile/decryptFile with progress callback. secureDelete with 3-pass random overwrite + delete (best-effort on flash storage due to wear leveling).</li>
+                    <li><strong>MemoryProtection.kt</strong> (new) - char[] and byte[] hygiene utilities (zero-fill wipe). FLAG_SECURE on Activity windows to prevent screenshots/screen recording. Timing-safe constant-time comparison for token validation. toSecureCharArray for safe String conversion.</li>
+                    <li><strong>TokenManager.kt</strong> (new) - Short-lived tokens with rotation + device pinning. Device pin generated from ANDROID_ID + Build.FINGERPRINT + Build.BOARD + Build.HARDWARE (SHA-256 hash). 15-min access token TTL (memory-only), refresh token in EncryptedSharedPreferences. Token theft detection via device pin mismatch. needsRefresh() with 30s buffer before expiry.</li>
+                    <li><strong>libs.versions.toml</strong> (modified) - Added security-crypto version (1.1.0-alpha06)</li>
+                    <li><strong>app/build.gradle.kts</strong> (modified) - Added security-crypto dependency</li>
+                </ul>
+                <p><strong>Build:</strong> ./gradlew :app:compileDebugKotlin — BUILD SUCCESSFUL (55s)</p>
+            </div>
+        </section>
+
     <div class="container">
         <footer class="append-info">
             <h3>Append Protocol &mdash; how chat.html stays current</h3>
