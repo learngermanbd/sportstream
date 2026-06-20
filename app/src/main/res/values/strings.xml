@@ -301,4 +301,31 @@
     <string name="notice_v2_push_dot_desc">Push notification</string>
     <string name="notice_v2_title">NOTICE</string>
     <string name="notice_v2_subtitle">Multi-section updates from the SportStream team</string>
+
+    <!--
+        Phase 6 · Step 6.2 — Auto-Update strings.
+
+        Used by:
+          - UpdateActivity          (theme host)
+          - UpdateDialogFragment    (BottomSheet body content)
+          - AppUpdateManager        (DownloadManager notification title/desc)
+          - MainActivity            (Snackbar UpToDate / Failed)
+
+        Forced-mode text uses the server `minAppVersion` as %1$s.
+        Optional-mode text uses the server `latestVersion` as %1$s.
+    -->
+    <string name="update_forced_label">REQUIRED UPDATE</string>
+    <string name="update_forced_title">Version %1$s is required</string>
+    <string name="update_forced_body">Your current build is below the minimum version required by the server. Tap Update to install the latest release, or Quit to close the app.</string>
+    <string name="update_optional_title">Version %1$s is available</string>
+    <string name="update_optional_default_changelog">Includes performance improvements, the newest live-stream sources, and bugfixes. Tap Update to install now, or Later to be reminded later.</string>
+    <string name="update_now">Update Now</string>
+    <string name="update_later">Later</string>
+    <string name="update_quit">Quit</string>
+    <string name="update_up_to_date">You’re already on the latest version</string>
+    <string name="update_check_failed">Couldn’t check for updates (%1$s)</string>
+    <string name="update_notification_title">SportStream update</string>
+    <string name="update_notification_description">Downloading the latest release…</string>
+    <string name="update_downloading">Downloading update…</string>
+    <string name="update_download_failed">Couldn’t start the update download</string>
 </resources>

@@ -6,20 +6,21 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.view.View
 import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.sportstream.app.R
 import com.sportstream.app.SportStreamApp
+import com.sportstream.app.data.update.UpdateDecision
 import com.sportstream.app.databinding.ActivitySplashBinding
 import com.sportstream.app.services.NotificationHelper
+import com.sportstream.app.ui.update.UpdateActivity
 import com.sportstream.app.ui.viewmodels.MainViewModel
+import kotlinx.coroutines.launch
 
 /**
  * Phase 3 · Step 3.1 — Splash screen.
@@ -27,8 +28,24 @@ import com.sportstream.app.ui.viewmodels.MainViewModel
  * Phase 5 · Step 5.4 — On API 33+, the splash gate also requests
  * `POST_NOTIFICATIONS` permission so FCM-driven Live Events
  * (`NotificationHelper.showLiveEventNotification`) actually render.
- * On API < 33 the permission is implied at install; no request
- * needed. Idempotent — calls when already granted are silent no-ops.
+ *
+ * Phase 6 · Step 6.2 — The splash gate now ALSO blocks on
+ * [com.sportstream.app.data.update.AppUpdateManager.checkForUpdate] so
+ * a forced-update server response can route to [UpdateActivity] BEFORE
+ * the MainActivity forward-navigation. Thinker-gemini step-6.2 review
+ * point E: we replaced the original `Handler.postDelayed` pattern with
+ * `coroutineScope.launch { delay(2_000); deferred.await() }` so the
+ * update check resolves deterministically without a race against the
+ * 2-second auto-nav timer.
+ *
+ *   - UpToDate / Optional / Failed: navigate to MainActivity after at
+ *     least `navDelayMs` of loader visibility.
+ *   - Forced: cancel the navigateRunnable path; start [UpdateActivity]
+ *     (which excludes itself from recents + blocks back), then finish
+ *     ourselves so Splash doesn't show underneath.
+ *
+ * On API < 33 the notification permission is implied at install; no
+ * runtime request needed.
  */
 class SplashActivity : AppCompatActivity() {
 
@@ -45,13 +62,7 @@ class SplashActivity : AppCompatActivity() {
         ViewModelProvider(this, factory)[MainViewModel::class.java]
     }
 
-    private val handler = Handler(Looper.getMainLooper())
     private val navDelayMs = 2_000L
-
-    private val navigateRunnable = Runnable {
-        startActivity(Intent(this, MainActivity::class.java))
-        finish()
-    }
 
     /**
      * Phase 5 · Step 5.4 — POST_NOTIFICATIONS runner. We use the
@@ -66,14 +77,8 @@ class SplashActivity : AppCompatActivity() {
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Phase 5 · Step 5.4 — Pre-create the FCM notification channels
-        // before any push arrives. Idempotent and cheap.
         NotificationHelper.ensureChannels(applicationContext)
 
-        // Phase 5 · Step 5.4 — runtime ask for POST_NOTIFICATIONS on
-        // API 33+ so future Live Events render. The system dialog
-        // shows once; if denied, we silently continue — notifications
-        // simply won't surface, but the rest of the app works fine.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val granted = ContextCompat.checkSelfPermission(
                 this, Manifest.permission.POST_NOTIFICATIONS
@@ -91,11 +96,10 @@ class SplashActivity : AppCompatActivity() {
         binding.versionText.text = getString(R.string.splash_version_template, version)
 
         binding.retryButton.setOnClickListener {
-            binding.errorCard.visibility = View.GONE
-            binding.loader.visibility = View.VISIBLE
+            binding.errorCard.visibility = android.view.View.GONE
+            binding.loader.visibility = android.view.View.VISIBLE
             binding.statusText.text = getString(R.string.splash_loading)
-            handler.removeCallbacks(navigateRunnable)
-            handler.postDelayed(navigateRunnable, navDelayMs)
+            launchUpdateGate()
         }
 
         binding.wifiButton.setOnClickListener { openSettingsOrFallback(Settings.ACTION_WIFI_SETTINGS) }
@@ -103,12 +107,53 @@ class SplashActivity : AppCompatActivity() {
 
         mainVm.load()
 
-        handler.postDelayed(navigateRunnable, navDelayMs)
+        launchUpdateGate()
     }
 
-    override fun onDestroy() {
-        handler.removeCallbacks(navigateRunnable)
-        super.onDestroy()
+    /**
+     * Phase 6 · Step 6.2 — coroutine splash gate. Keeps the loader
+     * visible for at least [navDelayMs] (so users see branding flash)
+     * and ALSO waits for the update check to complete before navigating.
+     *
+     * Two launch sites (`onCreate` + the Retry button) is the reason this
+     * is factorized out as a separate method.
+     *
+     * The Retrofit `dispatcher`-style race from the prior Handler-based
+     * implementation is gone — coroutines propagate
+     * [kotlinx.coroutines.CancellationException] through structured
+     * concurrency so an Activity destroy mid-flight cancels cleanly.
+     */
+    private fun launchUpdateGate() {
+        val app = application as SportStreamApp
+        lifecycleScope.launch {
+            // Min loader visible — ensures branding flash even on a fast
+            // local /api/config. CancellationException propagates to
+            // lifecycleScope which cancels on Activity destroy.
+            kotlinx.coroutines.delay(navDelayMs)
+
+            val decision = try {
+                app.updateManager.checkForUpdate()
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                UpdateDecision.UpToDate
+            }
+
+            when (decision) {
+                is UpdateDecision.Forced -> {
+                    UpdateActivity.startForced(
+                        context = this@SplashActivity,
+                        minVersion = decision.minVersion,
+                        apkUrl = decision.apkUrl
+                    )
+                    finish()
+                }
+                else -> {
+                    startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+                    finish()
+                }
+            }
+        }
     }
 
     private fun openSettingsOrFallback(action: String) {

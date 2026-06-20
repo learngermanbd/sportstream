@@ -12,6 +12,31 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <!-- Phase 4 · Step 4.6 — Floating player overlay. -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!--
+        Phase 6 · Step 6.2 — REQUEST_INSTALL_PACKAGES declares our
+        authority to invoke the platform package installer for an APK
+        we downloaded through FileProvider (thinker-gemini point A —
+        no runtime ask needed, but we still need this declaration).
+    -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <!--
+        Phase 6 · Step 6.2 — Package Visibility for API 30+. The
+        <queries><intent> ... </intent></queries> block tells the
+        platform PackageManager that we deliberately want to resolve
+        `ACTION_INSTALL_PACKAGE` so the install intent reaches the
+        right activity on Android 11+.
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.INSTALL_PACKAGE" />
+            <data android:mimeType="application/vnd.android.package-archive" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:mimeType="application/vnd.android.package-archive" />
+        </intent>
+    </queries>
 
     <application
         android:name=".SportStreamApp"
@@ -41,10 +66,48 @@
             android:supportsPictureInPicture="true"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout" />
 
+        <!--
+            Phase 6 · Step 6.2 — Forced-update gate. Opaque theme.
+            Excludes itself from Recents so the user can't swipe back
+            to the SplashActivity and bypass the gate.
+        -->
+        <activity
+            android:name=".ui.update.UpdateActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:taskAffinity=""
+            android:theme="@style/Theme.SportStream" />
+
         <service
             android:name=".ui.player.FloatingPlayerService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <receiver
+            android:name=".services.UpdateDownloadReceiver"
+            android:exported="true">
+            <!--
+                Thinker-gemini point I: dynamically-registered receivers
+                with RECEIVER_NOT_EXPORTED on Android 14+ block system
+                broadcasts from external apps like DownloadManager. We
+                declare it in the manifest with exported="true" + an
+                intent-filter for ACTION_DOWNLOAD_COMPLETE so the
+                DownloadManager can find our receiver.
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
+            </intent-filter>
+        </receiver>
 
         <!--
             Phase 5 · Step 5.4 — FCM messaging service. Standard

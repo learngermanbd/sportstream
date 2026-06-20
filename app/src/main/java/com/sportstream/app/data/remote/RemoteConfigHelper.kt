@@ -126,13 +126,22 @@ object RemoteConfigHelper {
         } else {
             emptyMap()
         }
+        // Phase 6 · Step 6.2 — back-compat fallback: if the server
+        // omits `latestVersion` (Phase 1.x payloads), inherit from
+        // `minAppVersion` so the optional-update branch is still well-
+        // defined. Missing `minAppVersion` itself falls back to the
+        // local app version so the Floor doesn't trigger a forced
+        // upgrade against an absent field.
+        val min = json.optString("minAppVersion", APP_VERSION)
+        val latest = json.optString("latestVersion", min)
         return AppConfig(
             apiBaseUrl      = json.optString("apiBaseUrl", ""),
             updateUrl       = json.optString("updateUrl", ""),
+            latestVersion   = latest,
             telegramLink    = json.optString("telegramLink", ""),
             noticeText      = json.optString("noticeText", ""),
             maintenanceMode = json.optBoolean("maintenanceMode", false),
-            minAppVersion   = json.optString("minAppVersion", APP_VERSION),
+            minAppVersion   = min,
             featureFlags    = featureFlags
         )
     }

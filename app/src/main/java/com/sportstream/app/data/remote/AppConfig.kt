@@ -3,14 +3,32 @@ package com.sportstream.app.data.remote
 /**
  * Payload returned by `GET /api/config` on the SportStream admin backend.
  *
- * Phase 1 \u00b7 Step 1.4. The real backend endpoint is implemented in Phase 8 \u00b7 Step 8.2.
+ * Phase 1 · Step 1.4. The real backend endpoint is implemented in Phase 8 · Step 8.2.
  * Until then, RemoteConfigHelper hits a placeholder URL and falls back to [defaults].
+ *
+ * Phase 6 · Step 6.2 — added [latestVersion]. The server emits TWO independent
+ * version fields so the client can distinguish:
+ *  - [minAppVersion] — the FLOOR; below this triggers a forced update gate on
+ *    SplashActivity.
+ *  - [latestVersion] — the LATEST version the admin uploaded; below this (but
+ *    at-or-above the floor) triggers an OPTIONAL update nag via the drawer's
+ *    Update entry.
+ *
+ * When the server omits `latestVersion`, [RemoteConfigHelper.fetchConfig]
+ * defaults it to [minAppVersion] so the older payloads from Phase 1.4 are
+ * still handled correctly.
  */
 data class AppConfig(
     /** Base URL for the content API. e.g. `https://api.example.com/api` */
     val apiBaseUrl: String,
     /** URL the same-version-check redirects to for app updates. */
     val updateUrl: String,
+    /**
+     * Newest version the admin uploaded. Below this but at-or-above
+     * [minAppVersion] drives an OPTIONAL update; missing from older
+     * payloads is treated as "same as minAppVersion".
+     */
+    val latestVersion: String,
     /** Telegram channel link surfaced in the drawer's "Join Us" entry. */
     val telegramLink: String,
     /** Free-form banner notice text shown on app splash / home top bar. */
@@ -31,6 +49,7 @@ data class AppConfig(
         fun defaults() = AppConfig(
             apiBaseUrl      = "https://learngermanwith.fun/api",
             updateUrl       = "https://learngermanwith.fun/update",
+            latestVersion   = "1.0.0",
             telegramLink    = "https://t.me/sportstream",
             noticeText      = "",
             maintenanceMode = false,

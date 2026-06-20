@@ -17,8 +17,12 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.snackbar.Snackbar
 import com.sportstream.app.R
 import com.sportstream.app.SportStreamApp
+import com.sportstream.app.data.update.UpdateDecision
 import com.sportstream.app.databinding.ActivityMainBinding
 import com.sportstream.app.ui.common.UiState
+import com.sportstream.app.ui.update.UpdateActivity
+import com.sportstream.app.ui.update.UpdateDialogFragment
+import com.sportstream.app.ui.update.showUpdateDialog
 import com.sportstream.app.ui.viewmodels.MainViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -29,19 +33,12 @@ import kotlinx.coroutines.launch
  * Hosts the BottomNavigationView (4 tabs) + the Drawer menu (10 items) +
  * (Phase 5 · Step 5.6) the MaterialToolbar with a Search action.
  *
- * Drawer items with real destinations navigate directly; the rest show
- * a Snackbar with `upcomingStepFor(itemId)`. The Toolbar's Search icon
- * navigates to R.id.searchFragment on every tap (single destination).
- *
- * As of Phase 5:
- *  - drawer_highlights      → R.id.highlightsFragment  (3.5)
- *  - drawer_playlists       → R.id.playlistsFragment   (5.2)
- *  - drawer_network_stream  → R.id.networkStreamFragment (5.3)
- *  - drawer_notice          → R.id.noticeFragment      (5.5)
- *  - drawer_share / drawer_exit → system actions
- *  - drawer_floating_player / drawer_video_quality /
- *    drawer_join_us / drawer_update → Snackbar placeholders
- *  - main_toolbar_action_search (toolbar menu) → R.id.searchFragment (5.6)
+ * Phase 6 · Step 6.2 — drawer_update wires the optional-update flow.
+ *  - Forced branch is treated as a user mid-app tap (very rare — the
+ *    splash gate should have caught it) and routes to UpdateActivity.
+ *  - Optional -> UpdateDialogFragment.newOptional (BottomSheet).
+ *  - UpToDate -> single-line Snackbar with "Up to date".
+ *  - Failed   -> single-line Snackbar with the failure reason.
  *
  * Window-inset policy: the toolbar absorbs the top system-bar inset
  * (status bar) so its title sits below the camera notch / cutout; the
@@ -73,8 +70,6 @@ class MainActivity : AppCompatActivity() {
             v.updatePadding(bottom = sysBars.bottom)
             insets
         }
-        // Toolbar absorbs the status-bar inset; NavHost then sits flush
-        // against the toolbar with no extra top padding (Phase 5 · Step 5.6).
         ViewCompat.setOnApplyWindowInsetsListener(binding.mainToolbar) { v, insets ->
             val sysBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.updatePadding(top = sysBars.top)
@@ -86,9 +81,6 @@ class MainActivity : AppCompatActivity() {
         val navController = navHost.navController
         binding.bottomNav.setupWithNavController(navController)
 
-        // Phase 5 · Step 5.6 — Toolbar search-action wiring. Menu is
-        // inflated declaratively via activity_main.xml `app:menu=`, so the
-        // listener only routes the click to navController.
         binding.mainToolbar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.main_toolbar_action_search -> {
@@ -119,6 +111,11 @@ class MainActivity : AppCompatActivity() {
                 R.id.drawer_notice -> {
                     navController.navigate(R.id.noticeFragment)
                     binding.drawerRoot.closeDrawers()
+                    true
+                }
+                R.id.drawer_update -> {
+                    binding.drawerRoot.closeDrawers()
+                    runUpdateFlowFromDrawer()
                     true
                 }
                 R.id.drawer_share -> {
@@ -166,17 +163,74 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Map a placeholder Drawer item id to the plan-listed step where its
-     * real screen ships (e.g. "Video Quality — Coming in Step 4.5").
-     * Playlists (5.2) + Network Stream (5.3) + Notice (5.5) have real
-     * destinations and were removed from this map in their respective
-     * steps.
+     * real screen ships. drawer_update was removed from this map in
+     * Phase 6 · Step 6.2 because the update flow is now live.
      */
     private fun upcomingStepFor(itemId: Int): String = when (itemId) {
         R.id.drawer_floating_player  -> "4.6"
         R.id.drawer_video_quality    -> "4.5"
         R.id.drawer_join_us          -> "8.x"
-        R.id.drawer_update           -> "6.2"
         else                          -> "TBD"
+    }
+
+    /**
+     * Phase 6 · Step 6.2 — Drawer "Update" handler.
+     *
+     * Re-runs the splash's [UpdateDecision] check inside the Activity
+     * scope (Drawer taps happen any time, not just Cold Start) and routes
+     * to the appropriate UX:
+     *   - Forced   → UpdateActivity (rare — splash gate normally catches)
+     *   - Optional → UpdateDialogFragment.newOptional(...) via
+     *                FragmentManager.showUpdateDialog
+     *   - UpToDate → Snackbar "Up to date"
+     *   - Failed   → Snackbar with the reason
+     *
+     * `updateManager.checkForUpdate()` runs on Dispatchers.IO and is
+     * CancellationException-safe.
+     */
+    private fun runUpdateFlowFromDrawer() {
+        val app = application as SportStreamApp
+        lifecycleScope.launch {
+            val decision = try {
+                app.updateManager.shouldShowOptionalNag() ?: app.updateManager.checkForUpdate()
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                UpdateDecision.Failed(e.message ?: e.javaClass.simpleName)
+            }
+
+            when (decision) {
+                is UpdateDecision.Forced -> {
+                    UpdateActivity.startForced(
+                        context = this@MainActivity,
+                        minVersion = decision.minVersion,
+                        apkUrl = decision.apkUrl
+                    )
+                }
+                is UpdateDecision.Optional -> {
+                    val frag = UpdateDialogFragment.newOptional(
+                        latest = decision.latestVersion,
+                        apkUrl = decision.apkUrl,
+                        changelog = decision.changelog
+                    )
+                    supportFragmentManager.showUpdateDialog(frag)
+                }
+                is UpdateDecision.UpToDate -> {
+                    Snackbar.make(
+                        binding.root,
+                        getString(R.string.update_up_to_date),
+                        Snackbar.LENGTH_SHORT
+                    ).setAnchorView(binding.bottomNav).show()
+                }
+                is UpdateDecision.Failed -> {
+                    Snackbar.make(
+                        binding.root,
+                        getString(R.string.update_check_failed, decision.reason),
+                        Snackbar.LENGTH_SHORT
+                    ).setAnchorView(binding.bottomNav).show()
+                }
+            }
+        }
     }
 
     private fun shareAppLink() {
