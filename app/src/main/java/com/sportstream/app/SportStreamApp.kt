@@ -11,16 +11,23 @@ import io.sentry.android.core.SentryAndroid
 import android.util.Log
 
 /**
- * SportStream Application. Phase 1 · Step 1.4 → Phase 2 · Step 2.3.
+ * SportStream Application. Phase 1 · Step 1.4 → Phase 2 · Step 2.3
+ * → Phase 5 · Step 5.5 v2.
  *
  * Init order matters:
  *  1. Sentry first so init-time crashes are captured.
- *  2. FirebaseMessaging next (the ONLY Firebase service we use  Remote Config
- *     is replaced by RemoteConfigHelper calling /api/config in data/remote/).
- *  3. [NetworkModule] + [LocalModule]  owns OkHttpClient + ApiClient +
- *     ApiService + RemoteDataSource (lazy singletons via `app.network.*`) and
- *     AppDatabase + FavoriteDao + PlaylistDao + LocalDataSource
- *     (lazy singletons via `app.local.*`).
+ *  2. FirebaseMessaging next (the ONLY Firebase service we use · Remote
+ *     Config is replaced by RemoteConfigHelper calling /api/config).
+ *  3. [NetworkModule] + [LocalModule] own OkHttpClient + ApiClient +
+ *     ApiService + RemoteDataSource (lazy singletons via `app.network.*`)
+ *     and AppDatabase + FavoriteDao + PlaylistDao + NoticeDao +
+ *     LocalDataSource (lazy singletons via `app.local.*`).
+ *
+ * Note: Phase 5 v2 RepositoryModule constructor now also takes the
+ * shared OkHttpClient + Application Context + a `() -> NoticeDao`
+ * provider lambda so NoticeRepository can be constructed lazily. The
+ * lambda is deferred so the database isn't built just to construct
+ * an unused repo on cold start.
  */
 class SportStreamApp : Application() {
 
@@ -40,25 +47,29 @@ class SportStreamApp : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        // 1. Sentry  crash reporter (replaces Firebase Crashlytics).
+        // 1. Sentry · crash reporter (replaces Firebase Crashlytics).
         //    DSN is a placeholder; real DSN lands in Step 6.5 (release prep).
         SentryAndroid.init(this) { options ->
             options.dsn = SENTRY_DSN
         }
 
-        // 2. Firebase Cloud Messaging  the only Firebase service.
+        // 2. Firebase Cloud Messaging · the only Firebase service.
         //    isAutoInitEnabled ensures FCM starts token registration on app launch.
         FirebaseMessaging.getInstance().isAutoInitEnabled = true
 
-        // 3. DI seams  all 3 lazy, so they're cheap on cold start.
+        // 3. DI seams — all 3 lazy, so they're cheap on cold start.
         network = NetworkModule(this)
         local = LocalModule(this)
         repository = RepositoryModule(
             remoteDataSource = network.remoteDataSource,
-            localDataSource = local.localDataSource
+            localDataSource = local.localDataSource,
+            httpClient = network.httpClient,
+            // Lambda defers NoticeDao instantiation until NoticeRepository
+            // asks for it — matches the lazy-friendly pattern used elsewhere.
+            noticeDaoProvider = { local.noticeDao }
         )
-            Log.i("SportStreamApp", "Resolved API Base URL: ${com.sportstream.app.data.remote.AppConfig.defaults().apiBaseUrl}")
-}
+        Log.i("SportStreamApp", "Resolved API Base URL: ${com.sportstream.app.data.remote.AppConfig.defaults().apiBaseUrl}")
+    }
 
     companion object {
         /** Sentry DSN. Replace at release time via gradle property / env. */

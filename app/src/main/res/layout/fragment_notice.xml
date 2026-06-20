@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Phase 5 · Step 5.5 — Notice layout.
+    Phase 5 \u00b7 Step 5.5 v2 \u2014 Notice layout (multi-section + fallback).
 
-    Surfaces:
-      • Header (title + subtitle)         — always visible
-      • noticeBodyCard (scrollable card)  — Success(non-empty noticeText)
-      • noticeEmptyState (icon + text)    — Success(empty noticeText)
-      • noticeErrorCard (glass red card)  — Error
-      • noticeProgress (CircularProgressIndicator) — Loading / Idle
-      • noticeRefreshFab (Extended FAB)   — always visible, force-refresh
+    Three render states + retained chrome:
 
-    The header + FAB stay visible across every render-state because the
-    user needs both context ("this is the Notice screen") and an
-    immediate "refresh-now" affordance even when the data is missing.
-    The four data surfaces (body / empty / error / progress) are
-    mutually exclusive — `Fragment.showOnly(...)` flips them.
+      \u2022 noticeRecycler       \u2014 ListMode (multi-section cards)
+      \u2022 noticeBodyCard       \u2014 LegacyMode (single free-form string)
+      \u2022 noticeEmptyState     \u2014 Empty (no notices anywhere)
+      \u2022 noticeErrorCard      \u2014 UiState.Error
+      \u2022 noticeProgress       \u2014 Loading / Idle overlay
+
+    Persistence parity with v1: the header, FAB and progress overlay
+    all stay visible on top of whichever surface is currently rendered
+    so the user always has an escape hatch (refresh) and the screen
+    never loses context (\"this is the Notice screen\").
+
+    The RecyclerView is match_parent / 0dp so the FAB can stay
+    anchored at the bottom-end regardless of scroll position.
 -->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -24,7 +26,7 @@
     android:layout_height="match_parent"
     android:background="@color/dark_bg">
 
-    <!-- Header -->
+    <!-- Header (always visible) -->
     <TextView
         android:id="@+id/noticeHeaderTitle"
         android:layout_width="wrap_content"
@@ -33,7 +35,7 @@
         android:layout_marginTop="32dp"
         android:fontFamily="@font/poppins_regular"
         android:letterSpacing="0.18"
-        android:text="@string/fragment_notice_title"
+        android:text="@string/notice_v2_title"
         android:textColor="@color/primary"
         android:textSize="24sp"
         android:textStyle="bold"
@@ -49,14 +51,32 @@
         android:layout_marginEnd="24dp"
         android:alpha="0.85"
         android:fontFamily="@font/poppins_regular"
-        android:text="@string/fragment_notice_subtitle"
+        android:text="@string/notice_v2_subtitle"
         android:textColor="@color/text_muted"
         android:textSize="13sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/noticeHeaderTitle" />
 
-    <!-- Notice body card -->
+    <!-- v2 ListMode surface -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/noticeRecycler"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="96dp"
+        android:clipToPadding="false"
+        android:paddingTop="6dp"
+        android:paddingBottom="0dp"
+        android:scrollbars="none"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/noticeHeaderSubtitle"
+        tools:listitem="@layout/view_notice_card" />
+
+    <!-- v1 fallback: LegacyMode body card -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/noticeBodyCard"
         android:layout_width="0dp"
@@ -91,8 +111,7 @@
                 android:padding="20dp"
                 android:textColor="@color/text"
                 android:textSize="15sp"
-                tools:text="We'll be performing scheduled maintenance on Sunday at 02:00 UTC. Streams may be unavailable for up to 30 minutes." />
-
+                tools:text="v1 fallback notice text" />
         </ScrollView>
     </com.google.android.material.card.MaterialCardView>
 
@@ -206,7 +225,7 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Refresh FAB: always visible so the user has an escape hatch from any state. -->
+    <!-- FAB refresh (always visible) -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/noticeRefreshFab"
         android:layout_width="wrap_content"

@@ -70,9 +70,21 @@ class SportStreamMessagingService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
+        val data = message.data
+
+        // Phase 5 v2 · Step 5.5 — branch on the `type` discriminator.
+        // `type == "notice"` payload is a v2 NoticeEntry; we (a) persist
+        // it to Room so the NoticeFragment's Flow auto-re-emits, and
+        // (b) ALSO show the OS-level Live Events banner so users with
+        // the app in the background get a heads-up. For legacy
+        // live-event pushes, the previous v1 code path runs unchanged.
+        if (data["type"]?.equals("notice", ignoreCase = true) == true) {
+            handleNoticePayload(message)
+            return
+        }
+
         // Prefer data payload (we control the format); fall back to the
         // OS-level notification if data is missing.
-        val data = message.data
         val title = data["title"]
             ?: message.notification?.title
             ?: getString(com.sportstream.app.R.string.notification_default_title)
@@ -90,6 +102,88 @@ class SportStreamMessagingService : FirebaseMessagingService() {
             title = title,
             body = body,
             deepLinkUri = deepLink
+        )
+    }
+
+    /**
+     * Phase 5 v2 · Step 5.5 — handle a `type=notice` push payload.
+     *
+     * Payload shape:
+     *  {
+     *      "type": "notice",
+     *      "id": "push:abc123",       // optional; falls back to FCM messageId
+     *      "title": "Server downtime",
+     *      "body":  "Sunday 02:00 UTC",
+     *      "section": "ALERT",        // INFO / PROMO / ALERT
+     *      "priority": "1",           // optional int
+     *      "expiresAt": "1731235200", // optional epoch millis string
+     *      "attachments": "[{\"url\":\"...\",\"type\":\"LINK\"}]" // optional JSON string
+     *  }
+     *
+     * Two parallel side-effects:
+     *  1. Persist to Room via [com.sportstream.app.data.repository.NoticeRepository.insertPushSourced].
+     *     This makes the NoticeFragment observe-and-render the new item
+     *     without a tap on the FAB.
+     *  2. Show OS-level notification via [NotificationHelper] so the
+     *     user sees the alert in the status bar even if NoticeFragment
+     *     isn't currently visible.
+     */
+    private fun handleNoticePayload(message: RemoteMessage) {
+        val data = message.data
+        val title = data["title"] ?: getString(com.sportstream.app.R.string.notification_default_title)
+        val body  = data["body"] ?: getString(com.sportstream.app.R.string.notification_default_body)
+        val sectionStr = data["section"]?.uppercase() ?: "INFO"
+        val section = runCatching {
+            com.sportstream.app.data.models.NoticeSection.valueOf(sectionStr)
+        }.getOrDefault(com.sportstream.app.data.models.NoticeSection.INFO)
+        val priority = data["priority"]?.toIntOrNull() ?: 0
+        val expiresAt = data["expiresAt"]?.toLongOrNull()
+        val deepLink = data["deepLink"]?.takeIf { it.isNotBlank() }
+        val messageId = message.messageId ?: java.util.UUID.randomUUID().toString()
+        val id = data["id"] ?: "push:$messageId"
+
+        val attachments = data["attachments"]?.let { raw ->
+            runCatching {
+                org.json.JSONArray(raw).let { arr ->
+                    List(arr.length()) { i ->
+                        com.sportstream.app.data.models.NoticeAttachment.fromJson(
+                            arr.optJSONObject(i) ?: org.json.JSONObject()
+                        )
+                    }
+                }
+            }.getOrDefault(emptyList())
+        } ?: emptyList()
+
+        val notice = com.sportstream.app.data.models.Notice(
+            id = id,
+            title = title,
+            body = body,
+            section = section,
+            priority = priority,
+            createdAt = System.currentTimeMillis(),
+            expiresAt = expiresAt,
+            attachments = attachments,
+            deepLink = deepLink,
+            isPushSourced = true
+        )
+
+        // (1) Persist — Observe-and-render via the Fragment.
+        val app = applicationContext as SportStreamApp
+        scope.launch {
+            runCatching { app.repository.noticeRepository.insertPushSourced(notice) }
+                .onFailure { Log.w("FCMService", "notice insert failed: ${it.message}", it) }
+        }
+
+        // (2) OS-level banner in the live_events channel so the alert
+        // surfaces even when NoticeFragment isn't on screen.
+        val notifId = (System.currentTimeMillis() and 0x7FFFFFFF).toInt()
+        val deepLinkUri: Uri? = deepLink?.let { runCatching { Uri.parse(it) }.getOrNull() }
+        NotificationHelper.showLiveEventNotification(
+            context = applicationContext,
+            notificationId = notifId,
+            title = title,
+            body = body,
+            deepLinkUri = deepLinkUri
         )
     }
 

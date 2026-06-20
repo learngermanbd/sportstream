@@ -272,4 +272,33 @@
     <string name="search_remove_recent_desc">Remove this recent search</string>
     <string name="search_meta_views_label">%1$s views</string>
     <string name="search_section_header">Search</string>
+
+    <!--
+        Phase 5 · Step 5.5 v2 — multi-section Notice screen.
+
+        v2 keeps the v1 minimal strings intact (used as the fallback
+        LegacyMode render path) and adds section labels, relative
+        timestamps, attachment labels and Plurals for item counts.
+    -->
+    <string name="notice_v2_section_alert">ALERTS</string>
+    <string name="notice_v2_section_info">UPDATES</string>
+    <string name="notice_v2_section_promo">OFFERS</string>
+    <string name="notice_v2_section_alert_short">ALERT</string>
+    <string name="notice_v2_section_info_short">INFO</string>
+    <string name="notice_v2_section_promo_short">PROMO</string>
+    <plurals name="notice_v2_section_count">
+        <item quantity="one">%d item</item>
+        <item quantity="other">%d items</item>
+    </plurals>
+    <string name="notice_v2_relative_now">Just now</string>
+    <string name="notice_v2_relative_minutes_template">%d min ago</string>
+    <string name="notice_v2_relative_hours_template">%d h ago</string>
+    <string name="notice_v2_relative_days_template">%d d ago</string>
+    <string name="notice_v2_attachment_image">Image</string>
+    <string name="notice_v2_attachment_link">Open link</string>
+    <string name="notice_v2_attachment_file">Attachment</string>
+    <string name="notice_v2_priority_urgent_desc">Urgent</string>
+    <string name="notice_v2_push_dot_desc">Push notification</string>
+    <string name="notice_v2_title">NOTICE</string>
+    <string name="notice_v2_subtitle">Multi-section updates from the SportStream team</string>
 </resources>

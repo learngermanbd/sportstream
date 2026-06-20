@@ -11,54 +11,56 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.sportstream.app.R
 import com.sportstream.app.SportStreamApp
-import com.sportstream.app.data.remote.AppConfig
 import com.sportstream.app.databinding.FragmentNoticeBinding
+import com.sportstream.app.ui.adapters.NoticeAdapter
 import com.sportstream.app.ui.common.UiState
+import com.sportstream.app.ui.viewmodels.NoticeScreenState
 import com.sportstream.app.ui.viewmodels.NoticeViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 /**
- * Phase 5 · Step 5.5 — Notice screen.
+ * Phase 5 · Step 5.5 v2 — Notice screen.
  *
- * Renders [AppConfig.noticeText] (free-form banner content the admin
- * sets via the Phase 8 backend) in a scrollable card. The data source
- * is [com.sportstream.app.data.remote.RemoteConfigHelper.fetchConfig]
- * which already caches for 30 minutes; the FAB forces a fresh network
- * fetch when the user wants the absolute latest.
+ * Renders one of four surface branches driven by [NoticeViewModel.state]:
+ *  - ListMode  → RecyclerView with [NoticeAdapter]'s mixed rows
+ *  - LegacyMode → single free-form body card (v1 fallback path)
+ *  - Empty     → empty-state ImageView + text
+ *  - Loading   → progress overlay
+ *  - UiState.Error (top-level) → error card with Retry button
  *
- * Three render branches map to [UiState]:
- *  - [UiState.Loading] → progress bar only
- *  - [UiState.Success] + noticeText non-empty → body card
- *  - [UiState.Success] + noticeText empty   → "No active notice" empty state
- *  - [UiState.Error]                         → error card with Retry button
+ * Click handlers for notice cards and attachment chips forward to the
+ * underlying launchers (deep link for cards, ACTION_VIEW for chips)
+ * — implemented in [NoticeAdapter.bind].
  *
- * `safeBinding` lets helper methods (`render(...)`, click-handlers
- * invoked from coroutine-collected state flows) safely no-op once the
- * Fragment view is destroyed — mirrors the Step 5.3 + Step 5.2 pattern.
+ * `safeBinding` lets helpers invoked from coroutine-collected state
+ * flows safely no-op once the Fragment view is destroyed (`_binding`
+ * null). Mirrors the same idiom in SearchFragment + HighlightsFragment.
  */
 class NoticeFragment : Fragment() {
 
     private var _binding: FragmentNoticeBinding? = null
     private val binding get() = _binding!!
 
-    /**
-     * Convenience view-binding accessor that's safe to call from helper
-     * methods invoked AFTER [onDestroyView] has nulled [_binding].
-     * Use this everywhere outside [onCreateView] / [onViewCreated]'s
-     * direct binding access. See Phase 3 [Step 5.3] precedent.
-     */
     private val safeBinding: FragmentNoticeBinding?
         get() = _binding
+
+    private lateinit var resultsAdapter: NoticeAdapter
 
     private val noticeVm: NoticeViewModel by viewModels {
         val app = requireActivity().application as SportStreamApp
         object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                NoticeViewModel(app, app.network.httpClient) as T
+                NoticeViewModel(
+                    app = app,
+                    httpClient = app.network.httpClient,
+                    noticeRepo = app.repository.noticeRepository
+                ) as T
         }
     }
 
@@ -73,39 +75,66 @@ class NoticeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // v2 RecyclerView + adapter wiring. Click handlers forward to
+        // standard launchers so they don't need to live here.
+        resultsAdapter = NoticeAdapter(
+            onNoticeClick = { notice ->
+                if (notice.deepLink != null) {
+                    safeBinding?.root?.let { root ->
+                        runCatching {
+                            val intent = android.content.Intent(
+                                android.content.Intent.ACTION_VIEW,
+                                android.net.Uri.parse(notice.deepLink)
+                            )
+                            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                            startActivity(intent)
+                        }
+                    }
+                }
+            },
+            onAttachmentClick = { /* no-op fallback for malformed URIs */ }
+        )
+        binding.noticeRecycler.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = resultsAdapter
+            setHasFixedSize(false)
+            itemAnimator?.changeDuration = 0  // avoid flicker on Flow re-emit
+        }
+
         binding.noticeRefreshFab.setOnClickListener {
             noticeVm.refresh(force = true)
         }
         binding.noticeRetryButton.setOnClickListener {
-            noticeVm.refresh()
+            noticeVm.reloadLegacyFallback()
+            noticeVm.refresh(force = false)
         }
+
         observeState()
-        if (noticeVm.state.value is UiState.Idle) {
-            noticeVm.refresh()
+        // First render: trigger a /api/notices fetch once. Don't fire on
+        // re-renders after a fragment recreate — the constructor's init
+        // block already started a fetch, and subsequent refreshes are
+        // user-initiated via the FAB / Retry button.
+        if (noticeVm.state.value is UiState.Success &&
+            (noticeVm.state.value as UiState.Success<NoticeScreenState>).value === NoticeScreenState.Loading
+        ) {
+            noticeVm.refresh(force = false)
         }
     }
 
     private fun observeState() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                noticeVm.state.collectLatest { render(it) }
+                noticeVm.state.collectLatest { state -> render(state) }
             }
         }
     }
 
-    private fun render(state: UiState<AppConfig>) {
+    private fun render(state: UiState<NoticeScreenState>) {
         val b = safeBinding ?: return
         when (state) {
             is UiState.Idle, is UiState.Loading -> showOnly(b.noticeProgress)
-            is UiState.Success -> {
-                val notice = state.value.noticeText.trim()
-                if (notice.isEmpty()) {
-                    showOnly(b.noticeEmptyState)
-                } else {
-                    b.noticeBodyText.text = notice
-                    showOnly(b.noticeBodyCard)
-                }
-            }
+            is UiState.Success -> renderScreenState(state.value, b)
             is UiState.Error -> {
                 b.noticeErrorText.text = state.message
                 showOnly(b.noticeErrorCard)
@@ -113,16 +142,32 @@ class NoticeFragment : Fragment() {
         }
     }
 
+    private fun renderScreenState(screen: NoticeScreenState, b: FragmentNoticeBinding) {
+        when (screen) {
+            is NoticeScreenState.Loading -> showOnly(b.noticeProgress)
+            is NoticeScreenState.ListMode -> {
+                val rows = NoticeAdapter.rowsOf(screen.sections)
+                resultsAdapter.submitList(rows)
+                showOnly(b.noticeRecycler)
+            }
+            is NoticeScreenState.LegacyMode -> {
+                b.noticeBodyText.text = screen.text
+                showOnly(b.noticeBodyCard)
+            }
+            is NoticeScreenState.Empty -> showOnly(b.noticeEmptyState)
+        }
+    }
+
     /**
-     * Make `visible` the only visible major surface (body / empty /
-     * error / progress). FAB and header chrome stay visible -- those
-     * are persistent across all states so the user can always refresh
-     * or see what screen they're on.
+     * Same `showOnly` idiom used in v1. v2 has 5 surfaces but the
+     * pattern is unchanged — flip visibility of all 5 to GONE, set
+     * the chosen one to VISIBLE.
      */
     private fun showOnly(visible: View) {
         val b = safeBinding ?: return
         listOf(
             b.noticeProgress,
+            b.noticeRecycler,
             b.noticeBodyCard,
             b.noticeEmptyState,
             b.noticeErrorCard
@@ -130,6 +175,10 @@ class NoticeFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        // Tear down the RecyclerView's adapter BEFORE nulling the
+        // binding so RecyclerView's ViewAttachedToWindow callback
+        // doesn't fire on a stale binding reference.
+        binding.noticeRecycler.adapter = null
         _binding = null
         super.onDestroyView()
     }
