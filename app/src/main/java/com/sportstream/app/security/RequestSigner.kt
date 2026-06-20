@@ -44,7 +44,7 @@ object RequestSigner {
      * [RuntimeStringProvider] or [EncryptedConstants].
      * Empty string disables signing (debug builds).
      *
-     * TODO(step 7.13): wire from EncryptedConstants.
+     * TODO(Phase 7): wire from EncryptedConstants.
      */
     internal var signingSecret: String = ""
 

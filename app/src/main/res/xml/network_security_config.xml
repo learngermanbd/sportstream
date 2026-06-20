@@ -36,7 +36,7 @@
         <pin-set expiration="2027-01-01">
             <!-- Primary pin: Let's Encrypt Authority X3
                  (generated from the current certificate chain).
-                 TODO(step 7.13): replace with real pin from production cert. -->
+                 TODO(Phase 7): replace with real pin from production cert. -->
             <pin digest="SHA-256">YLh1dUR9y6Kja30RrAn7JKnbQG/uEtLMkBgFF2Fuihg=</pin>
             <!-- Backup pin: ISRG Root X1 (Let's Encrypt root CA)
                  Survives intermediate CA rotation. -->

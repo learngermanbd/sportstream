@@ -37,7 +37,7 @@ object IntegrityChecker {
      * the release keystore and embeds it in EncryptedConstants or
      * BuildConfig.  SportStreamApp.onCreate populates this field.
      *
-     * TODO(step 7.13): wire from EncryptedConstants or BuildConfig.
+     * TODO(Phase 7): wire from EncryptedConstants or BuildConfig.
      */
     var expectedSignatureSha256: String = ""
 

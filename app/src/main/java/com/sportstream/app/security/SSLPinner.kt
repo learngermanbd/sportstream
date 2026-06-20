@@ -40,7 +40,7 @@ object SSLPinner {
      *   | base64
      * ```
      *
-     * TODO(step 7.13): replace placeholder pins with real values
+     * TODO(Phase 7): replace placeholder pins with real production cert pins
      * from the production certificate chain.
      */
     private val PINS = mapOf(
