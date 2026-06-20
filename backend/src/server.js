@@ -155,8 +155,10 @@ app.use((err, req, res, _next) => {
 
 if (require.main === module) {
   if (process.env.NODE_ENV !== 'production') {
-    console.warn('[sportstream-backend] DEV mode — set DATABASE_URL in .env and run `npx prisma migrate dev` to enable full CRUD.');
-    console.warn('[sportstream-backend] Without a database, Prisma-dependent endpoints will fail.');
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.warn('[sportstream-backend] DEV mode — set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env');
+    }
+    console.warn('[sportstream-backend] Run prisma/supabase_migration.sql in Supabase SQL Editor to create tables.');
   }
   app.listen(PORT, () => {
     console.log(`[sportstream-backend] listening on :${PORT}`);
