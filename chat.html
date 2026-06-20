@@ -231,8 +231,8 @@
         <h1>SportStream &mdash; Codebuff Conversation Log</h1>
         <p class="subtitle">Complete session transcript, a-to-z. Every turn in chronological order, with role, verbatim prompt, substantive response, subagent calls, git commits, deviations, and cross-references to the matching TODO.html step. This page is the immutable read-only record of how the SportStream Android project was built incrementally inside this single Codebuff session.</p>
         <div class="stats-bar">
-            <div class="stat"><div class="num">15</div><div class="lbl">Total Turns</div></div>
-            <div class="stat"><div class="num">15</div><div class="lbl">Commits Shipped</div></div>
+            <div class="stat"><div class="num">16</div><div class="lbl">Total Turns</div></div>
+            <div class="stat"><div class="num">16</div><div class="lbl">Commits Shipped</div></div>
             <div class="stat"><div class="num">60+</div><div class="lbl">Subagent Calls</div></div>
             <div class="stat"><div class="num">1</div><div class="lbl">Major URL Pivot</div></div>
             <div class="stat"><div class="num">4</div><div class="lbl">Compile Breakages</div></div>
@@ -255,6 +255,7 @@
         <a href="#turn-13"><span class="turn-num">013</span>Crash Q&amp;A</a>
         <a href="#turn-14"><span class="turn-num">014</span>Step 6.4 ship</a>
         <a href="#turn-15"><span class="turn-num">015</span>Sentry DSN</a>
+        <a href="#turn-16"><span class="turn-num">016</span>Step 6.2</a>
     </nav>
 
     <main class="container">
@@ -728,6 +729,43 @@
                     <span class="sha-chip">[step6.5-push-pending]</span>
                     <span class="deferred">compile + review &rarr; next session</span>
                     <span class="anchor-chip"><a href="TODO.html#step6.5">Step 6.5</a></span>
+                </div>
+            </div>
+        </section>
+
+
+        <section class="turn role-commit" id="turn-16">
+            <div class="step-header">
+                <span class="step-num">016</span>
+                <span class="agent commit">Shipped</span>
+                <span class="ts">turn 30-45</span>
+            </div>
+            <h4>STEP 6.2 SHIPPED - WorkManager daily update check + build-script fixes + APK size limit raised</h4>
+            <div class="response-body">
+                <p><strong>Components delivered</strong> (Step 6.2 - Auto-update system):</p>
+                <ul>
+                    <li><strong>UpdateWorker.kt</strong> (new) - WorkManager CoroutineWorker, 24h PeriodicWorkRequest, KEEP policy. Posts local notification with PendingIntent to MainActivity when update available. Creates "App Updates" NotificationChannel. Enqueued from SportStreamApp.onCreate via UpdateWorker.enqueue(this).</li>
+                    <li><strong>WorkManager dependency</strong> - workmanager 2.10.0 added to libs.versions.toml + app/build.gradle.kts.</li>
+                    <li><strong>String resources</strong> - update_channel_name + update_channel_description added to strings.xml.</li>
+                    <li><strong>SportStreamApp.kt</strong> - Added UpdateWorker.enqueue() in onCreate + fixed isEnableAutoSessionTracking (Sentry SDK 7.16.0 rename) + fixed scrubbed nullability.</li>
+                    <li><strong>APK size limit raised</strong> - All references to 30MB cap updated to 50MB in TODO.html (lines 621, 655, 974).</li>
+                </ul>
+                <p><strong>Build-script fixes (pre-existing Step 6.5 issues that were never compile-verified):</strong></p>
+                <ul>
+                    <li><strong>MAJOR-1</strong> - import java.util.Properties moved AFTER plugins {} block in both build.gradle.kts files. Gradle's java {} extension shadows the root java package (thinker-gemini diagnosis).</li>
+                    <li><strong>MAJOR-2</strong> - autoProguardConfig renamed to autoUploadProguardMapping in app (Sentry Gradle plugin 5.x property name).</li>
+                    <li><strong>MAJOR-3</strong> - Sentry plugin deferred in admin module (Phase 8 work, not active).</li>
+                    <li><strong>MAJOR-4</strong> - isSessionTrackingEnabled renamed to isEnableAutoSessionTracking in SportStreamApp.kt (Sentry SDK 7.16.0 property).</li>
+                </ul>
+                <p><strong>Compile:</strong> ./gradlew :app:compileDebugKotlin BUILD SUCCESSFUL (1m 53s).</p>
+                <p><strong>Commit:</strong> 054a7ef pushed to origin/main.</p>
+                <p><strong>Pre-existing note:</strong> The autoProguardConfig property was added in chat.html turn 15 (Sentry DSN wiring) but that turn deliberately skipped compile verification per user instruction. These build-script fixes close that gap.</p>
+            </div>
+            <div class="turn-footer">
+                <div class="legend-row">
+                    <span class="sha-chip">054a7ef</span>
+                    <span class="anchor-chip"><a href="TODO.html#step6.2">Step 6.2 done</a></span>
+                    <span class="deferred">admin Sentry plugin re-enable -> Phase 8</span>
                 </div>
             </div>
         </section>
