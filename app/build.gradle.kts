@@ -1,12 +1,11 @@
 // Step 1.2: full Android app module — plugins + viewBinding + full dependency block from §1.2 of
 // `sportzfy_build_plan.html`, sourced from `gradle/libs.versions.toml`.
 //
-// Phase 6 · Step 6.5 — explicit `java.util.Properties` import because Kotlin
-// Gradle DSL does NOT auto-import `java.util.*`; the FQN form produces
-// `Unresolved reference: util` compile errors during the release-build
-// configuration phase.
-import java.util.Properties
-
+// Phase 6 · Step 6.5 — `java.util.Properties` import placed AFTER the
+// `plugins {}` block.  Gradle Kotlin DSL exposes a `java {}` project
+// extension that shadows the root `java` package; placing the import
+// before `plugins {}` breaks script compilation and produces
+// `Unresolved reference: util` on fully-qualified `java.util.Properties()`.
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -14,6 +13,8 @@ plugins {
     alias(libs.plugins.google.services)    // Firebase Messaging only (BoM)
     alias(libs.plugins.sentry.android)      // Step 6.5 — auto-uploads R8 mapping.txt + InApp frames on assembleRelease
 }
+
+import java.util.Properties
 
 android {
     namespace = "com.sportstream.app"
@@ -30,10 +31,10 @@ android {
     // Falls back to an empty Properties when the file is missing so
     // `assembleDebug` still works for developers without prod creds.
     // -----------------------------------------------------------------
-    val rootSigningProps: java.util.Properties = rootProject.file("signing.properties")
-        .takeIf { it.exists() }
-        ?.let { java.util.Properties().apply { it.inputStream().use { stream -> load(stream) } } }
-        ?: java.util.Properties()
+    val rootSigningProps = Properties()
+    rootProject.file("signing.properties").takeIf { it.exists() }?.let { f ->
+        f.inputStream().use { stream -> rootSigningProps.load(stream) }
+    }
 
     defaultConfig {
         applicationId = "com.sportstream.app"
@@ -115,7 +116,7 @@ android {
         org = "sportstream-app"
         projectName = "sportstream-android"
         authToken = (rootSigningProps.getProperty("SENTRY_AUTH_TOKEN") ?: "").trim()
-        autoProguardConfig = true
+        autoUploadProguardMapping = true
         includeSourceContext = true
         uploadNativeSymbols = false
         // We deliberately do NOT set `proguardMappings` / `manifestPath`
@@ -218,4 +219,7 @@ dependencies {
 
     // ── ViewPager2 — Home tab banner auto-scroll carousel (Phase 3 · Step 3.3) ──
     implementation(libs.viewpager2)
+
+    // ── WorkManager — daily background update check (Phase 6 · Step 6.2) ──
+    implementation(libs.work.runtime)
 }

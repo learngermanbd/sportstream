@@ -11,26 +11,25 @@
 // yet -- the admin UI is straightforward and XML+ViewBinding stays consistent
 // with the user app's stack.
 //
-// Phase 6 · Step 6.5 — explicit `java.util.Properties` import (same
-// rationale as :app). Without it Kotlin Gradle DSL raises
-// `Unresolved reference: util` on the signingConfigs block.
-import java.util.Properties
-
+// Phase 6 · Step 6.5 — `java.util.Properties` import placed AFTER the
+// `plugins {}` block to avoid Gradle's `java {}` extension shadowing.
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.sentry.android)   // Step 6.5 — mapping.txt upload (mirror :app)
+    // alias(libs.plugins.sentry.android)  // Step 6.5 — deferred until admin module is actively developed
 }
+
+import java.util.Properties
 
 android {
     namespace = "com.sportstream.admin"
     compileSdk = 35
 
     // Step 6.5 — same hoisted properties pattern as :app.
-    val rootSigningProps: java.util.Properties = rootProject.file("signing.properties")
-        .takeIf { it.exists() }
-        ?.let { java.util.Properties().apply { it.inputStream().use { stream -> load(stream) } } }
-        ?: java.util.Properties()
+    val rootSigningProps = Properties()
+    rootProject.file("signing.properties").takeIf { it.exists() }?.let { f ->
+        f.inputStream().use { stream -> rootSigningProps.load(stream) }
+    }
 
     defaultConfig {
         applicationId = "com.sportstream.admin"
@@ -89,14 +88,15 @@ android {
     // so admin crash mappings end up under a separate Sentry project
     // (admin events should NOT tangle with user-app release health).
     // -----------------------------------------------------------------
-    sentry {
-        org = "sportstream-app"
-        projectName = "sportstream-admin-android"
-        authToken = (rootSigningProps.getProperty("SENTRY_AUTH_TOKEN") ?: "").trim()
-        autoProguardConfig = true
-        includeSourceContext = true
-        uploadNativeSymbols = false
-    }
+    // Sentry plugin config — deferred until admin module is actively developed.
+    // sentry {
+    //     org = "sportstream-app"
+    //     projectName = "sportstream-admin-android"
+    //     authToken = (rootSigningProps.getProperty("SENTRY_AUTH_TOKEN") ?: "").trim()
+    //     autoUploadProguardMapping = true
+    //     includeSourceContext = true
+    //     uploadNativeSymbols = false
+    // }
 
     buildTypes {
         release {

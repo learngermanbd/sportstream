@@ -352,4 +352,6 @@
     <string name="update_notification_description">Downloading the latest release…</string>
     <string name="update_downloading">Downloading update…</string>
     <string name="update_download_failed">Couldn’t start the update download</string>
+    <string name="update_channel_name">App Updates</string>
+    <string name="update_channel_description">Notifications about available SportStream updates.</string>
 </resources>

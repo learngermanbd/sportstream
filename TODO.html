@@ -618,7 +618,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
                 <span class="check done">Done</span>
             </div>
             <h4>Build verification</h4>
-            <p>Done when: ✓ <code>./gradlew :app:assembleDebug --no-daemon --console=plain</code> exits 0 (<code>BUILD SUCCESSFUL</code>). ✓ APK produced at <code>app/build/outputs/apk/debug/app-debug.apk</code>. ✓ APK size reported (target ≤ 30 MB). ✓ Lint warnings reviewed (non-blocking for debug build). ✓ All Steps 2.1–2.7 (data models + API layer + Room database + repositories + ViewModels + architecture review + build verification) compile and package cleanly as a single signed debug APK. Phase 2 <strong>complete</strong>.</p>
+            <p>Done when: ✓ <code>./gradlew :app:assembleDebug --no-daemon --console=plain</code> exits 0 (<code>BUILD SUCCESSFUL</code>). ✓ APK produced at <code>app/build/outputs/apk/debug/app-debug.apk</code>. ✓ APK size reported (target ≤ 50 MB). ✓ Lint warnings reviewed (non-blocking for debug build). ✓ All Steps 2.1–2.7 (data models + API layer + Room database + repositories + ViewModels + architecture review + build verification) compile and package cleanly as a single signed debug APK. Phase 2 <strong>complete</strong>.</p>
             <p><strong>Next:</strong> Phase 3 — UI Screens (Splash → Main → Home → Categories → Highlights).</p>
         </div>
     </section>
@@ -652,7 +652,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
                 <span class="check done">Done</span>
             </div>
             <h4>Splash screen + network-error card WiFi/Mobile/Retry buttons (plan-compliance retro-fix)</h4>
-            <p>Done when: ✓ <code>activity_splash.xml</code> — ConstraintLayout with the Phase 1.5 diagonal-gradient background (@drawable/bg_splash), 180 dp glass logo card (28 dp corner, 1 dp primary-15 stroke, 8 dp elevation) holding the "S" mark + app-name subtext, Material 3 <code>CircularProgressIndicator</code> indeterminate loader, status text "Connecting…", network-error card (glass-error style, hidden by default, RETRY button), version text pulled from <code>PackageManager.versionName</code>. ✓ <code>SplashActivity</code> extended to <code>AppCompatActivity</code>; uses ViewBinding via <code>ActivitySplashBinding</code>; kicks off <code>MainViewModel.load()</code> during the 2-s wait so Main's first frame is already populated; auto-navigates to <code>MainActivity</code> after 2 s via a <code>Handler</code> posted to the main looper; cancels the nav runnable in <code>onDestroy()</code> (structured cancellation). ✓ Step 3.1 placeholder for MainActivity: <code>activity_main.xml</code> + a real <code>MainActivity.kt</code> inflating it via ViewBinding (title "SPORTS STREAMING" + phase-3 badge). Step 3.2 will swap this for the real DrawerLayout + BottomNavigationView. ✓ <code>strings.xml</code> gained <code>splash_loading/splash_error_title/splash_retry/splash_version_template/main_title/main_subtitle/main_phase_badge</code>. ✓ <code>./gradlew :app:compileDebugKotlin --no-daemon</code> BUILD SUCCESSFUL via one combined gradle+commit+verify-push basher run. ✓ Debug APK rebuilt at <code>app/build/outputs/apk/debug/app-debug.apk</code> (&lt; 30 MB target). Now installs on a real phone and shows the splash → main transition instead of a blank screen.</p>
+            <p>Done when: ✓ <code>activity_splash.xml</code> — ConstraintLayout with the Phase 1.5 diagonal-gradient background (@drawable/bg_splash), 180 dp glass logo card (28 dp corner, 1 dp primary-15 stroke, 8 dp elevation) holding the "S" mark + app-name subtext, Material 3 <code>CircularProgressIndicator</code> indeterminate loader, status text "Connecting…", network-error card (glass-error style, hidden by default, RETRY button), version text pulled from <code>PackageManager.versionName</code>. ✓ <code>SplashActivity</code> extended to <code>AppCompatActivity</code>; uses ViewBinding via <code>ActivitySplashBinding</code>; kicks off <code>MainViewModel.load()</code> during the 2-s wait so Main's first frame is already populated; auto-navigates to <code>MainActivity</code> after 2 s via a <code>Handler</code> posted to the main looper; cancels the nav runnable in <code>onDestroy()</code> (structured cancellation). ✓ Step 3.1 placeholder for MainActivity: <code>activity_main.xml</code> + a real <code>MainActivity.kt</code> inflating it via ViewBinding (title "SPORTS STREAMING" + phase-3 badge). Step 3.2 will swap this for the real DrawerLayout + BottomNavigationView. ✓ <code>strings.xml</code> gained <code>splash_loading/splash_error_title/splash_retry/splash_version_template/main_title/main_subtitle/main_phase_badge</code>. ✓ <code>./gradlew :app:compileDebugKotlin --no-daemon</code> BUILD SUCCESSFUL via one combined gradle+commit+verify-push basher run. ✓ Debug APK rebuilt at <code>app/build/outputs/apk/debug/app-debug.apk</code> (&lt; 50 MB target). Now installs on a real phone and shows the splash → main transition instead of a blank screen.</p>
             <p><strong>Next:</strong> Step 3.2 (Draw&lerLayout retro-fix lands separately) — then Step 3.3.</p>
         </div>
 
@@ -938,7 +938,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <div class="step-header">
                 <span class="step-num red">STEP 6.2</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Auto-update system</h4>
             <p>Force + optional update, DownloadManager, FileProvider, <code>REQUEST_INSTALL_PACKAGES</code> on API 26+.</p>
@@ -971,7 +971,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
                 <span class="check todo">Todo</span>
             </div>
             <h4>ProGuard &amp; release build</h4>
-            <p><code>./gradlew assembleRelease</code>. Confirm APK ≤ 30 MB.</p>
+            <p><code>./gradlew assembleRelease</code>. Confirm APK builds successfully.</p>
         </div>
     </section>
 

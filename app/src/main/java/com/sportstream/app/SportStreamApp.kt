@@ -15,6 +15,7 @@ import com.sportstream.app.data.remote.NetworkModule
 import com.sportstream.app.data.remote.RemoteConfigHelper
 import com.sportstream.app.data.repository.RepositoryModule
 import com.sportstream.app.data.update.AppUpdateManager
+import com.sportstream.app.services.UpdateWorker
 import io.sentry.SentryEvent
 import io.sentry.SentryOptions
 import io.sentry.android.core.SentryAndroid
@@ -74,7 +75,7 @@ class SportStreamApp : Application() {
             options.isDebug = BuildConfig.DEBUG
             options.sampleRate = 1.0
             options.tracesSampleRate = 0.0
-            options.isSessionTrackingEnabled = !BuildConfig.DEBUG
+            options.isEnableAutoSessionTracking = !BuildConfig.DEBUG
             options.environment = if (BuildConfig.DEBUG) "debug" else "release"
             options.release = "${BuildConfig.APPLICATION_ID}@${BuildConfig.VERSION_NAME}+${BuildConfig.VERSION_CODE}"
             options.isAttachStacktrace = true
@@ -108,7 +109,7 @@ class SportStreamApp : Application() {
         )
         fun redact(input: String?): String? {
             if (input.isNullOrBlank()) return input
-            var scrubbed = input
+            var scrubbed: String = input
             piiPatterns.forEach { scrubbed = scrubbed.replace(it, "$1[Filtered]") }
             return scrubbed
         }
@@ -193,6 +194,11 @@ class SportStreamApp : Application() {
         network
         local
         repository
+
+        // Phase 6 · Step 6.2 — schedule a daily background update check.
+        // WorkManager coalesces duplicates via KEEP policy so this is
+        // safe to call on every cold start.
+        UpdateWorker.enqueue(this)
     }
 
     /**

@@ -28,6 +28,7 @@ coroutines = "1.9.0"
 gson = "2.10.1"           # Step 2.1 — @SerializedName on data models
 swiperefreshlayout = "1.1.0"   # Step 3.3 — SwipeRefreshLayout host for Home pull-to-refresh
 viewpager2 = "1.1.0"           # Step 3.3 — banner carousel on Home tab
+workmanager = "2.10.0"          # Step 6.2 — daily update check PeriodicWorkRequest
 
 [libraries]
 # Media3 — video player
@@ -83,6 +84,9 @@ swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout"
 
 # ViewPager2 — Home tab banner carousel (Phase 3 · Step 3.3)
 viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "viewpager2" }
+
+# WorkManager — background periodic update check (Phase 6 · Step 6.2)
+work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "workmanager" }
 
 [plugins]
 android-application = { id = "com.android.application",                  version.ref = "agp" }
