@@ -9,7 +9,10 @@ import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import com.sportstream.app.security.NetworkInterceptor
+import com.sportstream.app.security.RequestSigner
 import com.sportstream.app.security.RuntimeStringProvider
+import com.sportstream.app.security.SSLPinner
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -93,7 +96,15 @@ class ApiClient(
                 .readTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)
                 .cache(Cache(context.cacheDir.resolve("sportstream_http"), CACHE_SIZE_BYTES))
+                // Phase 7 · Step 7.7 — SSL pinning (relaxed in debug for proxy tools)
+                // Note: Proxy.NO_PROXY is NOT set here because this client is
+                // shared with Media3 ExoPlayer (HLS/DASH streaming) which may
+                // need system proxy on corporate networks.  HTTPS enforcement
+                // + certificate pinning provide equivalent MITM protection.
+                .certificatePinner(SSLPinner.buildCertificatePinner(debug))
                 .addInterceptor(AuthInterceptor)
+                // Phase 7 · Step 7.7 — HTTPS enforcement + request signing + redirect protection
+                .addInterceptor(NetworkInterceptor)
                 .apply { if (debug) addInterceptor(DebugLoggerInterceptor()) }
                 .build()
     }
