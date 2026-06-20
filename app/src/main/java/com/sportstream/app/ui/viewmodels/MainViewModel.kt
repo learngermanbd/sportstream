@@ -62,14 +62,11 @@ class MainViewModel(
         var loadError:  UiState.Error?  = null
 
         coroutineScope {
-            // Phase 7 · Step 7.13 — use *WithFallback variants so the
-            // app stays usable when the live API is unreachable; demo
-            // content seeds in-place on network failure.
-            val liveD   = async { mainRepository.fetchLiveWithFallback() }
-            val eventsD = async { mainRepository.fetchEventsWithFallback() }
-            val catD    = async { mainRepository.fetchCategoriesWithFallback() }
-            val hlD     = async { mainRepository.fetchHighlightsWithFallback() }
-            val bannerD = async { mainRepository.fetchBannersWithFallback() }
+            val liveD   = async { mainRepository.fetchLive() }
+            val eventsD = async { mainRepository.fetchEvents() }
+            val catD    = async { mainRepository.fetchCategories() }
+            val hlD     = async { mainRepository.fetchHighlights() }
+            val bannerD = async { mainRepository.fetchBanners() }
 
             // First-failure short-circuit on `live` (canonical sentinel —
             // if it fails, the rest of the snapshot is unusable). Returning
