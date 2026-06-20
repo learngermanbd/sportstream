@@ -30,6 +30,10 @@ swiperefreshlayout = "1.1.0"   # Step 3.3 — SwipeRefreshLayout host for Home p
 viewpager2 = "1.1.0"           # Step 3.3 — banner carousel on Home tab
 workmanager = "2.10.0"          # Step 6.2 — daily update check PeriodicWorkRequest
 security-crypto = "1.1.0-alpha06"  # Step 7.8 — EncryptedSharedPreferences (AES-256-GCM + HMAC)
+# --- Test dependencies (Step 9.1) ---
+junit-jupiter = "5.11.0"
+mockk = "1.13.12"
+truth = "1.4.2"
 
 [libraries]
 # Media3 — video player
@@ -92,6 +96,13 @@ work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "workm
 
 # Security — EncryptedSharedPreferences + MasterKey (Phase 7 · Step 7.8)
 security-crypto = { module = "androidx.security:security-crypto", version.ref = "security-crypto" }
+
+# --- Test libraries (Step 9.1) ---
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+truth = { module = "com.google.truth:truth", version.ref = "truth" }
 
 [plugins]
 android-application = { id = "com.android.application",                  version.ref = "agp" }

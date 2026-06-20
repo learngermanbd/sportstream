@@ -267,6 +267,13 @@ dependencies {
 
     // ── Security — EncryptedSharedPreferences (Phase 7 · Step 7.8) ──
     implementation(libs.security.crypto)
+
+    // ── Test dependencies (Phase 9 · Step 9.1) ──
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testImplementation(libs.mockk)
+    testImplementation(libs.coroutines.test)
+    testImplementation(libs.truth)
 }
 
 // ──────────────────────────────────────────────────────────────────────
