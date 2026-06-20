@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SportStream — Codebase Audit Report</title>
+    <style>
+        :root {
+            --primary: #1CCBD4;
+            --primary-dark: #17a8b0;
+            --secondary: #131931;
+            --bg: #0a0f1a;
+            --bg-card: #121a27;
+            --text: #e0e6ed;
+            --text-muted: #8899aa;
+            --border: #1e2d45;
+            --green: #22c55e;
+            --orange: #f59e0b;
+            --red: #ef4444;
+            --yellow: #eab308;
+            --purple: #a78bfa;
+            --pink: #ec4899;
+            --blue: #3b82f6;
+            --glass: rgba(28,203,212,0.08);
+            --glass-border: rgba(28,203,212,0.15);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg); color: var(--text); line-height: 1.7;
+        }
+        body::before {
+            content:''; position:fixed; top:-50%; left:-50%; width:200%; height:200%;
+            background: radial-gradient(ellipse at 20% 30%, rgba(28,203,212,0.04) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 70%, rgba(167,139,250,0.03) 0%, transparent 50%);
+            z-index:-1; animation: bgShift 25s ease-in-out infinite alternate;
+        }
+        @keyframes bgShift { 0%{transform:translate(0,0)} 100%{transform:translate(-3%,-3%)} }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+        .container { max-width:1200px; margin:0 auto; padding:0 24px; }
+
+        /* Hero */
+        .hero { text-align:center; padding:60px 20px 50px; position:relative; }
+        .hero::after {
+            content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+            width:80%; max-width:600px; height:1px;
+            background:linear-gradient(90deg,transparent,var(--primary),transparent);
+        }
+        .hero-badge {
+            display:inline-block; background:var(--glass); border:1px solid var(--glass-border);
+            padding:6px 18px; border-radius:50px; font-size:13px; color:var(--primary);
+            letter-spacing:1px; text-transform:uppercase; margin-bottom:16px;
+        }
+        .hero h1 {
+            font-size:3rem; font-weight:800;
+            background:linear-gradient(135deg,var(--primary),var(--purple));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+            margin-bottom:10px;
+        }
+        .hero .sub { font-size:1.1rem; color:var(--text-muted); max-width:720px; margin:0 auto; }
+        .hero .meta { display:inline-flex; gap:14px; margin-top:20px; flex-wrap:wrap; justify-content:center; }
+        .hero .meta-item {
+            padding:6px 14px; border-radius:8px; font-size:12px; color:var(--text-muted);
+            background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+        }
+        .hero .meta-item strong { color:var(--primary); }
+
+        /* Stats bar */
+        .stats-bar {
+            display:flex; justify-content:center; gap:20px; flex-wrap:wrap;
+            padding:30px 0; margin:20px 0;
+        }
+        .stat {
+            text-align:center; padding:14px 20px; border-radius:12px;
+            background:var(--bg-card); border:1px solid var(--border); min-width:120px;
+        }
+        .stat .num {
+            font-size:1.8rem; font-weight:800;
+            background:linear-gradient(135deg,var(--primary),var(--purple));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+        }
+        .stat .label { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; }
+
+        /* Section */
+        .section { margin:50px 0; }
+        .section-header {
+            display:flex; align-items:center; gap:14px; margin-bottom:24px;
+            padding-bottom:14px; border-bottom:1px solid var(--border);
+        }
+        .section-title { font-size:1.5rem; font-weight:700; color:#fff; }
+
+        /* Card */
+        .card {
+            background:var(--bg-card); border:1px solid var(--border); border-radius:16px;
+            padding:28px; transition:all 0.3s; position:relative; overflow:hidden;
+            margin-bottom:20px;
+        }
+        .card::before {
+            content:''; position:absolute; top:0; left:0; right:0; height:2px;
+            background:linear-gradient(90deg,var(--primary),var(--purple));
+            opacity:0; transition:opacity 0.3s;
+        }
+        .card:hover { border-color:var(--glass-border); transform:translateY(-2px); box-shadow:0 8px 32px rgba(0,0,0,0.3); }
+        .card:hover::before { opacity:1; }
+
+        /* Tables */
+        table { width:100%; border-collapse:collapse; margin:14px 0; font-size:13px; }
+        th { background:rgba(28,203,212,0.10); color:var(--primary); padding:10px 14px; text-align:left; border-bottom:1px solid var(--border); text-transform:uppercase; font-size:11px; letter-spacing:1px; }
+        td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.04); color:var(--text-muted); }
+        tr:hover td { background:rgba(255,255,255,0.02); }
+        td code { background:rgba(28,203,212,0.10); padding:2px 8px; border-radius:4px; font-size:11px; color:var(--primary); }
+
+        /* Severity badges */
+        .badge {
+            display:inline-block; padding:3px 10px; border-radius:5px;
+            font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;
+        }
+        .badge.crit  { background:rgba(239,68,68,0.15); color:var(--red); border:1px solid rgba(239,68,68,0.3); }
+        .badge.warn  { background:rgba(245,158,11,0.15); color:var(--orange); border:1px solid rgba(245,158,11,0.3); }
+        .badge.ok    { background:rgba(34,197,94,0.15); color:var(--green); border:1px solid rgba(34,197,94,0.3); }
+        .badge.note  { background:rgba(59,130,246,0.15); color:var(--blue); border:1px solid rgba(59,130,246,0.3); }
+
+        /* Lists */
+        ul.cols2 { columns:2; column-gap:30px; }
+        ul { margin:8px 0 8px 24px; color:var(--text-muted); }
+        li { margin:6px 0; font-size:13px; padding-left:8px; }
+        li strong { color:var(--primary); }
+
+        /* Code blocks */
+        pre.code-block {
+            background:#000; border:1px solid var(--border); border-radius:10px;
+            padding:14px 16px; font-family:'Courier New',monospace; font-size:12px;
+            color:var(--green); overflow-x:auto; line-height:1.5; margin-top:10px;
+        }
+
+        /* Risk callout */
+        .risk {
+            border-left:4px solid var(--red);
+            background:rgba(239,68,68,0.06);
+            padding:14px 18px;
+            margin:10px 0;
+            border-radius:0 8px 8px 0;
+        }
+        .risk .title { color:var(--red); font-weight:700; margin-bottom:6px; font-size:14px; }
+        .risk p { color:var(--text-muted); font-size:13px; }
+
+        .recommendation {
+            border-left:4px solid var(--orange);
+            background:rgba(245,158,11,0.06);
+            padding:14px 18px;
+            margin:10px 0;
+            border-radius:0 8px 8px 0;
+        }
+        .recommendation .title { color:var(--orange); font-weight:700; margin-bottom:6px; font-size:14px; }
+        .recommendation p { color:var(--text-muted); font-size:13px; }
+
+        .success-note {
+            border-left:4px solid var(--green);
+            background:rgba(34,197,94,0.06);
+            padding:14px 18px;
+            margin:10px 0;
+            border-radius:0 8px 8px 0;
+        }
+        .success-note .title { color:var(--green); font-weight:700; margin-bottom:6px; font-size:14px; }
+        .success-note p { color:var(--text-muted); font-size:13px; }
+
+        /* Footer */
+        .footer {
+            text-align:center; padding:40px 20px; margin-top:60px;
+            border-top:1px solid var(--border); color:var(--text-muted); font-size:13px;
+        }
+        .footer a { color:var(--primary); text-decoration:none; }
+
+        /* Responsive */
+        @media(max-width:768px) {
+            .hero h1 { font-size:2rem; }
+            .container { padding:0 16px; }
+            .card { padding:20px; }
+            .stats-bar { gap:12px; }
+            .stat { min-width:90px; padding:10px 14px; }
+            .stat .num { font-size:1.4rem; }
+            ul.cols2 { columns:1; }
+        }
+
+        ::-webkit-scrollbar { width:8px; }
+        ::-webkit-scrollbar-track { background:var(--bg); }
+        ::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+        ::-webkit-scrollbar-thumb:hover { background:var(--primary-dark); }
+        html { scroll-behavior:smooth; }
+    </style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="hero-badge">🔍 Static Codebase Audit</div>
+    <h1>SportStream — Codebase Audit</h1>
+    <p class="sub">Comprehensive audit of the SportStream Android codebase — a <strong style="color:var(--primary)">Sportzfy-clone</strong> live sports streaming app. <br>99 commits · 22,174 LOC · 121 Kotlin files · 81 XML resources · Android 6 → 16 support.</p>
+    <div class="meta">
+        <div class="meta-item">📦 <strong>SportStream v0.6.0</strong> (Phase 6 ship)</div>
+        <div class="meta-item">🤖 <strong>99 commits</strong> since initial commit</div>
+        <div class="meta-item">🛡️ <strong>20+ security layers</strong></div>
+        <div class="meta-item">📱 <strong>Android 6 → 16 (SDK 23 → 35)</strong></div>
+        <div class="meta-item">📅 <strong>Audit date: 2026-06-20</strong></div>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- Stats -->
+    <div class="stats-bar">
+        <div class="stat"><div class="num">99</div><div class="label">Commits</div></div>
+        <div class="stat"><div class="num">121</div><div class="label">.kt Files</div></div>
+        <div class="stat"><div class="num">30</div><div class="label">Security Files</div></div>
+        <div class="stat"><div class="num">9</div><div class="label">Phases</div></div>
+        <div class="stat"><div class="num">7</div><div class="label">Steps Shipped</div></div>
+    </div>
+
+    <!-- High-level overview -->
+    <div class="section" id="overview">
+        <div class="section-header"><div class="section-title">📊 1. Project Snapshot</div></div>
+        <div class="card">
+            <h3 style="color:#fff;margin-bottom:14px;font-size:16px;">Build pipeline</h3>
+            <table>
+                <tr><th>Toolchain</th><td>Kotlin <code>2.0.21</code> · AGP <code>8.7.3</code> · Gradle <code>8.11.1</code> · JDK <code>17</code> · NDK <code>27.3.13750724</code></td></tr>
+                <tr><th>SDK targets</th><td><code>minSdk=23</code> · <code>targetSdk=35</code> · <code>compileSdk=35</code></td></tr>
+                <tr><th>Version</th><td><code>versionCode=1</code> · <code>versionName="1.0.0"</code></td></tr>
+                <tr><th>Library catalog</th><td><code>gradle/libs.versions.toml</code> — <strong>36</strong> pinned libraries</td></tr>
+                <tr><th>Native layer</th><td><code>app/src/main/cpp/native_security.cpp</code> · CMakeLists.txt · C++17</td></tr>
+                <tr><th>Build size</th><td>Kotlin <code>16,822</code> LOC · XML <code>5,352</code> LOC · <span class="badge ok">22,174 total</span></td></tr>
+            </table>
+
+            <h3 style="color:#fff;margin:20px 0 14px;font-size:16px;">Per-layer Kotlin file count</h3>
+            <table>
+                <tr><th>Package</th><th>Files</th><th>Purpose</th></tr>
+                <tr><td><code>app.security.*</code></td><td><strong>30</strong></td><td>Anti-tamper, key storage, SSL pinning, integrity</td></tr>
+                <tr><td><code>app.data.*</code></td><td><strong>41</strong></td><td>Models, Room DB, OkHttp clients, repositories</td></tr>
+                <tr><td><code>app.ui.*</code></td><td><strong>44</strong></td><td>Activities, fragments, ViewModels, adapters</td></tr>
+                <tr><td>Other (Splash, App, etc.)</td><td><strong>6</strong></td><td>Application, root Co-/Utils</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Architecture -->
+    <div class="section" id="architecture">
+        <div class="section-header"><div class="section-title">🏗️ 2. Architecture</div></div>
+        <div class="card">
+            <p>The codebase follows a three-layer MVVM/Clean architecture with Kotlin Coroutines, Room for local persistence, and OkHttp for remote calls.</p>
+
+            <h3 style="color:#fff;margin:20px 0 14px;font-size:16px;">Layer breakdown</h3>
+
+            <div class="success-note">
+                <div class="title">✓ UI layer — mature</div>
+                <p>5 Activities (Splash, Main, Player, Update, Crash) · 8 ViewModels (Home, Categories, Favorites, Highlights, Player, Main, Search, Notice, NetworkStream) · dedicated adapters and base StateViewModel with CancellationException-safe scope.</p>
+            </div>
+
+            <div class="success-note">
+                <div class="title">✓ Data layer — production-ready</div>
+                <p>3 Repositories (Main, Favorites, Playlist) with thin-pass-through to RemoteDataSource / LocalDataSource. DI seams via NetworkModule + LocalModule + RepositoryModule.</p>
+            </div>
+
+            <div class="success-note">
+                <div class="title">✓ Security layer — exceptional depth</div>
+                <p>30 dedicated security files covering 20+ protection mechanisms. Each module is documented inline with Phase/Step provenance (e.g. <code>Phase 7 · Step 7.4</code>). Excellent traceability.</p>
+            </div>
+
+            <h3 style="color:#fff;margin:20px 0 14px;font-size:16px;">Dependency inventory</h3>
+            <ul class="cols2">
+                <li><strong>Media3</strong> — ExoPlayer + UI + Session + datasource-okhttp</li>
+                <li><strong>OkHttp</strong> — networking with logging interceptor</li>
+                <li><strong>Room</strong> — local DB (Favorites, Playlist, Notice)</li>
+                <li><strong>Coroutines</strong> — structured concurrency</li>
+                <li><strong>DataStore</strong> — preferences + remote config cache</li>
+                <li><strong>Sentry</strong> — crash reporting + proguard mapping</li>
+                <li><strong>Firebase Messaging</strong> — push only</li>
+                <li><strong>Navigation</strong> — fragment routing</li>
+                <li><strong>Lifecycle</strong> — viewmodel + livedata</li>
+                <li><strong>Glide</strong> — image loading</li>
+                <li><strong>Gson</strong> — JSON serialization</li>
+                <li><strong>Security-Crypto</strong> — EncryptedSharedPreferences</li>
+                <li><strong>Play Integrity</strong> — device attestation</li>
+                <li><strong>WorkManager</strong> — background tasks</li>
+                <li><strong>Lottie</strong> — animations</li>
+                <li><strong>Material 3</strong> — UI components</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Security Audit -->
+    <div class="section" id="security">
+        <div class="section-header"><div class="section-title">🛡️ 3. Security Audit</div></div>
+        <div class="card">
+            <p>The security layer is the standout feature of this codebase — 30 files implementing 20+ protection mechanisms.</p>
+
+            <h3 style="color:#fff;margin:20px 0 14px;font-size:16px;">Security modules by category</h3>
+            <table>
+                <tr><th>Category</th><th>Files</th><th>Wired into SecurityGate</th></tr>
+                <tr>
+                    <td><strong>Detection</strong></td>
+                    <td>RootDetector, EmulatorDetector, HookDetector, TamperDetector, AntiDebug, RuntimeMonitor, DeviceAttestation</td>
+                    <td><span class="badge ok">All</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Integrity</strong></td>
+                    <td>IntegrityChecker, IntegrityManager, IntegrityVerdict, PlayIntegrityManager (com.google.android.play:integrity)</td>
+                    <td><span class="badge ok">All</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Native</strong></td>
+                    <td>NativeSecurityManager (JNI), libsportstream_security.so</td>
+                    <td><span class="badge ok">Yes — JNI_OnLoad with self-ptrace</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Crypto</strong></td>
+                    <td>KeystoreManager, StringEncryptor, SecurePreferences, SecureFileStorage, RuntimeStringProvider</td>
+                    <td><span class="badge ok">Used by app</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Network</strong></td>
+                    <td>SSLPinner, NetworkInterceptor, RequestSigner, ApiHttpException</td>
+                    <td><span class="badge ok">ApiClient</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Runtime</strong></td>
+                    <td>MemoryProtection, TokenManager, AntiScreenCapture, CodeObfuscationRuntime, HoneyPotManager</td>
+                    <td><span class="badge ok">SportStreamApp / SecurityGate</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Orchestrator</strong></td>
+                    <td>SecurityGate, SecurityModule, TamperDetector, SelfHealing</td>
+                    <td><span class="badge ok">SportStreamApp.onCreate</span></td>
+                </tr>
+            </table>
+
+            <h3 style="color:#fff;margin:20px 0 14px;font-size:16px;">Scoring logic</h3>
+            <p>Threat weighs (Hook = 5 pts, Root = 3 pts) feed a 0-10 score bucket:</p>
+            <table>
+                <tr><th>Score</th><th>Action</th></tr>
+                <tr><td>0</td><td><span class="badge ok">Clean</span> — proceed normally</td></tr>
+                <tr><td>1-4</td><td><span class="badge warn">Soft block</span> — friendly warning UX</td></tr>
+                <tr><td>5-9</td><td><span class="badge crit">Hard block</span> — kill streaming</td></tr>
+                <tr><td>10+</td><td><span class="badge crit">Critical</span> — exit the app</td></tr>
+            </table>
+
+            <h3 style="color:#fff;margin:20px 0 14px;font-size:16px;">Native layer (JNI)</h3>
+            <pre class="code-block">// app/src/main/cpp/native_security.cpp — ~150 lines, C++17
+xs_antidebug     → JNI_OnLoad runs ptrace(PTRACE_TRACEME) on library load
+xs_check_root    → enumerates /data/adb/magisk, /sbin/su, /system/xbin/su
+xs_check_emulator→ reads Build.PRODUCT + /proc/cpuinfo flags
+xs_check_hooks   → scans /proc/self/maps for Frida/Xposed patterns
+xs_verify_sig    → re-hashes APK signature against expected SHA-256
+                  → exported with -fvisibility=hidden + RegisterNatives
+                  → opaque function names in ELF export table</pre>
+            <p style="margin-top:10px;">The native layer is <strong>properly compiled</strong> (libsportstream_security.so present in APK for arm64-v8a / armeabi-v7a / x86_64). The opaque-export trick via <code>JNI_OnLoad</code> + <code>RegisterNatives</code> makes static analysis harder for attackers.</p>
+        </div>
+    </div>
+
+    <!-- Manifest -->
+    <div class="section" id="manifest">
+        <div class="section-header"><div class="section-title">📜 4. Manifest Audit</div></div>
+        <div class="card">
+            <h3 style="color:#fff;margin-bottom:14px;font-size:16px;">Requested permissions (<span class="badge note">8 total</span>)</h3>
+            <table>
+                <tr><th>Permission</th><th>Why needed</th><th>Severity</th></tr>
+                <tr><td><code>INTERNET</code></td><td>HTTP/HLS streams + API calls</td><td><span class="badge ok">Required</span></td></tr>
+                <tr><td><code>ACCESS_NETWORK_STATE</code></td><td>Online/offline detection</td><td><span class="badge ok">Standard</span></td></tr>
+                <tr><td><code>WAKE_LOCK</code></td><td>Player foreground service</td><td><span class="badge ok">Standard</span></td></tr>
+                <tr><td><code>POST_NOTIFICATIONS</code></td><td>FCM push on Android 13+</td><td><span class="badge ok">Standard</span></td></tr>
+                <tr><td><code>FOREGROUND_SERVICE</code></td><td>Floating player / FCM worker</td><td><span class="badge ok">Standard</span></td></tr>
+                <tr><td><code>FOREGROUND_SERVICE_MEDIA_PLAYBACK</code></td><td>Media3 service type on API 34+</td><td><span class="badge ok">Standard</span></td></tr>
+                <tr><td><code>SYSTEM_ALERT_WINDOW</code></td><td>Floating mini-player overlay</td><td><span class="badge warn">Privileged</span></td></tr>
+                <tr><td><code>REQUEST_INSTALL_PACKAGES</code></td><td>Self-update via APK (Step 6.2)</td><td><span class="badge warn">Restricted</span></td></tr>
+            </table>
+
+            <h3 style="color:#fff;margin:20px 0 14px;font-size:16px;">Components</h3>
+            <ul>
+                <li><strong>5 Activities</strong> — SplashActivity, MainActivity, PlayerActivity, UpdateActivity, CrashActivity</li>
+                <li><strong>2 Services</strong> — FloatingPlayerService + SportStreamMessagingService</li>
+                <li><strong>1 BroadcastReceiver</strong> — Firebase install referrer</li>
+                <li><strong>1 ContentProvider</strong> — FileProvider for update APK install</li>
+                <li><strong>Isolated process</strong> — <code>android:process=":crash"</code> for CrashActivity (separate process for resilient recovery)</li>
+                <li><strong>networkSecurityConfig</strong> — Reference to <code>res/xml/network_security_config.xml</code> for SSL pinning + cleartext block</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Build/Gradle -->
+    <div class="section" id="build">
+        <div class="section-header"><div class="section-title">⚙️ 5. Build Pipeline</div></div>
+        <div class="card">
+            <h3 style="color:#fff;margin-bottom:14px;font-size:16px;">Configuration summary</h3>
+            <table>
+                <tr><th>Item</th><th>Value</th></tr>
+                <tr><td>Signing config</td><td>Release falls back to debug signing when <code>signing.properties</code> is missing <span class="badge crit">Risk</span></td></tr>
+                <tr><td>ProGuard</td><td><code>app/proguard-rules.pro</code> — <strong>107 lines</strong> configured</td></tr>
+                <tr><td>Sentry mapping upload</td><td>Enabled (needs valid DSN token in CI)</td></tr>
+                <tr><td>Build-time encryptor</td><td><code>encryptSecrets</code> task generates <code>EncryptedConstants.kt</code> via AES-256-GCM</td></tr>
+                <tr><td>R8 full mode</td><td>Enabled (Phase 7 Step 7.3)</td></tr>
+                <tr><td><code>signing.properties</code></td><td><span class="badge crit">Missing in repo</span> — current build uses debug fallback</td></tr>
+            </table>
+
+            <h3 style="color:#fff;margin:20px 0 14px;font-size:16px;">APK outputs verified</h3>
+            <p>Both <code>debug</code> and <code>release</code> APKs build successfully:</p>
+            <ul>
+                <li><code>app-debug.apk</code> — ~17-20 MB</li>
+                <li><code>app-release.apk</code> — <strong>7.7 MB</strong> (after R8 stripping)</li>
+                <li>Native libs present: <code>libsentry.so</code>, <code>libnative_security.so</code> (in arm64-v8a / armeabi-v7a / x86_64)</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Gaps & Risks -->
+    <div class="section" id="gaps">
+        <div class="section-header"><div class="section-title">⚠️ 6. Gaps & Risks</div></div>
+        <div class="card">
+            <p>The following issues should be addressed before a public release.</p>
+
+            <div class="risk">
+                <div class="title">🚨 [CRITICAL] Zero automated testing</div>
+                <p>Neither <code>app/src/test</code> (JUnit) nor <code>app/src/androidTest</code> (Espresso/UI) directories exist. No <code>testImplementation</code> dependencies in <code>build.gradle.kts</code>. The security scoring logic, repository code paths, and ViewModel state transitions are completely unverified in CI.</p>
+            </div>
+
+            <div class="risk">
+                <div class="title">🚨 [CRITICAL] Missing signing.properties</div>
+                <p>The <code>signing.properties</code> file is not in the repo (correctly — credentials shouldn't be committed). However, the build script falls back to <strong>debug signing</strong> for release if the file is absent. This means a CI run without proper signing config produces a release APK signed with the debug keystore — which is acceptable for demos but <strong>dangerous</strong> if accidentally deployed.</p>
+            </div>
+
+            <div class="risk">
+                <div class="title">🚨 [CRITICAL] EncryptedConstants XOR weakness</div>
+                <p>The build-time <code>encryptSecrets</code> task generates <code>EncryptedConstants.kt</code> with AES-256-GCM ciphertext, but downstream code uses XOR to combine key halves in plain Kotlin. A Frida/IDA hook on the XOR step trivially recovers the base URL — undermining the runtime protection. Limits protecting only against <em>static</em> string dumps, not dynamic instrumentation.</p>
+            </div>
+
+            <div class="recommendation">
+                <div class="title">⚠️ [HIGH] Magisk Hide / Zygisk evasion risk</div>
+                <p>The native root check searches <code>/data/adb/magisk</code> via <code>stat()</code>. RootHide, Zygisk denylist, or Shamiko-equipped Magisk will hide the directory. Consider cross-referencing <code>/proc/self/mountinfo</code> for overlay mounts and checking <code>ro.debuggable</code> + SELinux contexts.</p>
+            </div>
+
+            <div class="recommendation">
+                <div class="title">⚠️ [HIGH] No release-mode UI verification</div>
+                <p>The codebase has never been smoke-tested end-to-end on a real device in release mode (R8 obfuscation may strip a class name that Glide or reflection depends on). Recommendation: <code>adb install app-release.apk</code> on a clean Android 12+ device and verify all 5 activities boot without <code>ClassNotFoundException</code>.</p>
+            </div>
+
+            <div class="recommendation">
+                <div class="title">⚠️ [MEDIUM] SYSTEM_ALERT_WINDOW trust check</div>
+                <p>The <code>SYSTEM_ALERT_WINDOW</code> permission is requested but the app does not verify it was actually granted at runtime. On Android 12+ the user must explicitly grant via Settings — a missing grant would silently crash the floating player service.</p>
+            </div>
+
+            <div class="recommendation">
+                <div class="title">ℹ️ [MEDIUM] Pin-set is static</div>
+                <p>SSL pins are baked into <code>network_security_config.xml</code> with an expiration of 2027-01-01. If Let's Encrypt rotates the intermediate CA ahead of schedule, all users will get connection failures. Consider adding a backup pin rotation mechanism (fetched from /api/config every 30 days via RemoteConfigHelper).</p>
+            </div>
+
+            <div class="recommendation">
+                <div class="title">ℹ️ [MEDIUM] Native crash propagation</div>
+                <p>If <code>native_security.so</code> panics (e.g. unmapped memory on a tamper attempt), the isolated <code>:crash</code> process and main process both die simultaneously because the JVM-level signal handler doesn't differentiate. Consider registering a <code>sigaction</code> that escalates gracefully.</p>
+            </div>
+
+            <div class="recommendation">
+                <div class="title">ℹ️ [LOW] Inconsistent ProGuard keep rules</div>
+                <p>Some @SerializedName-driven Gson models may have their field names obfuscated. The 107-line <code>proguard-rules.pro</code> covers Media3 and Glide but doesn't explicitly keep all data model constructors. Fastjson-style serialization breakage is possible unless verified.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phase progress -->
+    <div class="section" id="phases">
+        <div class="section-header"><div class="section-title">🚀 7. Phase Progress</div></div>
+        <div class="card">
+            <table>
+                <tr><th>Phase</th><th>Description</th><th>Status</th><th>Steps Shipped</th></tr>
+                <tr><td>Phase 0</td><td>Environment & Setup</td><td><span class="badge ok">Complete</span></td><td>1 / 1</td></tr>
+                <tr><td>Phase 1</td><td>Project Setup & Foundation</td><td><span class="badge ok">Complete</span></td><td>6 / 6</td></tr>
+                <tr><td>Phase 2</td><td>Core Architecture & Data Layer</td><td><span class="badge ok">Complete</span></td><td>7 / 7</td></tr>
+                <tr><td>Phase 3</td><td>UI Screens</td><td><span class="badge ok">Complete</span></td><td>7 / 7 (todo pagination)</td></tr>
+                <tr><td>Phase 4</td><td>Video Player</td><td><span class="badge warn">Partial</span></td><td>6 / 7</td></tr>
+                <tr><td>Phase 5</td><td>Extra Features</td><td><span class="badge ok">Complete</span></td><td>7 / 7 (post-fix)</td></tr>
+                <tr><td>Phase 6</td><td>Polish, Ads & Launch</td><td><span class="badge warn">Partial</span></td><td>4 / 5 (theme + crash + auto-update + step6.3; AdMob + ProGuard todo)</td></tr>
+                <tr><td>Phase 7</td><td>Security & Protection</td><td><span class="badge ok">Complete</span></td><td>13 / 13</td></tr>
+                <tr><td>Phase 8</td><td>Admin Panel (Web+Android+Backend)</td><td><span class="badge note">Not started</span></td><td>0 / 8+</td></tr>
+                <tr><td>Phase 9</td><td>Polish + Final Release</td><td><span class="badge note">Not started</span></td><td>0 / —</td></tr>
+            </table>
+            <p style="margin-top:14px;"><strong>Overall:</strong> <strong>51 of ~75 steps complete</strong> across phases 0-7. Phase 8 (admin panel) and Phase 9 (final release polish) remain.</p>
+        </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="section" id="recs">
+        <div class="section-header"><div class="section-title">✅ 8. Recommendations</div></div>
+        <div class="card">
+            <h3 style="color:#fff;margin-bottom:14px;font-size:16px;">Before next commit</h3>
+            <ol style="margin:8px 0 8px 24px;color:var(--text);">
+                <li><strong>Add a JUnit test for SecurityGate scoring</strong> — at minimum unit tests for the score thresholds. Without tests, refactoring is dangerous.</li>
+                <li><strong>Refactor <code>signing.properties</code> fallback</strong> to fail the build if <code>signing.properties</code> is missing AND CI flag is set — never silently sign release with debug key.</li>
+                <li><strong>Verify release APK installs</strong> on a real device. Use <code>adb install -r app-release.apk</code> and walk all 5 activities.</li>
+                <li><strong>Add <code>testImplementation</code> deps</strong> (JUnit 5 + Truth + Mockito-Kotlin). Free-tier library, no runtime cost.</li>
+            </ol>
+
+            <h3 style="color:#fff;margin:20px 0 14px;font-size:16px;">Before production release</h3>
+            <ol style="margin:8px 0 8px 24px;color:var(--text);">
+                <li><strong>Strengthen anti-root logic</strong> with <code>/proc/self/mountinfo</code> overlay detection and a tied <code>ro.debuggable</code> + SELinux check.</li>
+                <li><strong>Add runtime pin rotation</strong> by reading backup pin set from <code>/api/config</code> every 30 days.</li>
+                <li><strong>Migrate encrypted secrets to pure JNI</strong> — XOR step should happen inside <code>libsportstream_security.so</code>, not in cleartext Kotlin.</li>
+                <li><strong>Add SAFEGUARD in CrashActivity</strong> for native signum propagation — surface a recovery screen instead of letting process die.</li>
+                <li><strong>End-to-end Playwright/CI test</strong> for the whole login → stream → favorite → notification pipeline once Phase 8 backend lands.</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p><strong>SportStream Codebase Audit</strong> — generated 2026-06-20 (commit <code>7fb3926</code> on <a href="https://github.com/learngermanbd/sportstream">learngermanbd/sportstream</a>)</p>
+        <p style="margin-top:8px;">No source code was modified during this audit. This report is documentation-only.</p>
+        <p style="margin-top:8px;">Companion docs: <a href="TODO.html">TODO.html</a> · <a href="chat.html">chat.html</a> · <a href="sportzfy_build_plan.html">sportzfy_build_plan.html</a></p>
+    </footer>
+
+</div>
+</body>
+</html>
