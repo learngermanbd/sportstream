@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.datastore.preferences.preferencesDataStore
+import com.sportstream.app.BuildConfig
 import com.sportstream.app.data.crash.CrashHandler
 import com.sportstream.app.data.local.LocalModule
 import com.sportstream.app.data.prefs.ThemePrefs
@@ -14,6 +15,8 @@ import com.sportstream.app.data.remote.NetworkModule
 import com.sportstream.app.data.remote.RemoteConfigHelper
 import com.sportstream.app.data.repository.RepositoryModule
 import com.sportstream.app.data.update.AppUpdateManager
+import io.sentry.SentryEvent
+import io.sentry.SentryOptions
 import io.sentry.android.core.SentryAndroid
 import kotlinx.coroutines.runBlocking
 
@@ -36,14 +39,99 @@ import kotlinx.coroutines.runBlocking
 class SportStreamApp : Application() {
 
     /**
-     * 1. Sentry first — captures initialization crashes of downstream steps.
+     * Phase 6 · Step 6.5 — Sentry first: captures initialization crashes
+     * of downstream steps. DSN is injected from [BuildConfig.SENTRY_DSN]
+     * (populated by `app/build.gradle.kts` from
+     * `signing.properties → APP_SENTRY_DSN`). When blank (debug install
+     * without prod creds) the SDK no-ops and falls through to Logcat's
+     * native stack trace. We deliberately do NOT throw — `assembleRelease`
+     * should still succeed with no `signing.properties` present so that
+     * minification pipeline tests don't have to drop credentials.
+     *
+     * Crash-only reporting tuned for v1:
+     *   sampleRate        = 1.0   — always capture the crash or it never
+     *                              ships; Sentry's default for `error`
+     *                              events is already 1.0 but we set it
+     *                              explicitly so a future SDK change
+     *                              can't silently suppress crashes.
+     *   tracesSampleRate  = 0.0   — no perf spans (saves Sentry quota +
+     *                              avoids the player-overlay frame
+     *                              ingestion tax on ExoPlayer sessions).
+     *   sessionTracking   = !DEBUG — release builds don't tap into
+     *                              background telemetry the user has
+     *                              already opted out of at OS level.
+     *   attachStacktrace  = true
+     *   attachThreads     = true  — multi-thread crashes (the most
+     *                              common shape in this codebase — FCM
+     *                              + ExoPlayer render thread + DataStore
+     *                              IO) need the full thread dump.
+     *   attachViewHierarchy = false  — PiP overlay + crash-screen pixels
+     *                              would leak user state; we skip it.
      */
     private fun initSentry() {
         SentryAndroid.init(this) { options ->
-            options.dsn = SENTRY_DSN.takeIf { it.isNotBlank() }
-            options.isDebug = false
-            options.tracesSampleRate = 0.1
+            options.dsn = BuildConfig.SENTRY_DSN.takeIf { it.isNotBlank() }
+            options.isDebug = BuildConfig.DEBUG
+            options.sampleRate = 1.0
+            options.tracesSampleRate = 0.0
+            options.isSessionTrackingEnabled = !BuildConfig.DEBUG
+            options.environment = if (BuildConfig.DEBUG) "debug" else "release"
+            options.release = "${BuildConfig.APPLICATION_ID}@${BuildConfig.VERSION_NAME}+${BuildConfig.VERSION_CODE}"
+            options.isAttachStacktrace = true
+            options.isAttachThreads = true
+            options.isAttachViewHierarchy = false
+            options.beforeSend = SentryOptions.BeforeSendCallback { event, _ -> scrubPii(event) }
+            options.setTag("versionName", BuildConfig.VERSION_NAME)
+            options.setTag("versionCode", BuildConfig.VERSION_CODE.toString())
+            options.setTag("process", "main")
         }
+    }
+
+    /**
+     * Phase 6 · Step 6.5 — in-place PII scrub for any event Sentry is about
+     * to capture. Strips Bearer/JWT tokens, FCM tokens (≥140 chars that
+     * look like firebase registration tokens), Android-IDs and cookie
+     * values from message text, breadcrumb data + HTTP request headers.
+     * We never drop the event (returning null would silence the crash)
+     * — we ALWAYS scrub in place and let the report ship.
+     */
+    private fun scrubPii(event: SentryEvent): SentryEvent? {
+        val piiPatterns = listOf(
+            // RFC 6750 Bearer scheme + RFC 7519 base64url chars
+            Regex("(?i)(Bearer\\s+)[A-Za-z0-9\\-._~+/]+=*"),
+            // FCM registration tokens (140+ char base64)
+            Regex("(?i)(FCM[_-]?Token[:= ]?)[A-Za-z0-9_\\-]{140,}"),
+            // Advertising-ID / ANDROID_ID style hex
+            Regex("(?i)(android[_-]?id[:= ]?)[A-Fa-f0-9\\-]{8,}"),
+            // Cookie header value
+            Regex("(?i)(Cookie[:= ]?)[^\\s;]+"),
+        )
+        fun redact(input: String?): String? {
+            if (input.isNullOrBlank()) return input
+            var scrubbed = input
+            piiPatterns.forEach { scrubbed = scrubbed.replace(it, "$1[Filtered]") }
+            return scrubbed
+        }
+        event.message?.message?.let { event.message?.message = redact(it) }
+        event.breadcrumbs?.forEach { bc ->
+            bc.message?.let { bc.message = redact(it) }
+            bc.data?.keys?.toList()?.forEach { k ->
+                bc.data?.get(k)?.let { v ->
+                    bc.data?.put(k, redact(v?.toString()) ?: v)
+                }
+            }
+        }
+        event.request?.headers?.let { headers ->
+            headers.keys.toList().forEach { k ->
+                if (k.equals("Authorization", true) ||
+                    k.contains("Token", true) ||
+                    k.contains("Cookie", true)
+                ) {
+                    headers[k] = "[Filtered]"
+                }
+            }
+        }
+        return event
     }
 
     override fun onCreate() {
@@ -166,7 +254,12 @@ class SportStreamApp : Application() {
             name = "sportstream_remote_config"
         )
 
-        /** Sentry DSN — left blank intentionally; we'll wire a real one in Phase 7. */
-        private const val SENTRY_DSN = ""
+        // Sentry DSN flows from BuildConfig.SENTRY_DSN (populated by
+        // app/build.gradle.kts from `signing.properties → APP_SENTRY_DSN`).
+        // The companion's old `private const val SENTRY_DSN = ""` placeholder
+        // is gone — BuildConfig is the single source of truth.
+        // (Step 6.5 ships the `io.sentry.android.gradle` plugin alongside
+        //  so `assembleRelease` auto-uploads mapping.txt for deobfuscated
+        //  stack traces.)
     }
 }

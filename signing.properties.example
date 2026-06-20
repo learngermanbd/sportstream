@@ -1,0 +1,52 @@
+# =====================================================================
+# Phase 6 · Step 6.5 — `signing.properties.example`
+# =====================================================================
+#
+# Copy this file to `signing.properties` (gitingored) and drop in real
+# values for release builds. The Gradle build reads it at configuration
+# time; the .example file is committed for discoverability so every
+# developer knows which keys are expected.
+#
+# File layout:
+#   * RELEASE_STORE_FILE / _PASSWORD / _KEY_ALIAS / _KEY_PASSWORD
+#       Keystore + credentials for `assembleRelease`. Already wired in
+#       Phase 6 · Step 6.5 (review-pass MAJOR: hoisted into a single
+#       shared Properties instance so app + admin don't re-read the file).
+#   * APP_SENTRY_DSN    — public Sentry DSN for the user app
+#   * ADMIN_SENTRY_DSN  — public Sentry DSN for the admin app
+#                          (separate Sentry project so admin crashes don't
+#                          contaminate the user-app release board)
+#   * SENTRY_AUTH_TOKEN — secret Sentry API token (Settings > API > Auth
+#                          Tokens, scope: project:releases + project:write).
+#                          Consumed by the `io.sentry.android.gradle` plugin
+#                          to upload `mapping.txt` + InApp-frame mappings
+#                          on `assembleRelease`. When blank, the upload
+#                          task is a no-op (so local/CI without secrets
+#                          still produces a signed APK, just without the
+#                          symbolic crash reports).
+#   * RELEASE_ADMIN_STORE_FILE / RELEASE_ADMIN_KEY_ALIAS (optional)
+#       If you ship the admin app under a different keystore than the
+#       user app, drop these in. Falls back to RELEASE_STORE_FILE /
+#       RELEASE_KEY_ALIAS otherwise.
+#
+# IMPORTANT — none of these values belong in git. The `.gitignore` at
+# the repo root excludes `signing.properties`. Never paste real secrets
+# into this `.example` file.
+# =====================================================================
+
+# --- Release keystore ----------------------------------------------------
+RELEASE_STORE_FILE=release.keystore
+RELEASE_STORE_PASSWORD=change-me
+RELEASE_KEY_ALIAS=change-me
+RELEASE_KEY_PASSWORD=change-me
+
+# --- Sentry DSNs (design-public per https://docs.sentry.io/product/sentry-basics/dsn-explainer/) ---
+APP_SENTRY_DSN=https://examplePublicKey@o0.ingest.sentry.io/0
+ADMIN_SENTRY_DSN=https://examplePublicKey@o0.ingest.sentry.io/1
+
+# --- Sentry Gradle plugin auth token (secret) -----------------------------
+SENTRY_AUTH_TOKEN=
+
+# --- Optional separate admin keystore (falls back to the user-app keystore) -
+RELEASE_ADMIN_STORE_FILE=
+RELEASE_ADMIN_KEY_ALIAS=

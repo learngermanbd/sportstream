@@ -10,14 +10,27 @@
 // don't need to add compose-bom + 6 compose-* aliases to libs.versions.toml
 // yet -- the admin UI is straightforward and XML+ViewBinding stays consistent
 // with the user app's stack.
+//
+// Phase 6 · Step 6.5 — explicit `java.util.Properties` import (same
+// rationale as :app). Without it Kotlin Gradle DSL raises
+// `Unresolved reference: util` on the signingConfigs block.
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.sentry.android)   // Step 6.5 — mapping.txt upload (mirror :app)
 }
 
 android {
     namespace = "com.sportstream.admin"
     compileSdk = 35
+
+    // Step 6.5 — same hoisted properties pattern as :app.
+    val rootSigningProps: java.util.Properties = rootProject.file("signing.properties")
+        .takeIf { it.exists() }
+        ?.let { java.util.Properties().apply { it.inputStream().use { stream -> load(stream) } } }
+        ?: java.util.Properties()
 
     defaultConfig {
         applicationId = "com.sportstream.admin"
@@ -25,6 +38,14 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
+
+        // Step 6.5 — separate DSN slot for the admin app. Two Sentry
+        // projects so admin crashes don't pollute user-app release health.
+        buildConfigField(
+            "String",
+            "SENTRY_DSN",
+            "\"" + (rootSigningProps.getProperty("ADMIN_SENTRY_DSN") ?: "") + "\""
+        )
     }
 
     buildFeatures {
@@ -32,10 +53,68 @@ android {
         buildConfig = true   // Needed for BuildConfig.DEBUG in AdminApi (mirrors :app)
     }
 
+    // -----------------------------------------------------------------
+    // Phase 6 · Step 6.5 — Release signing. Same fallback-to-debug
+    // pattern as `:app`; see `app/build.gradle.kts` for the rationale.
+    //
+    // Implementation note: we deliberately do NOT nest `apply {}` inside
+    // `use {}` because Kotlin's receiver-resolution makes `load(it)` then
+    // ambiguous (it resolves to the inner InputStream receiver, not
+    // Properties). An explicit named lambda parameter + a `p.load()`
+    // call sidesteps the trap.
+    // -----------------------------------------------------------------
+    signingConfigs {
+        create("release") {
+            // Step 6.5 — reuse `rootSigningProps` hoisted above (avoids
+            // re-reading the file twice).
+            if (rootSigningProps.isNotEmpty()) {
+                // Admin may use a DIFFERENT keystore than :app — fall
+                // back to the user-app keystore fields when admin-
+                // specific keys are absent.
+                storeFile = file(rootSigningProps.getProperty("RELEASE_ADMIN_STORE_FILE")
+                    ?: rootSigningProps.getProperty("RELEASE_STORE_FILE") ?: "")
+                storePassword = rootSigningProps.getProperty("RELEASE_STORE_PASSWORD")
+                keyAlias = rootSigningProps.getProperty("RELEASE_ADMIN_KEY_ALIAS")
+                    ?: rootSigningProps.getProperty("RELEASE_KEY_ALIAS")
+                keyPassword = rootSigningProps.getProperty("RELEASE_KEY_PASSWORD")
+                enableV1Signing = true
+                enableV2Signing = true
+                enableV3Signing = true
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------
+    // Step 6.5 — Sentry Gradle plugin extension. Distinct `projectName`
+    // so admin crash mappings end up under a separate Sentry project
+    // (admin events should NOT tangle with user-app release health).
+    // -----------------------------------------------------------------
+    sentry {
+        org = "sportstream-app"
+        projectName = "sportstream-admin-android"
+        authToken = (rootSigningProps.getProperty("SENTRY_AUTH_TOKEN") ?: "").trim()
+        autoProguardConfig = true
+        includeSourceContext = true
+        uploadNativeSymbols = false
+    }
+
     buildTypes {
         release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            // Same `takeIf { storeFile != null }` guard as :app — falls
+            // back to debug signing when signing.properties is absent.
+            signingConfig = signingConfigs.findByName("release")
+                ?.takeIf { it.storeFile != null }
+                ?: signingConfigs.getByName("debug")
+        }
+        debug {
             isMinifyEnabled = false
-            // Step 6.5 will fill proguardFiles(...) for release shrink/obfuscate.
+            isShrinkResources = false
         }
     }
 

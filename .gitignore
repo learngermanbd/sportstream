@@ -49,3 +49,4 @@ captures/
 *.keystore
 *.jks
 keystore.properties
+signing.properties
