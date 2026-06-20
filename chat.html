@@ -820,6 +820,28 @@
                 <p><strong>Commit:</strong> 5a3ec4a on origin/main.</p>
             </div>
         </section>
+
+        <section class="turn role-commit" id="turn-20">
+            <div class="step-header">
+                <span class="step-num">020</span>
+                <span class="agent commit">Shipped</span>
+                <span class="ts">turn 60-68</span>
+            </div>
+            <h4>STEP 7.4 SHIPPED - NDK Native Library Protection</h4>
+            <div class="response-body">
+                <p><strong>Components delivered</strong> (Step 7.4 - Native Library Protection):</p>
+                <ul>
+                    <li><strong>CMakeLists.txt</strong> (new) - CMake build config for libnative_security.so. Hardened: symbol stripping (-Wl,--strip-all), hidden visibility (-fvisibility=hidden), no RTTI/exceptions, stack protector (-fstack-protector-strong), gc-sections, exclude-libs=ALL.</li>
+                    <li><strong>native_security.cpp</strong> (new) - JNI security checks: ptrace(PTRACE_TRACEME) anti-debugging, root detection (su binaries + Magisk + /data/adb), emulator detection (SystemProperties + device files), Frida/Xposed/Substrate hook detection (/proc/self/maps scanning with case-insensitive pattern match), APK signature verification via JNI PackageManager.getPackageInfo + MessageDigest SHA-256. All bindings registered via RegisterNatives in JNI_OnLoad (no Java_ prefix exports).</li>
+                    <li><strong>NativeSecurityManager.kt</strong> (new) - Kotlin JNI bridge. System.loadLibrary with graceful UnsatisfiedLinkError handling. ThreatFlag bitmask (ROOT/DEBUGGER/EMULATOR/HOOK). checkEnvironment(context): Int, verifySignature(context, expectedSha256): Boolean, isEnvironmentSafe(), describeThreats(). bytesToHex @JvmStatic for JNI access.</li>
+                    <li><strong>build.gradle.kts</strong> - Added ndkVersion 27.3.13750724, externalNativeBuild CMake 3.31.5, -DCMAKE_SYSTEM_NAME=Android (fixes Windows RC compiler issue), cppFlags, abiFilters (armeabi-v7a, arm64-v8a, x86_64).</li>
+                    <li><strong>proguard-rules.pro</strong> - Keep NativeSecurityManager native methods + bytesToHex static method.</li>
+                </ul>
+                <p><strong>Build fixes:</strong> Moved target_compile_options after add_library (CMake requires target to exist first). Added -DCMAKE_SYSTEM_NAME=Android to fix CMake 3.31.5 Windows RC compiler issue. Installed sdkmanager config for proper SDK directory access.</p>
+                <p><strong>Build:</strong> ./gradlew :app:assembleDebug BUILD SUCCESSFUL (1m 45s). libnative_security.so compiled for arm64-v8a, armeabi-v7a, x86_64.</p>
+                <p><strong>Commit:</strong> 72dc2f8 on origin/main.</p>
+            </div>
+        </section>
     </main>
 
     <div class="container">
