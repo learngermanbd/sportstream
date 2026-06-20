@@ -9,6 +9,7 @@ import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import com.sportstream.app.security.RuntimeStringProvider
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -18,8 +19,8 @@ import java.util.concurrent.TimeUnit
  * so callers (in this layer: [ApiService]) stay parser-agnostic.
  *
  * @param baseUrl   The configured API host, e.g. "https://learngermanwith.fun/".
- *                  Will be [DEFAULT_BASE_URL] until `RemoteConfigHelper.fetchConfig()`
- *                  delivers a real one (Phase 7 \u00b7 Step 7.6).
+ *                  Will be [defaultBaseUrl] until `RemoteConfigHelper.fetchConfig()`
+ *                  delivers a real one (Phase 7 · Step 7.6).
  * @param httpClient The OkHttp instance. Use [buildHttpClient] to get the shared one
  *                  with the right timeouts, cache, auth + debug logging wiring.
  */
@@ -65,8 +66,13 @@ class ApiClient(
     }
 
     companion object {
-        /** Placeholder admin DNS lands in Phase 7 \u00b7 Step 7.6. */
-        const val DEFAULT_BASE_URL = "https://learngermanwith.fun/"
+        /**
+         * Phase 7 · Step 7.2 — Default API base URL, decrypted at
+         * runtime from build-time encrypted constants.  Replaces the
+         * old `const val DEFAULT_BASE_URL` which was a plaintext
+         * literal visible in the APK.
+         */
+        fun defaultBaseUrl(): String = RuntimeStringProvider.getString("API_BASE_URL")
 
         /** Sent on every authed request. Real version from BuildConfig.VERSION_NAME in 6.5. */
         const val APP_VERSION = "1.0.0"

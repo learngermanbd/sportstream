@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.sportstream.app.SportStreamApp.Companion.remoteConfigDataStore
+import com.sportstream.app.security.RuntimeStringProvider
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -21,8 +22,12 @@ import java.io.IOException
  */
 object RemoteConfigHelper {
 
-    /** Placeholder backend URL. Real DNS + cert pinned in Phase 7 \u00b7 Step 7.7. */
-    private const val DEFAULT_API_URL = "https://learngermanwith.fun/api/config"
+    /**
+     * Phase 7 · Step 7.2 — Config endpoint URL, decrypted at runtime
+     * from build-time encrypted constants.  Replaces the old
+     * `private const val DEFAULT_API_URL` plaintext literal.
+     */
+    private fun defaultApiUrl(): String = RuntimeStringProvider.getString("API_CONFIG_URL")
 
     /** 30 minutes in milliseconds. */
     private const val REFRESH_INTERVAL_MS = 30L * 60L * 1000L
@@ -57,7 +62,7 @@ object RemoteConfigHelper {
 
         try {
             val request = Request.Builder()
-                .url(DEFAULT_API_URL)
+                .url(defaultApiUrl())
                 .header("X-App-Version", APP_VERSION)
                 .header("Accept", "application/json")
                 .build()

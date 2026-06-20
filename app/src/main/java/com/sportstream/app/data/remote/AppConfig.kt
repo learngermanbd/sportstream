@@ -1,5 +1,7 @@
 package com.sportstream.app.data.remote
 
+import com.sportstream.app.security.RuntimeStringProvider
+
 /**
  * Payload returned by `GET /api/config` on the SportStream admin backend.
  *
@@ -46,11 +48,15 @@ data class AppConfig(
          * All URLs point at the placeholder domain; the app surfaces a network-error
          * card (Step 3.1) instead of silently using offline defaults.
          */
+        // Phase 7 · Step 7.2 — URLs decrypted from build-time encrypted
+        // constants via RuntimeStringProvider.  The plaintext never
+        // appears in the compiled APK; only the AES-GCM ciphertext +
+        // obfuscated key are present.
         fun defaults() = AppConfig(
-            apiBaseUrl      = "https://learngermanwith.fun/api",
-            updateUrl       = "https://learngermanwith.fun/update",
+            apiBaseUrl      = RuntimeStringProvider.getString("API_BASE_URL"),
+            updateUrl       = RuntimeStringProvider.getString("UPDATE_URL"),
             latestVersion   = "1.0.0",
-            telegramLink    = "https://t.me/sportstream",
+            telegramLink    = RuntimeStringProvider.getString("TELEGRAM_LINK"),
             noticeText      = "",
             maintenanceMode = false,
             minAppVersion   = "1.0.0",

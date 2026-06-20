@@ -15,11 +15,15 @@ import okhttp3.OkHttpClient
  *  app.network.remoteDataSource  \u2014 typed fetch+parse for the 8 models
  *
  * Live binding of the real `apiBaseUrl` from [RemoteConfigHelper.fetchConfig()]
- * lands in Phase 7 \u00b7 Step 7.6; for now we use [ApiClient.DEFAULT_BASE_URL].
+ * lands in Phase 7 · Step 7.6; for now we use [ApiClient.defaultBaseUrl].
+ *
+ * Phase 7 · Step 7.2 — default param switched from `const val DEFAULT_BASE_URL`
+ * (plaintext literal) to `defaultBaseUrl()` (decrypted at runtime from
+ * build-time encrypted constants).
  */
 class NetworkModule(
     context: Context,
-    private val baseUrl: String = ApiClient.DEFAULT_BASE_URL
+    private val baseUrl: String = ApiClient.defaultBaseUrl()
 ) {
 
     val httpClient: OkHttpClient by lazy {

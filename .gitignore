@@ -50,3 +50,9 @@ captures/
 *.jks
 keystore.properties
 signing.properties
+
+# Phase 7 \u00b7 Step 7.2 \u2014 Build-time secrets (plaintext credentials)
+secrets.properties
+
+# Phase 7 \u00b7 Step 7.2 \u2014 Generated encrypted constants (build artifact)
+app/build/generated/source/encryption/

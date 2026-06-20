@@ -15,6 +15,7 @@ import com.sportstream.app.data.remote.NetworkModule
 import com.sportstream.app.data.remote.RemoteConfigHelper
 import com.sportstream.app.data.repository.RepositoryModule
 import com.sportstream.app.data.update.AppUpdateManager
+import com.sportstream.app.security.SecurityModule
 import com.sportstream.app.services.UpdateWorker
 import io.sentry.SentryEvent
 import io.sentry.SentryOptions
@@ -156,6 +157,12 @@ class SportStreamApp : Application() {
         }
 
         initSentry()
+
+        // Phase 7 · Step 7.2 — initialise string-encryption subsystem.
+        // Registers a ComponentCallbacks2 that wipes the decrypted-value
+        // cache when the app enters the background (onTrimMemory).
+        SecurityModule.init(this)
+
         // Phase 6 · Step 6.4 — install the global UncaughtExceptionHandler
         // right after Sentry initialises so the chain is: this handler
         // (writes local dump + spawns CrashActivity) -> Sentry's handler
