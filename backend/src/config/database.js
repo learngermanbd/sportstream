@@ -1,51 +1,398 @@
 /**
- * Phase 9 · Supabase database adapter.
+ * Phase 9 · pg database adapter.
  *
- * Replaces Prisma direct-connection with Supabase REST API (via service_role key).
- * Exposes the same API shape (findMany, findUnique, create, update, delete, count, etc.)
- * so all 12 controllers work without changes.
+ * Uses a direct PostgreSQL connection pool (via node-postgres) instead of
+ * the Supabase REST API.  By-passing the API layer means we never deal
+ * with expired/revoked service_role keys.
  *
- * Authenticates with the service_role key, which bypasses Row Level Security
- * and allows full CRUD on all tables.
+ * Exposes the same Prisma-alike API that all 12 controllers call:
+ *   findMany  findUnique  findFirst  create  update  delete
+ *   upsert    count       deleteMany createMany
  */
 
-const { createClient } = require('@supabase/supabase-js');
+const { Client } = require('pg');
 
-let supabase = null;
+// ── Per-query Client (avoids pg-pool SNI issues with Supabase PgBouncer) ─
+//    tools/check_db_pg.js proved that new Client({...}) with the object
+//    config works; pg-pool's internal Client construction can behave
+//    differently with TLS/SNI on some versions.
 
-/** Parse include to a Supabase select string (supports nested relations). */
-function buildSelect(include) {
-  if (!include) return '*';
+let client = null;
 
-  const parts = [];
-  for (const [key, value] of Object.entries(include)) {
-    if (key === '_count') {
-      // _count is handled separately — skip it in select
-      continue;
-    }
-    // Map relation name to Supabase table/relation name
-    const relName = relationMap[key] || key;
-    if (value === true) {
-      parts.push(`${relName}(*)`);
-    } else if (value && typeof value === 'object' && value.select) {
-      const cols = Object.keys(value.select).join(', ');
-      parts.push(`${relName}(${cols})`);
-    }
+function getClient() {
+  if (client) return client;
+
+  const host     = process.env.DB_HOST;
+  const port     = process.env.DB_PORT     ? parseInt(process.env.DB_PORT, 10) : 6543;
+  const user     = process.env.DB_USER;
+  const password = process.env.DB_PASSWORD;
+  const database = process.env.DB_NAME || 'postgres';
+
+  if (!host || !user || !password) {
+    throw new Error('[pg] Missing DB_HOST/DB_USER/DB_PASSWORD env vars. Set them in .env');
   }
-  return parts.length > 0 ? `*, ${parts.join(', ')}` : '*';
+
+  client = new Client({
+    host, port, user, password, database,
+    ssl: { rejectUnauthorized: false },
+    connectionTimeoutMillis: 10000,
+    keepAlive: true,
+  });
+
+  client.on('error', (err) => {
+    console.error('[pg] Client error:', err.message);
+  });
+
+  return client;
 }
 
-/** Map Prisma relation names to Supabase table names. */
-const relationMap = {
-  streams:    'StreamLink',
-  category:   'Category',
-  sentBy:     'Admin',
-  channels:   'Channel',
-  events:     'Event',
-  notifications: 'Notification',
+let connected = false;
+
+async function ensureConnected() {
+  const cl = getClient();
+  if (connected) return;
+  await cl.connect();
+  connected = true;
+  console.log('[pg] Connected →', cl.host + ':' + cl.port);
+}
+
+// ── Quote an identifier (table or column name) ────────────────────
+function qi(name) {
+  return '"' + name.replace(/"/g, '""') + '"';
+}
+
+// ── Build WHERE clause from a filter object ───────────────────────
+//   { status: 'LIVE', scheduledAt: { lte: Date } }  →  "status"=$1 AND "scheduledAt"<=$2
+function buildWhere(where, values, startIdx) {
+  if (!where || Object.keys(where).length === 0) return '';
+  const clauses = [];
+  let i = startIdx;
+  for (const [key, val] of Object.entries(where)) {
+    if (val === undefined || val === null) continue;
+    if (typeof val === 'object' && !Array.isArray(val) && !(val instanceof Date)) {
+      // Range filter  { column: { lte: ..., gte: ... } }
+      for (const [op, opVal] of Object.entries(val)) {
+        const sqlOp = { lte: '<=', gte: '>=', lt: '<', gt: '>', not: '<>' }[op] || '=';
+        clauses.push(`${qi(key)}${sqlOp}$${i}`);
+        values.push(opVal instanceof Date ? opVal.toISOString() : opVal);
+        i++;
+      }
+    } else {
+      clauses.push(`${qi(key)}=$${i}`);
+      values.push(val);
+      i++;
+    }
+  }
+  return ' WHERE ' + clauses.join(' AND ');
+}
+
+// ── Build ORDER BY ────────────────────────────────────────────────
+function buildOrderBy(orderBy) {
+  if (!orderBy) return '';
+  const entries = Array.isArray(orderBy) ? orderBy : [orderBy];
+  const parts = [];
+  for (const entry of entries) {
+    for (const [field, dir] of Object.entries(entry)) {
+      parts.push(qi(field) + (dir === 'desc' ? ' DESC' : ' ASC'));
+    }
+  }
+  return ' ORDER BY ' + parts.join(', ');
+}
+
+// ── Map relation names to foreign-key info ────────────────────────
+const RELATIONS = {
+  streams:    { table: 'StreamLink',  fk: 'eventId',   many: true },
+  category:   { table: 'Category',    fk: null,         many: false, reverseFk: 'id', localFk: 'categoryId' },
+  sentBy:     { table: 'Admin',       fk: null,         many: false, reverseFk: 'id', localFk: 'sentById' },
+  channels:   { table: 'Channel',     fk: 'categoryId', many: true },
+  events:     { table: 'Event',       fk: 'categoryId', many: true },
 };
 
-/** Map Prisma model names to Supabase table names (most are same, but some may differ). */
+// ── Model class (one per table) ───────────────────────────────────
+class PgModel {
+  constructor(tableName) {
+    this.table = tableName;
+  }
+
+  // ── Helpers ─────────────────────────────────────────────────────
+  async _query(text, params = []) {
+    await ensureConnected();
+    const res = await client.query(text, params);
+    return res.rows;
+  }
+
+  async _queryOne(text, params = []) {
+    const rows = await this._query(text, params);
+    return rows[0] || null;
+  }
+
+  /** Fetch related rows for a set of parent records. */
+  async _loadRelations(rows, include) {
+    if (!include || !rows || rows.length === 0) return;
+    const idField = 'id';
+
+    for (const [key, spec] of Object.entries(include)) {
+      if (key === '_count') continue;
+      const rel = RELATIONS[key] || { table: key, fk: this.table.toLowerCase() + 'Id', many: true };
+
+      if (rel.many) {
+        // One-to-many: child.fk IN parent.ids
+        const ids = rows.map(r => r[idField]);
+        const childRows = await this._query(
+          `SELECT * FROM ${qi(rel.table)} WHERE ${qi(rel.fk)} = ANY($1::text[])`,
+          [ids]
+        );
+        // Group children by parent id
+        for (const row of rows) {
+          row[key] = childRows.filter(c => c[rel.fk] === row[idField]);
+        }
+      } else {
+        // Many-to-one or one-to-one: parent.localFk = child.reverseFk
+        const fkField = rel.localFk || (this.table.toLowerCase() + 'Id');
+        const refField = rel.reverseFk || 'id';
+        const ids = [...new Set(rows.map(r => r[fkField]).filter(Boolean))];
+        if (ids.length === 0) {
+          for (const row of rows) row[key] = null;
+          continue;
+        }
+        const childRows = await this._query(
+          `SELECT * FROM ${qi(rel.table)} WHERE ${qi(refField)} = ANY($1::text[])`,
+          [ids]
+        );
+        const map = {};
+        for (const c of childRows) map[c[refField]] = c;
+
+        // If spec.select limits which columns we return, filter them
+        if (spec.select) {
+          const cols = Object.keys(spec.select);
+          for (const row of rows) {
+            const full = map[row[fkField]] || null;
+            if (full) {
+              const trimmed = {};
+              for (const col of cols) trimmed[col] = full[col];
+              row[key] = trimmed;
+            } else {
+              row[key] = null;
+            }
+          }
+        } else {
+          for (const row of rows) row[key] = map[row[fkField]] || null;
+        }
+      }
+    }
+
+    // Handle _count includes
+    if (include._count) {
+      for (const [childKey] of Object.entries(include._count.select || {})) {
+        const childRel = RELATIONS[childKey] || { table: childKey, fk: this.table.toLowerCase() + 'Id' };
+        for (const row of rows) {
+          const childRows = await this._query(
+            `SELECT COUNT(*)::int as cnt FROM ${qi(childRel.table)} WHERE ${qi(childRel.fk)} = $1`,
+            [row[idField]]
+          );
+          if (!row._count) row._count = {};
+          row._count[childKey] = childRows[0]?.cnt || 0;
+        }
+      }
+    }
+  }
+
+  // ── CRUD ────────────────────────────────────────────────────────
+  async findMany({ where, include, orderBy, skip, take, select: selectFields } = {}) {
+    const values = [];
+    const selectClause = selectFields
+      ? (Array.isArray(selectFields) ? selectFields : selectFields.split(',').map(s => s.trim())).map(qi).join(', ')
+      : '*';
+
+    let sql = `SELECT ${selectClause} FROM ${qi(this.table)}`;
+    sql += buildWhere(where, values, 1);
+    sql += buildOrderBy(orderBy);
+
+    if (skip !== undefined && take !== undefined) {
+      sql += ` OFFSET ${skip} LIMIT ${take}`;
+    } else if (take !== undefined) {
+      sql += ` LIMIT ${take}`;
+    }
+
+    const rows = await this._query(sql, values);
+
+    if (include) await this._loadRelations(rows, include);
+    return rows;
+  }
+
+  async findUnique({ where, include, select: selectFields } = {}) {
+    const values = [];
+    const selectClause = selectFields
+      ? (Array.isArray(selectFields) ? selectFields : selectFields.split(',').map(s => s.trim())).map(qi).join(', ')
+      : '*';
+
+    let sql = `SELECT ${selectClause} FROM ${qi(this.table)}`;
+    sql += buildWhere(where, values, 1);
+    sql += ' LIMIT 1';
+
+    const row = await this._queryOne(sql, values);
+    if (row && include) await this._loadRelations([row], include);
+    return row;
+  }
+
+  async findFirst({ where, include, orderBy, select: selectFields } = {}) {
+    const values = [];
+    const selectClause = selectFields
+      ? (Array.isArray(selectFields) ? selectFields : selectFields.split(',').map(s => s.trim())).map(qi).join(', ')
+      : '*';
+
+    let sql = `SELECT ${selectClause} FROM ${qi(this.table)}`;
+    sql += buildWhere(where, values, 1);
+    sql += buildOrderBy(orderBy);
+    sql += ' LIMIT 1';
+
+    const row = await this._queryOne(sql, values);
+    if (row && include) await this._loadRelations([row], include);
+    return row;
+  }
+
+  async create({ data, include, select: selectFields }) {
+    // Extract nested data
+    const flat = {}, nested = [];
+    for (const [key, value] of Object.entries(data)) {
+      if (value && typeof value === 'object' && !Array.isArray(value) && value.create) {
+        nested.push({ key, records: Array.isArray(value.create) ? value.create : [value.create] });
+      } else if (key === 'streams' && Array.isArray(value)) {
+        nested.push({ key, records: value });
+      } else {
+        flat[key] = value;
+      }
+    }
+
+    const columns = Object.keys(flat);
+    const values = Object.values(flat).map(v => v instanceof Date ? v.toISOString() : v);
+    const placeholders = values.map((_, i) => '$' + (i + 1));
+
+    const selectClause = selectFields
+      ? (Array.isArray(selectFields) ? selectFields : selectFields.split(',').map(s => s.trim())).map(qi).join(', ')
+      : '*';
+
+    const sql = `INSERT INTO ${qi(this.table)} (${columns.map(qi).join(', ')}) VALUES (${placeholders.join(', ')}) RETURNING ${selectClause}`;
+
+    const rows = await this._query(sql, values);
+    const record = rows[0];
+
+    // Handle nested creates
+    if (record && nested.length > 0) {
+      for (const n of nested) {
+        const rel = RELATIONS[n.key] || { table: n.key, fk: this.table.toLowerCase() + 'Id' };
+        for (const childData of n.records) {
+          const childCols = Object.keys(childData);
+          const childVals = Object.values(childData);
+          childCols.push(rel.fk);
+          childVals.push(record.id);
+          const childPh = childVals.map((_, i) => '$' + (i + 1));
+          await this._query(
+            `INSERT INTO ${qi(rel.table)} (${childCols.map(qi).join(', ')}) VALUES (${childPh.join(', ')})`,
+            childVals
+          );
+        }
+      }
+      // Re-fetch with includes
+      if (include) {
+        return this.findUnique({ where: { id: record.id }, include });
+      }
+    }
+
+    if (record && include) {
+      return this.findUnique({ where: { id: record.id }, include });
+    }
+    return record;
+  }
+
+  async update({ where, data, include, select: selectFields }) {
+    const setValues = [];
+    const setClauses = [];
+    const whereValues = [];
+
+    for (const [key, value] of Object.entries(data)) {
+      setClauses.push(`${qi(key)}=$${setValues.length + 1}`);
+      setValues.push(value instanceof Date ? value.toISOString() : value);
+    }
+    if (setClauses.length === 0) {
+      // Nothing to update — just return existing
+      return this.findUnique({ where, include });
+    }
+
+    let idxOffset = setValues.length;
+    let whereClause = '';
+    if (where) {
+      whereClause = buildWhere(where, whereValues, idxOffset + 1);
+    }
+
+    const allValues = [...setValues, ...whereValues];
+    const selectClause = selectFields
+      ? (Array.isArray(selectFields) ? selectFields : selectFields.split(',').map(s => s.trim())).map(qi).join(', ')
+      : '*';
+
+    const sql = `UPDATE ${qi(this.table)} SET ${setClauses.join(', ')}${whereClause} RETURNING ${selectClause}`;
+    const rows = await this._query(sql, allValues);
+    const record = rows[0] || null;
+    if (record && include) await this._loadRelations([record], include);
+    return record;
+  }
+
+  async delete({ where } = {}) {
+    const values = [];
+    let sql = `DELETE FROM ${qi(this.table)}`;
+    sql += buildWhere(where, values, 1);
+    await this._query(sql, values);
+  }
+
+  async upsert({ where: _where, update, create }) {
+    // For DeviceToken: upsert on token column
+    const data = update || create || {};
+    const onConflictCol = _where ? Object.keys(_where)[0] : 'token';
+
+    const columns = Object.keys(data);
+    const values = Object.values(data);
+    const ph = values.map((_, i) => '$' + (i + 1));
+
+    const setClauses = columns.map(c => `${qi(c)} = EXCLUDED.${qi(c)}`).join(', ');
+
+    const sql = `INSERT INTO ${qi(this.table)} (${columns.map(qi).join(', ')}) VALUES (${ph.join(', ')}) ON CONFLICT (${qi(onConflictCol)}) DO UPDATE SET ${setClauses} RETURNING *`;
+
+    const rows = await this._query(sql, values);
+    return rows[0] || null;
+  }
+
+  async count({ where } = {}) {
+    const values = [];
+    let sql = `SELECT COUNT(*)::int AS count FROM ${qi(this.table)}`;
+    sql += buildWhere(where, values, 1);
+    const rows = await this._query(sql, values);
+    return rows[0]?.count || 0;
+  }
+
+  async deleteMany({ where } = {}) {
+    const values = [];
+    let sql = `DELETE FROM ${qi(this.table)}`;
+    sql += buildWhere(where, values, 1);
+    await this._query(sql, values);
+  }
+
+  async createMany({ data }) {
+    if (!data || data.length === 0) return;
+    const columns = Object.keys(data[0]);
+    let idx = 1;
+    const valueRows = [];
+    const allValues = [];
+    for (const row of data) {
+      const ph = columns.map(() => '$' + (idx++));
+      valueRows.push('(' + ph.join(', ') + ')');
+      for (const col of columns) allValues.push(row[col]);
+    }
+    const sql = `INSERT INTO ${qi(this.table)} (${columns.map(qi).join(', ')}) VALUES ${valueRows.join(', ')}`;
+    await this._query(sql, allValues);
+  }
+}
+
+// ── Table map (same shape Prisma expects) ─────────────────────────
 const TABLE_MAP = {
   event:           'Event',
   channel:         'Channel',
@@ -60,291 +407,27 @@ const TABLE_MAP = {
   streamLink:      'StreamLink',
 };
 
-class SupabaseModel {
-  constructor(sb, tableName) {
-    this.sb = sb;
-    this.tableName = tableName;
-  }
-
-  // ─── CRUD ───
-
-  async findMany({ where, include, orderBy, skip, take, select: selectFields } = {}) {
-    var hasCount = include && include._count;
-    let selectStr = selectFields
-      ? (Array.isArray(selectFields) ? selectFields.join(', ') : selectFields)
-      : buildSelect(include);
-    let query = this.sb.from(this.tableName).select(selectStr, { count: 'exact' });
-
-    if (where) query = this._applyWhere(query, where);
-    if (orderBy) query = this._applyOrder(query, orderBy);
-    if (skip !== undefined && take !== undefined) {
-      query = query.range(skip, skip + take - 1);
-    }
-
-    const { data, error } = await query;
-    if (error) throw new Error(`[${this.tableName}/findMany] ${error.message}`);
-
-    // Post-process _count includes (e.g. categories counting channels + events)
-    // Uses batch queries (one per relation) instead of N+1 per-row queries.
-    if (hasCount && data && data.length > 0) {
-      var countSelect = hasCount.select || {};
-      var fkMap = { channels: { fk: 'categoryId', tbl: 'Channel' }, events: { fk: 'categoryId', tbl: 'Event' } };
-      var ids = data.map(function(r) { return r.id; });
-
-      // Initialize _count to 0 for all rows
-      for (var row of data) {
-        row._count = {};
-        for (var childName of Object.keys(countSelect)) { row._count[childName] = 0; }
-      }
-
-      // Batch-fetch counts: one query per relation for ALL matching rows
-      for (var childName of Object.keys(countSelect)) {
-        var fkInfo = fkMap[childName] || { fk: this.tableName.toLowerCase() + 'Id', tbl: relationMap[childName] || childName };
-        // Fetch all counts in one query: SELECT fk_field, COUNT(*) ... GROUP BY fk_field
-        // Supabase REST doesn't support GROUP BY natively, so we do one query and aggregate client-side
-        var { data: childRows } = await this.sb.from(fkInfo.tbl).select(fkInfo.fk).in(fkInfo.fk, ids);
-        if (childRows) {
-          // Build a count map
-          var countMap = {};
-          for (var cr of childRows) {
-            var fkVal = cr[fkInfo.fk];
-            countMap[fkVal] = (countMap[fkVal] || 0) + 1;
-          }
-          for (var row of data) {
-            row._count[childName] = countMap[row.id] || 0;
-          }
-        }
-      }
-    }
-
-    return data;
-  }
-
-  async findUnique({ where, include, select: selectFields } = {}) {
-    let selectStr = selectFields
-      ? (Array.isArray(selectFields) ? selectFields.join(', ') : selectFields)
-      : buildSelect(include);
-    let query = this.sb.from(this.tableName).select(selectStr);
-
-    if (where) query = this._applyWhere(query, where);
-    query = query.limit(1);
-
-    const { data, error } = await query;
-    if (error) throw new Error(`[${this.tableName}/findUnique] ${error.message}`);
-    return data?.[0] || null;
-  }
-
-  async findFirst({ where, include, orderBy, select: selectFields } = {}) {
-    let selectStr = selectFields
-      ? (Array.isArray(selectFields) ? selectFields.join(', ') : selectFields)
-      : buildSelect(include);
-    let query = this.sb.from(this.tableName).select(selectStr);
-
-    if (where) query = this._applyWhere(query, where);
-    if (orderBy) query = this._applyOrder(query, orderBy);
-    query = query.limit(1);
-
-    const { data, error } = await query;
-    if (error) throw new Error(`[${this.tableName}/findFirst] ${error.message}`);
-    return data?.[0] || null;
-  }
-
-  async create({ data, include, select: selectFields }) {
-    // Extract nested create/connect data
-    var parts = this._extractNested(data);
-    let selectStr = selectFields
-      ? (Array.isArray(selectFields) ? selectFields.join(', ') : selectFields)
-      : buildSelect(include);
-
-    let query = this.sb.from(this.tableName).insert(parts.flat).select(selectStr);
-
-    const { data: created, error } = await query;
-    if (error) throw new Error(`[${this.tableName}/create] ${error.message}`);
-    const record = created?.[0] || created;
-
-    // Handle nested creates
-    if (record && parts.nested.length > 0) {
-      for (const nested of parts.nested) {
-        await this._createNested(record, nested);
-      }
-      // Re-fetch with includes
-      if (include && Object.keys(include).some(k => k !== '_count')) {
-        const { data: refetched } = await this.sb.from(this.tableName)
-          .select(selectStr)
-          .eq('id', record.id)
-          .single();
-        return refetched || record;
-      }
-    }
-
-    return record;
-  }
-
-  async update({ where, data, include, select: selectFields }) {
-    let selectStr = selectFields
-      ? (Array.isArray(selectFields) ? selectFields.join(', ') : selectFields)
-      : buildSelect(include);
-    let query = this.sb.from(this.tableName).update(data).select(selectStr);
-
-    if (where) query = this._applyWhere(query, where);
-
-    const { data: updated, error } = await query;
-    if (error) throw new Error(`[${this.tableName}/update] ${error.message}`);
-    return updated?.[0] || null;
-  }
-
-  async delete({ where } = {}) {
-    let query = this.sb.from(this.tableName).delete();
-    if (where) query = this._applyWhere(query, where);
-
-    const { error } = await query;
-    if (error) throw new Error(`[${this.tableName}/delete] ${error.message}`);
-  }
-
-  async upsert({ where: _where, update, create, ...rest }) {
-    // For DeviceToken: upsert on unique token
-    const data = update || create || {};
-    const onConflict = _where && Object.keys(_where)[0] || 'token';
-
-    const { data: result, error } = await this.sb.from(this.tableName)
-      .upsert(data, { onConflict, ignoreDuplicates: false })
-      .select();
-
-    if (error) throw new Error(`[${this.tableName}/upsert] ${error.message}`);
-    return result?.[0] || null;
-  }
-
-  async count({ where } = {}) {
-    let query = this.sb.from(this.tableName).select('id', { count: 'exact', head: true });
-    if (where) query = this._applyWhere(query, where);
-
-    const { count, error } = await query;
-    if (error) throw new Error(`[${this.tableName}/count] ${error.message}`);
-    return count || 0;
-  }
-
-  async deleteMany({ where } = {}) {
-    let query = this.sb.from(this.tableName).delete();
-    if (where) query = this._applyWhere(query, where);
-
-    const { error } = await query;
-    if (error) throw new Error(`[${this.tableName}/deleteMany] ${error.message}`);
-  }
-
-  async createMany({ data }) {
-    const { error } = await this.sb.from(this.tableName).insert(data);
-    if (error) throw new Error(`[${this.tableName}/createMany] ${error.message}`);
-  }
-
-  // ─── Helpers ───
-
-  _applyWhere(query, where) {
-    for (const [key, value] of Object.entries(where)) {
-      if (value === undefined || value === null) continue;
-      // Handle range filter (e.g. scheduledAt: { lte: new Date() })
-      if (typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
-        for (const [op, opVal] of Object.entries(value)) {
-          if (op === 'lte') query = query.lte(key, opVal);
-          else if (op === 'gte') query = query.gte(key, opVal);
-          else if (op === 'lt') query = query.lt(key, opVal);
-          else if (op === 'gt') query = query.gt(key, opVal);
-          else if (op === 'not') query = query.neq(key, opVal);
-          else if (op === 'contains') query = query.ilike(key, `%${opVal}%`);
-        }
-      } else {
-        query = query.eq(key, value);
-      }
-    }
-    return query;
-  }
-
-  _applyOrder(query, orderBy) {
-    if (!orderBy) return query;
-    // Support { field: 'asc' } or [{ field: 'asc' }]
-    const entries = Array.isArray(orderBy) ? orderBy : [orderBy];
-    for (const entry of entries) {
-      for (const [field, dir] of Object.entries(entry)) {
-        query = query.order(field, { ascending: dir === 'asc' });
-      }
-    }
-    return query;
-  }
-
-  /** Extract nested Prisma create data (e.g., { streams: { create: [...] } }) into flat columns. */
-  _extractNested(data) {
-    var flat = {};
-    var nested = [];
-    for (const [key, value] of Object.entries(data)) {
-      if (value && typeof value === 'object' && !Array.isArray(value) && value.create) {
-        // e.g., streams: { create: [{ name, url }] }
-        nested.push({ key, records: Array.isArray(value.create) ? value.create : [value.create] });
-      } else if (key === 'streams' && Array.isArray(value)) {
-        // Direct array of stream objects
-        nested.push({ key, records: value });
-      } else {
-        flat[key] = value;
-      }
-    }
-    return { flat, nested };
-  }
-
-  /** Create nested child records after parent creation. */
-  async _createNested(parent, { key, records }) {
-    const childTable = relationMap[key] || key;
-    const fkMap = {
-      streams: { foreignKey: 'eventId', table: 'StreamLink' },
-      notifications: { foreignKey: 'sentById', table: 'Notification' },
-    };
-
-    var info = fkMap[key];
-    if (!info) {
-      console.warn('[supabase] Unknown nested create key "' + key + '" — skipping child inserts. Add mapping to fkMap in database.js.');
-      return;
-    }
-
-    var childRecords = records.map(function(r) {
-      var obj = Object.assign({}, r);
-      obj[info.foreignKey] = parent.id;
-      return obj;
-    });
-
-    await this.sb.from(info.table).insert(childRecords);
-  }
-}
-
-class SupabasePrisma {
-  constructor(sb) {
-    this.sb = sb;
-    // Build model proxies for each table
+class PgPrisma {
+  constructor() {
     for (const [prismaName, tableName] of Object.entries(TABLE_MAP)) {
-      this[prismaName] = new SupabaseModel(sb, tableName);
+      const model = new PgModel(tableName);
+      model.table = tableName; // keep for debugging
+      this[prismaName] = model;
     }
   }
 
-  /** Like prisma.$transaction, but for Supabase, just run sequentially. */
   async $transaction(fn) {
-    // pseudo-transaction: pass this same instance
     return fn(this);
   }
 }
 
+let pgPrisma = null;
+
 function getPrisma() {
-  if (supabase) return supabase;
-
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !supabaseKey) {
-    console.warn('[supabase] ⚠️  SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set.');
-    console.warn('[supabase]     Set both in .env. Database operations will fail.');
-  }
-
-  const sb = createClient(supabaseUrl || 'http://localhost:54321', supabaseKey || 'no-key', {
-    auth: { autoRefreshToken: false, persistSession: false }
-  });
-
-  supabase = new SupabasePrisma(sb);
-  return supabase;
+  if (pgPrisma) return pgPrisma;
+  pgPrisma = new PgPrisma();
+  console.log('[pg-prisma] Models ready:', Object.keys(TABLE_MAP).length, 'tables');
+  return pgPrisma;
 }
 
 module.exports = { getPrisma };

@@ -259,10 +259,11 @@
 
   Date        | Step                       | Status
   ────────────┼────────────────────────────┼──────────
-  2026-06-20  | Run SQL migration          | ⬜ TODO ← DO THIS NOW
+  2026-06-20  | Run SQL migration (v2)      | ✅ Done ← DO THIS NOW
   ────────────┼────────────────────────────┼──────────
   2026-06-20  | Install Node.js deps       | ✅ Done
   2026-06-20  | Configure .env             | ✅ Done
   2026-06-20  | Unit tests pass (22/22)    | ✅ Done
   2026-06-20  | Server boots on :4000      | ✅ Done
   2026-06-20  | Code pushed to GitHub      | ✅ Done
+  2026-06-20  | Verify 14 API endpoints   | ✅ 8 public pass, auth OK
