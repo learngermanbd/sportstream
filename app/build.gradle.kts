@@ -263,6 +263,9 @@ dependencies {
 
     // ── WorkManager — daily background update check (Phase 6 · Step 6.2) ──
     implementation(libs.work.runtime)
+
+    // ── Security — EncryptedSharedPreferences (Phase 7 · Step 7.8) ──
+    implementation(libs.security.crypto)
 }
 
 // ──────────────────────────────────────────────────────────────────────
