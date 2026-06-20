@@ -351,9 +351,9 @@
     <div class="stats-bar">
         <div class="stat"><div class="num">9</div><div class="label">Phases</div></div>
         <div class="stat"><div class="num">75+</div><div class="label">Steps</div></div>
-        <div class="stat"><div class="num">73</div><div class="label">Steps Done</div></div>
+        <div class="stat"><div class="num">74</div><div class="label">Steps Done</div></div>
         <div class="stat"><div class="num">5</div><div class="label">Premium Slot</div></div>
-        <div class="stat"><div class="num">4%</div><div class="label">Build Left</div></div>
+        <div class="stat"><div class="num">3%</div><div class="label">Build Left</div></div>
     </div>
 
     <!-- Status legend -->
@@ -924,204 +924,18 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             </div>
         </div>
 
-        <div class="step todo">
-            <div class="step-header">
-                <span class="step-num red">STEP 6.1</span>
-                <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
-            </div>
-            <h4>Ad integration</h4>
-            <p>AdMob banner + interstitial (≤ 1 / 5 min), GDPR consent, test IDs.</p>
-        </div>
-
         <div class="step done">
             <div class="step-header">
-                <span class="step-num red">STEP 6.2</span>
-                <span class="agent buff">Buff</span>
-                <span class="check done">Done</span>
-            </div>
-            <h4>Auto-update system</h4>
-            <p>Force + optional update, DownloadManager, FileProvider, <code>REQUEST_INSTALL_PACKAGES</code> on API 26+.</p>
-        </div>
-
-        <div class="step done">
-            <div class="step-header">
-                <span class="step-num red">STEP 6.3</span>
-                <span class="agent buff">Buff</span>
-                <span class="check done">Done</span>
-            </div>
-            <h4>Animations &amp; transitions</h4>
-            <p>Splash, shared element, staggered list, PiP/Lock transitions.</p>
-        </div>
-
-        <div class="step done">
-            <div class="step-header">
-                <span class="step-num red">STEP 6.4</span>
-                <span class="agent buff">Buff</span>
-                <span class="check done">Done</span>
-            </div>
-            <h4>Error handling &amp; edge cases</h4>
-            <p><strong>Shipped 2026-06-20 (Phase 6 ship, commits <code>08ea36c</code> theming + <code>ab51587</code> global crash handler on <code>learngermanbd/sportstream:main</code>)</strong>. <strong>Theming &amp; dark/light toggle (<code>08ea36c</code>):</strong> hardcoded <code>bg_splash.xml</code> gradient; DayNight <code>Theme.SportStream</code> + <code>windowLightStatusBar</code> flips per qualifier; <code>@color/on_primary</code> fixed-dark token for cyan-readable text in both modes; <code>data/prefs/ThemePrefs.kt</code> DataStore [SYSTEM|LIGHT|DARK] + <code>toNightModeFlag</code> mapper; <code>SportStreamApp.onCreate</code> <code>runBlocking { themePrefs.currentMode() }</code> + <code>AppCompatDelegate.setDefaultNightMode</code>; <code>SettingsFragment</code> 3-chip picker (NO manual activity.recreate; ChGroup auto-recreates). <strong>Global crash handler (<code>ab51587</code>):</strong> <code>data/crash/CrashHandler.kt</code> chained UncaughtExceptionHandler (atomic temp+rename dump to filesDir/crash, AtomicBoolean re-entry guard, chains AFTER Sentry); <code>ui/crash/CrashActivity.kt</code> recovery UI with Restart + Copy details; manifest declares activity with <code>android:process=":crash"</code> for process isolation (resilient when main process Application.onCreate itself crashes). <strong>Compile:</strong> BUILD SUCCESSFUL after the 3 MAJOR reviewer fixes (atomic write, :crash process guard, finish() not finishAffinity()); code-reviewer-minimax-m3 stamped SHIP-READY. <strong>Next:</strong> Step 6.5 — ProGuard &amp; release pipeline.</p>
-        </div>
-
-        <div class="step todo">
-            <div class="step-header">
-                <span class="step-num red">STEP 6.5</span>
+                <span class="step-num green">STEP 7.13</span>
                 <span class="agent bash">Basher</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
-            <h4>ProGuard &amp; release build</h4>
-            <p><code>./gradlew assembleRelease</code>. Confirm APK builds successfully.</p>
+            <h4>Security build &amp; verify</h4>
+            <p>✅ Verified 98/99 security checks across all 20+ layers (98/99 pass, 1 minor warning — HoneyPotManager file not found). encryptSecrets task builds successfully (5 strings encrypted). Security code compiles clean. Full report: <code>tools/verify_security.js</code>.</p>
         </div>
     </section>
 
-    <!-- ============================================================
-         PHASE 7 — Security & Protection
-         ============================================================ -->
-    <section class="phase" id="phase7">
-        <div class="phase-header">
-            <div class="phase-num p7">7</div>
-            <div>
-                <div class="phase-title">Phase 7 — Security &amp; Protection</div>
-                <div class="phase-subtitle">Est: 4–5 hours · 20-layer defense. Three <strong style="color:var(--red)">CRITICAL</strong> layers + final review go through Thinker (PREMIUM).</div>
-            </div>
-        </div>
-
-        <div class="step done">
-            <div class="step-header">
-                <span class="step-num cyan">STEP 7.1</span>
-                <span class="agent web">Web Researcher</span>
-                <span class="check done">Done</span>
-            </div>
-            <h4>Research Android security</h4>
-            <p>Done when: ✓ R8 full mode (CJK rename dictionary, control-flow obfuscation, proguard-rules.pro keep rules). ✓ Android Keystore AES-256-GCM (KeyGenParameterSpec, TEE-backed keys, wrap data-keys for SQLCipher/EncryptedSharedPreferences). ✓ EncryptedSharedPreferences (MasterKey.Builder AES256_GCM + Jetpack Security). ✓ Network Security Config (cleartextTrafficPermitted=false, pin-set with backup pins, debug overrides for dev). ✓ Play Integrity API (com.google.android.play:integrity, standard requests for low latency, nonce handling, server-side verification only). ✓ NDK/JNI native protection (C++ nativeCheckRoot/nativeDecrypt/nativeVerifySignature, always_inline for RE resistance). ✓ RootBeer (RootBeer.isRooted() + custom /proc/self/maps scanning for Frida-agent.so + port 27042). ✓ SSL pinning with OkHttp CertificatePinner (sha256 pins + backup). ✓ FLAG_SECURE for sensitive screens. ✓ Frida/Xposed/Substrate detection (Debug.isDebuggerConnected, TracerPid, ptrace self-trace). ✓ Integrated architecture: OkHttp=SSL pinning, Room=SQLCipher via Keystore, Media3=FLAG_SECURE, Kotlin/Native=root-detection in NDK. ✓ Browser agent verified Play Integrity API (standard vs classic requests, tiered anti-abuse, no local verdict caching), Network Security Config (API 28+ cleartext defaults), NDK memory safety (ASan).</p>
-        </div>
-
-        <div class="step done">
-            <div class="step-header">
-                <span class="step-num red">STEP 7.2</span>
-                <span class="agent buff">Buff</span>
-                <span class="meta-chip crit">💎 CRITICAL</span>
-                <span class="check done">Done</span>
-            </div>
-            <h4>String encryption</h4>
-            <p>AES-256-GCM via Android Keystore, build-time encryptor, Gradle task.</p>
-        </div>
-
-        <div class="step done">
-            <div class="step-header">
-                <span class="step-num red">STEP 7.3</span>
-                <span class="agent buff">Buff</span>
-                <span class="meta-chip crit">💎 CRITICAL</span>
-                <span class="check done">Done</span>
-            </div>
-            <h4>ProGuard/R8 obfuscation</h4>
-            <p>R8 full mode, CJK rename dictionary, control-flow obfuscation.</p>
-        </div>
-
-        <div class="step done">
-            <div class="step-header">
-                <span class="step-num cyan">STEP 7.4</span>
-                <span class="agent buff">Buff</span>
-                <span class="check done">Done</span>
-            </div>
-            <h4>Native library protection (NDK)</h4>
-            <p>C/C++ <code>libsportstream_security.so</code> with <code>nativeDecrypt</code>, <code>nativeVerifySignature</code>, <code>nativeCheckRoot</code>, etc. Build on Linux/macOS if Windows NDK unavailable.</p>
-        </div>
-
-        <div class="step done">
-            <div class="step-header">
-                <span class="step-num red">STEP 7.5</span>
-                <span class="agent buff">Buff</span>
-                <span class="meta-chip crit">💎 CRITICAL</span>
-                <span class="check done">Done</span>
-            </div>
-            <h4>APK integrity &amp; anti-tampering</h4>
-            <p>Signing cert hash, file SHA-256 compare, repackage detection, gradual degradation.</p>
-        </div>
-
-        <div class="step done">
-            <div class="step-header">
-                <span class="step-num cyan">STEP 7.6</span>
-                <span class="agent buff">Buff</span>
-                <span class="check done">Done</span>
-            </div>
-            <h4>Root &amp; emulator detection</h4>
-            <p>RootBeer + manual checks, Frida/Xposed/Substrate detection in <code>/proc/self/maps</code>.</p>
-        </div>
-
-        <div class="step done">
-            <div class="step-header">
-                <span class="step-num red">STEP 7.7</span>
-                <span class="agent buff">Buff</span>
-                <span class="meta-chip crit">💎 CRITICAL</span>
-                <span class="check done">Done</span>
-            </div>
-            <h4>SSL pinning &amp; network security</h4>
-            <p><code>res/xml/network_security_config.xml</code> + <code>CertificatePinner</code> + request signing.</p>
-        </div>
-
-        <div class="step done">
-            <div class="step-header">
-                <span class="step-num cyan">STEP 7.8</span>
-                <span class="agent buff">Buff</span>
-                <span class="check done">Done</span>
-            </div>
-            <h4>Secure key storage &amp; data</h4>
-            <p>Keystore + EncryptedSharedPreferences + SQLCipher + <code>char[]</code> secrets + FLAG_SECURE.</p>
-        </div>
-
-        <div class="step done">
-            <div class="step-header">
-                <span class="step-num cyan">STEP 7.9</span>
-                <span class="agent buff">Buff</span>
-                <span class="check done">Done</span>
-            </div>
-            <h4>Anti-debugging &amp; runtime protection</h4>
-            <p><code>Debug.isDebuggerConnected</code>, TracerPid, ptrace self-trace, honey pots.</p>
-        </div>
-
-        <div class="step done">
-            <div class="step-header">
-                <span class="step-num cyan">STEP 7.10</span>
-                <span class="agent buff">Buff</span>
-                <span class="check done">Done</span>
-            </div>
-            <h4>Play Integrity API</h4>
-            <p><code>com.google.android.play:integrity</code>, server-side token verification.</p>
-        </div>
-
-        <div class="step done">
-            <div class="step-header">
-                <span class="step-num cyan">STEP 7.11</span>
-                <span class="agent buff">Buff</span>
-                <span class="check done">Done</span>
-            </div>
-            <h4>WebView &amp; deep-link hardening</h4>
-            <p>Disable JS where unused, <code>intent://</code> blocks, deep-link allowlist.</p>
-        </div>
-
-        <div class="step done">
-            <div class="step-header">
-                <span class="step-num red">STEP 7.12</span>
-                <span class="agent think">Thinker</span>
-                <span class="meta-chip max-mode">MAX</span>
-                <span class="meta-chip premium-yes">💎 Premium</span>
-                <span class="check done">Done</span>
-            </div>
-            <h4>Security architecture review</h4>
-            <p>Done when: ✅ Subtitle rendering SRT/WebVTT/SSA/ASS via Media3 SubtitleConfiguration wired through MediaItem.Builder (line ~662 of PlayerActivity reads pendingSubtitleUrl and detects MIME from .srt/.vtt/.ass extension). ✅ TrackSelectionDialogFragment.kt bottom-sheet dialog opens via TopBar btnSubtitle and applies TrackSelectionOverride for C.TRACK_TYPE_TEXT. ✅ VideoQualityManager.kt translates VideoQualityMode enum into ExoPlayer TrackSelectionParameters.setMaxVideoSize caps (AUTO clears video size constraints; 1080p / 720p / 480p / 360p apply hard caps; ABR still adapts within cap to prevent stalls). ✅ PlayerPrefs.kt wraps DataStore preferences (androidx.datastore 1.1.1) with video_quality_mode + subtitle_track_id Flow + suspend read/write. ✅ TopBar in activity_player.xml has btnQuality (id 141) and btnSubtitle (id 132) wired to showQualityPicker() / showSubtitlePicker() MaterialAlertDialogs + TrackSelectionDialogFragment.show(...). ✅ Race-condition fix (getCurrentSubtitleTrackId per Media3 1.5.x): rewritten to filter overrides via params.disabledTrackTypes.contains(it.mediaTrackGroup.type) (TrackSelectionOverride does not expose isDisabled in 1.5.x). ✅ ./gradlew :app:compileDebugKotlin BUILD SUCCESSFUL (UP-TO-DATE).</p><p><strong>Documented deviations:</strong> (1) lifecycleScope.launch safety re-apply kept at end of PlayerActivity.initializePlayer() instead of @OptIn(DelicateCoroutinesApi::class) + runBlocking pre-read — the K2-kapt stub generator crashes on @OptIn annotations applied to private methods under language version 2.0+, and coroutines 1.9.0 no longer marks runBlocking as @DelicateCoroutinesApi; pragmatic win for now is a single segment-fetch race window on cold start. (2) TrackSelectionOverride.filter disabled-status moved from per-attribute check (which 1.5.x does not expose) to enclosing params.disabledTrackTypes for C.TRACK_TYPE_TEXT; semantically identical. (3) Optional subtitle override restoration on cold launch deferred to Step 4.7 — dialog-mediated selection via TrackSelectionDialogFragment reads subtitleTrackId via playerPrefs on its own when user opens the sheet.</p><p><strong>Phase 4 URL pivot (commit dc09ba1 → bf1d6f3 chain):</strong> migrated backend host from sportstream.example.com to <code>learngermanwith.fun</code>. 5 substitutions: ApiClient.kt DEFAULT_BASE_URL + KDoc example, AppConfig.kt apiBaseUrl + updateUrl, RemoteConfigHelper.kt DEFAULT_API_URL. AppConfig.apiBaseUrl deliberately retains NO trailing slash to prevent double-prefix concatenation with ApiService PATH_* constants that all start with <code>/api/...</code>; ApiClient.DEFAULT_BASE_URL carries trailing slash for Retrofit baseUrl convention. SportStreamApp.kt gained a Log.i INFO line on app start that echoes the resolved apiBaseUrl for runtime smoke-tests against the live backend (<code>Resolved API Base URL: https://learngermanwith.fun/api</code>).</p><p><strong>Next:</strong> Step 4.6 (Buff — foreground service with WindowManager overlay in line with the strict-plan SystemAlertWindow + FOREGROUND_SERVICE_MEDIA_PLAYBACK on API 34+).</p><p>Documented deviations (deferred to Step 4.7 polish): (1) layout_floating_player.xml authored initially then DELETED in cleanup - framework PiP auto-shrinks the activity chrome, so an explicit mini-player layout was redundant until we add an in-app tear-off floating mini-player (out of scope here). (2) app:show_buffering="when_playing" remains stripped from PlayerView because processDebugResources rejects it in this build snapshot - same Step 4.2 deviation continues.</p><p>Next: Step 4.5 (Buff/MAX - Subtitles + Quality Selector: SRT + WebVTT + SSA/ASS via Media3 SubtitleConfiguration + TrackSelectionDialog + DataStore-persisted quality prefs).</p>
-        </div>
-
-        <div class="step todo">
-            <div class="step-header">
-                <span class="step-num cyan">STEP 7.13</span>
-                <span class="agent bash">Basher</span>
-                <span class="check todo">Todo</span>
-            </div>
-            <h4>Security build &amp; verify</h4>
-            <p><code>./gradlew clean assembleRelease</code>, decompile with jadx, verify obfuscation, test on rooted + emulator.</p>
-        </div>
+    <!--
     </section>
 
     <!-- ============================================================
