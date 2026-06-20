@@ -1,22 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Phase 6 \u00b7 Step 6.4 \u2014 DARK MODE theme override.
+
+    Android resource resolution REPLACES (does NOT merge) styles that
+    share a name across qualifiers. So the body of Theme.SportStream
+    here has to mirror values/themes.xml in full; we override only the
+    system-bar light flags because they're mode-dependent.
+
+    Material lib 1.12.0 (Step 1.2) supplies Theme.Material3.* styles.
+    Color tokens resolve through the qualifier-matched
+    values-night/colors.xml automatically, so no color override is
+    needed here.
+-->
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!--
-        Phase 1 · Step 1.5 → Phase 6 · Step 6.4 — Material 3 DayNight
-        theme. Material lib 1.12.0 (Step 1.2) supplies
-        Theme.Material3.* styles.
-
-        Step 6.4 update:
-          - colorOnPrimary / colorOnSecondary now point at the fixed-
-            dark @color/on_primary token so label text on cyan primary
-            buttons reads in BOTH modes.
-          - windowLightStatusBar / windowLightNavigationBar flip to
-            TRUE so the system bar icons stay dark (legible on the
-            light surface).
-        values-night/themes.xml REPLACES (not merges) this entire style
-        with the dark-mode equivalent; only the 2 system-bar flags
-        differ between the two qualifiers.
-    -->
     <style name="Theme.SportStream" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Brand palette -->
         <item name="colorPrimary">@color/primary</item>
@@ -37,14 +34,14 @@
         <item name="colorOnError">@color/white</item>
         <item name="colorOutline">@color/border_default</item>
 
-        <!-- Window chrome — light mode keeps transparent system bars;
-             status icons flip to DARK (windowLightStatusBar=true) so they
-             stay legible on the white surface. -->
+        <!-- Window chrome \u2014 dark mode keeps transparent system bars; status
+             icons flip to LIGHT (windowLightStatusBar=false) so they stay
+             legible on the dark_nav surface. -->
         <item name="android:windowBackground">@color/dark_bg</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
-        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
 
         <!-- Text colors -->
         <item name="android:textColor">@color/text</item>

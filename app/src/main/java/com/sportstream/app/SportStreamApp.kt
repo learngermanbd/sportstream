@@ -3,8 +3,10 @@ package com.sportstream.app
 import android.app.Application
 import android.content.Context
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.datastore.preferences.preferencesDataStore
 import com.sportstream.app.data.local.LocalModule
+import com.sportstream.app.data.prefs.ThemePrefs
 import com.sportstream.app.data.prefs.UpdatePrefs
 import com.sportstream.app.data.remote.AppConfig
 import com.sportstream.app.data.remote.NetworkModule
@@ -12,6 +14,7 @@ import com.sportstream.app.data.remote.RemoteConfigHelper
 import com.sportstream.app.data.repository.RepositoryModule
 import com.sportstream.app.data.update.AppUpdateManager
 import io.sentry.android.core.SentryAndroid
+import kotlinx.coroutines.runBlocking
 
 /**
  * Application entry-point. Initialised once per process.
@@ -49,6 +52,21 @@ class SportStreamApp : Application() {
         // auto-initializes from the `google-services.json` plugin and we
         // only rely on FirebaseMessaging (Phase 5 · Step 5.4).
         Log.i(TAG, "Resolved API Base URL: ${AppConfig.defaults().apiBaseUrl}")
+
+        // Phase 6 · Step 6.4 — apply persisted theme BEFORE any
+        // Activity inflates so the first Activity launched after a
+        // cold start holds the correct uiMode (no dark→light flash
+        // on launch). DataStore.fist() returns from a tiny on-disk
+        // blob (~10 ms typical, never blocks more than ~50 ms).
+        //
+        // TODO(stephand): if the team enables Android StrictMode
+        // `detectDiskReads()` later, move this read into a
+        // ContentProvider.onCreate (which fires before
+        // Application.onCreate, before StrictMode policies activate
+        // at attachBaseContext()). For v1 we accept the main-thread
+        // DataStore read since no StrictMode policy is active.
+        val themeMode = runBlocking { themePrefs.currentMode() }
+        AppCompatDelegate.setDefaultNightMode(themePrefs.toNightModeFlag(themeMode))
 
         // Touch the lazy seams so onCreate's cold start still gets the
         // same observable behaviour as the previous lateinit version
@@ -95,6 +113,19 @@ class SportStreamApp : Application() {
      */
     val updatePrefs: UpdatePrefs by lazy {
         UpdatePrefs(applicationContext)
+    }
+
+    /**
+     * Phase 6 · Step 6.4 — Persisted storage for the user's theme
+     * preference (System / Light / Dark). Lazily constructed; the first
+     * access happens during [onCreate] to push the stored uiMode into
+     * [androidx.appcompat.app.AppCompatDelegate] BEFORE any Activity
+     * inflates. The DataStore read (via [ThemePrefs.currentMode]) is
+     * resolved with [runBlocking] from [onCreate] — acceptable
+     * because the read returns from a tiny on-disk blob in a few ms.
+     */
+    val themePrefs: ThemePrefs by lazy {
+        ThemePrefs(applicationContext)
     }
 
     companion object {

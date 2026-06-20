@@ -30,7 +30,19 @@
     <string name="fragment_favorites_title">FAVORITES</string>
     <string name="fragment_favorites_subtitle">Step 5.1 incoming</string>
     <string name="fragment_settings_title">SETTINGS</string>
-    <string name="fragment_settings_subtitle">Step 5.5 incoming</string>
+    <string name="fragment_settings_subtitle">Customise your SportStream experience</string>
+
+    <!--
+        Phase 6 · Step 6.4 — Settings tab widget strings.
+        THEME picker chips + hint + version footer powered by ThemePrefs
+        + AppCompatDelegate.setDefaultNightMode.
+    -->
+    <string name="fragment_settings_appearance_section">APPEARANCE</string>
+    <string name="fragment_settings_theme_hint">System follows your device setting. Light and Dark override it explicitly.</string>
+    <string name="theme_picker_system">System</string>
+    <string name="theme_picker_light">Light</string>
+    <string name="theme_picker_dark">Dark</string>
+    <string name="fragment_settings_version_template">SportStream v%1$s</string>
 
     <!-- Home tab (Step 3.3) — section header + empty-state copy. -->
     <string name="fragment_home_header">LIVE EVENTS</string>
