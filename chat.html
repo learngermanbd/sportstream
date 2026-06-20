@@ -912,6 +912,27 @@
         </section>
     </main>
 
+        <section class="turn role-commit" id="turn-26">
+            <div class="step-header">
+                <span class="step-num">026</span>
+                <span class="agent commit">Shipped</span>
+                <span class="ts">turn 91-95</span>
+            </div>
+            <h4>STEP 7.10 SHIPPED - Play Integrity API &amp; Device Attestation</h4>
+            <div class="response-body">
+                <p><strong>Components delivered</strong> (Step 7.10 - Play Integrity API &amp; Device Attestation):</p>
+                <ul>
+                    <li><strong>PlayIntegrityManager.kt</strong> (new) — Google Play Integrity API wrapper: IntegrityManagerFactory.create(), 16-byte SecureRandom nonce (Base64URL-encoded), IntegrityTokenRequest with optional cloudProjectNumber. Session caching via AtomicReference with 30-min TTL. Concurrent request prevention.</li>
+                    <li><strong>IntegrityVerdict.kt</strong> (new) — JWS token parser and verdict data class: parses deviceIntegrity.deviceRecognitionVerdict (MEETS_DEVICE/BASIC/VIRTUAL_INTEGRITY), appIntegrity (packageName, certificateSha256Digest), accountDetails (appLicensingVerdict). Risk scoring: NO_INTEGRITY=4, virtual-only=3, basic=1, package/cert mismatch=3 each, unlicensed=2. isTrustworthy() and meetsMinimumRequirements() helpers.</li>
+                    <li><strong>DeviceAttestation.kt</strong> (new) — 5 attestation checks: installer source (Play/Galaxy/Amazon via getInstallSourceInfo API 30+), signing certificate cross-check via IntegrityChecker.getSigningCertSha256(), bootloader state (ro.boot.verifiedbootstate green/yellow/orange), GMS availability (versionCode >= 12M), Build.TAGS test-keys consistency.</li>
+                    <li><strong>SecurityGate.kt</strong> (modified) — Added Layer 10 DeviceAttestation (+riskScore) and Layer 11 PlayIntegrityManager (fire-and-forget token request + cached verdict score contribution).</li>
+                    <li><strong>libs.versions.toml</strong> (modified) — Added play-integrity 1.4.0</li>
+                    <li><strong>app/build.gradle.kts</strong> (modified) — Added implementation(libs.play.integrity)</li>
+                </ul>
+                <p><strong>Build:</strong> ./gradlew :app:compileDebugKotlin — BUILD SUCCESSFUL (1m 47s)</p>
+            </div>
+        </section>
+
         <section class="turn role-commit" id="turn-25">
             <div class="step-header">
                 <span class="step-num">025</span>
