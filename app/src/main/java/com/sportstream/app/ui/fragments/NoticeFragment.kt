@@ -12,9 +12,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.sportstream.app.R
 import com.sportstream.app.SportStreamApp
+import com.sportstream.app.data.repository.NoticeRepository
 import com.sportstream.app.databinding.FragmentNoticeBinding
 import com.sportstream.app.ui.adapters.NoticeAdapter
 import com.sportstream.app.ui.common.UiState
@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 /**
  * Phase 5 · Step 5.5 v2 — Notice screen.
  *
- * Renders one of four surface branches driven by [NoticeViewModel.state]:
+ * Renders one of four NoticeScreenState branches driven by [NoticeViewModel.state]:
  *  - ListMode  → RecyclerView with [NoticeAdapter]'s mixed rows
  *  - LegacyMode → single free-form body card (v1 fallback path)
  *  - Empty     → empty-state ImageView + text
@@ -40,6 +40,10 @@ import kotlinx.coroutines.launch
  * `safeBinding` lets helpers invoked from coroutine-collected state
  * flows safely no-op once the Fragment view is destroyed (`_binding`
  * null). Mirrors the same idiom in SearchFragment + HighlightsFragment.
+ *
+ * Phase 5 · Step 5.7 — the "first-render triggers refresh?" gate uses
+ * `as? UiState.Success<*>` smart cast instead of unchecked `as` so the
+ * compiler doesn't need the `-Xunchecked-cast` opt-in.
  */
 class NoticeFragment : Fragment() {
 
@@ -55,14 +59,15 @@ class NoticeFragment : Fragment() {
         val app = requireActivity().application as SportStreamApp
         object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                NoticeViewModel(
-                    app = app,
-                    httpClient = app.network.httpClient,
-                    noticeRepo = app.repository.noticeRepository
-                ) as T
+            override fun <T : ViewModel> create(modelClass: Class<T>): T = noticeRepositoryVm(app) as T
         }
     }
+
+    private fun noticeRepositoryVm(app: SportStreamApp): NoticeViewModel = NoticeViewModel(
+        app = app,
+        httpClient = app.network.httpClient,
+        noticeRepo = app.repository.noticeRepository,
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -115,9 +120,7 @@ class NoticeFragment : Fragment() {
         // re-renders after a fragment recreate — the constructor's init
         // block already started a fetch, and subsequent refreshes are
         // user-initiated via the FAB / Retry button.
-        if (noticeVm.state.value is UiState.Success &&
-            (noticeVm.state.value as UiState.Success<NoticeScreenState>).value === NoticeScreenState.Loading
-        ) {
+        if (noticeVm.state.value.let { it is UiState.Success<*> && it.value === NoticeScreenState.Loading }) {
             noticeVm.refresh(force = false)
         }
     }

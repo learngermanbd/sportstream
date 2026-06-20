@@ -86,9 +86,11 @@ class NoticeViewModel(
             }
         }
 
-        // 3. Background housekeeping — sweep push notices older than 7 days.
+        // 3. Background housekeeping — sweep push-sourced TTL AND
+        //    expired server-sourced rows. Phase 5.7 widens the sweep
+        //    so the table doesn't grow unbounded on slow admin panels.
         viewModelScope.launch {
-            runCatching { noticeRepo.pruneOldPushNotices() }
+            runCatching { noticeRepo.pruneOldNotices() }
                 .onFailure { Log.w(TAG, "prune failed: ${it.message}") }
         }
     }

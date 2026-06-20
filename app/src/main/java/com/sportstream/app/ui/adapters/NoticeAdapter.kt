@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.google.android.material.card.MaterialCardView
 import com.sportstream.app.R
 import com.sportstream.app.data.models.Notice
@@ -29,6 +30,12 @@ import com.sportstream.app.data.models.NoticeSection
  *
  * Click handlers are set inside bind() (not init) so a recycled
  * `current: Notice?` reference can't fire for the wrong row.
+ *
+ * Phase 5 · Step 5.7 — IMAGE-attachment thumbnails now load via Glide
+ * (mirrors how [com.sportstream.app.ui.adapters.HighlightAdapter] does
+ * its 16:9 thumbnails). The placeholder for missing images is
+ * `bg_glass_card` (the same generic glass frame Step 1.5 introduced)
+ * so the loading state is consistent across screens.
  *
  * Layouts: see `res/layout/view_notice_section.xml` (header) and
  * `res/layout/view_notice_card.xml` (notice + attachments).
@@ -136,19 +143,31 @@ class NoticeAdapter(
             attachmentsStrip.removeAllViews()
             renderAttachments(notice.attachments, attachmentsStrip)
 
-            // Thumbnail: first IMAGE attachment wins (small avatar-style first peek).
-            // We deliberately don't pull in Glide here to keep diff light;
-            // IMAGE thumbnails use the system launcher icon as a placeholder
-            // until Phase 9 introduces Glide.
+            // Thumbnail: first IMAGE attachment wins (center-cropped preview).
+            // Glide handles placeholder + error + cleared-on-recycle for us.
             val firstImage = notice.attachments.firstOrNull { it.type == NoticeAttachmentType.IMAGE }
-            thumbnail.visibility = if (firstImage != null) View.VISIBLE else View.GONE
-            firstImage?.url?.let { /* marker for Glide integration in 5.7 polish */ }
+            if (firstImage != null) {
+                thumbnail.visibility = View.VISIBLE
+                Glide.with(thumbnail.context)
+                    .load(firstImage.url)
+                    .placeholder(R.drawable.bg_glass_card)
+                    .error(R.drawable.bg_glass_card)
+                    .centerCrop()
+                    .into(thumbnail)
+            } else {
+                // Ensure no stale image survives from a previous bind.
+                Glide.with(thumbnail.context).clear(thumbnail)
+                thumbnail.visibility = View.GONE
+            }
 
             card.setOnClickListener { currentNotice?.let(onNoticeClick) }
         }
 
         fun clearImage() {
             currentNotice = null
+            // Cancel any in-flight Glide load and reset the placeholder so
+            // a previous thumbnail can't bleed into the next row.
+            Glide.with(thumbnail.context).clear(thumbnail)
             thumbnail.visibility = View.GONE
             attachmentsStrip.removeAllViews()
         }
@@ -163,12 +182,9 @@ class NoticeAdapter(
             items.forEach { att ->
                 val chip = inf.inflate(R.layout.view_notice_attachment_chip, strip, false)
                 val label: TextView = chip.findViewById(R.id.attachmentChipLabel)
-                val iconRes = when (att.type) {
-                    NoticeAttachmentType.IMAGE -> R.drawable.ic_notice_section_info  // placeholder
-                    NoticeAttachmentType.LINK  -> R.drawable.ic_notice_section_info
-                    NoticeAttachmentType.FILE  -> R.drawable.ic_notice_section_info
-                }
-                chip.findViewById<ImageView>(R.id.attachmentChipIcon).setImageResource(iconRes)
+                chip.findViewById<ImageView>(R.id.attachmentChipIcon)
+                    .setImageResource(R.drawable.ic_notice_section_info)
+
                 label.text = att.label ?: when (att.type) {
                     NoticeAttachmentType.IMAGE -> strip.context.getString(R.string.notice_v2_attachment_image)
                     NoticeAttachmentType.LINK  -> strip.context.getString(R.string.notice_v2_attachment_link)
@@ -194,7 +210,7 @@ class NoticeAdapter(
             val diff = System.currentTimeMillis() - epochMs
             return when {
                 diff < 60_000L       -> itemView.context.getString(R.string.notice_v2_relative_now)
-                diff < 60 * 60_000L  -> itemView.context.getString(R.string.notice_v2_relative_minutes_template, (diff / 60_000L).toInt())
+                diff < 60 * 60_000L  -> itemView.context.getString(R.string.notice_v2_relative_hours_template, (diff / 60_000L).toInt())
                 diff < 24 * 60 * 60_000L -> itemView.context.getString(R.string.notice_v2_relative_hours_template, (diff / (60 * 60_000L)).toInt())
                 else -> itemView.context.getString(R.string.notice_v2_relative_days_template, (diff / (24 * 60 * 60_000L)).toInt())
             }
@@ -207,10 +223,11 @@ class NoticeAdapter(
 
         /**
          * Builds the [Row] list from a [NoticeSectionBlock] list.
-         * Stable order: ALERT → INFO → PROMO (already enforced by
-         * the SQL CASE in [com.sportstream.app.data.local.NoticeDao.observeAll]
-         * but the section block we hand to the adapter doesn't
-         * guarantee that order, so we re-sort here).
+         * Stable order: ALERT → INFO → PROMO. Kotlin-layer sorting
+         * is the canonical ordering source — the SQL CASE in
+         * [com.sportstream.app.data.local.NoticeDao.observeAll] orders
+         * the 3 known sections by enum name with `ELSE 3` fall-through,
+         * but Section.ordinal is the durable truth.
          */
         fun rowsOf(blocks: List<com.sportstream.app.ui.viewmodels.NoticeSectionBlock>): List<Row> {
             val ordered = blocks.sortedBy { it.section.ordinal }

@@ -29,38 +29,40 @@ import com.sportstream.app.ui.adapters.SearchAdapter
 import com.sportstream.app.ui.adapters.SearchItem
 import com.sportstream.app.ui.common.UiState
 import com.sportstream.app.ui.util.PlayerNavigation
+import com.sportstream.app.ui.viewmodels.CategoriesViewModel
 import com.sportstream.app.ui.viewmodels.MainViewModel
 import com.sportstream.app.ui.viewmodels.SearchViewModel
 import kotlinx.coroutines.launch
 
 /**
- * Phase 5 · Step 5.6 — Search screen.
+ * Phase 5 · Step 5.6 + Step 5.7 — Search screen.
  *
  * Layout split:
  *  - Persistent header row: search EditText + clear-text IconButton +
  *    back IconButton.
  *  - "Recent searches" chip strip: visible while [query] is blank AND the
- *    user has at least one history entry. Tapping a chip re-populates
- *    the EditText with that query. Closing a chip removes it from the
- *    list.
- *  - Result RecyclerView: visible while [query] is non-blank. When the
- *    query produces 0 matches across both surfaced sections (Events +
- *    Highlights) we show the `search_empty` TextView inside the recycler
- *    area.
+ *    user has at least one history entry.
+ *  - Result RecyclerView: visible while [query] is non-blank.
  *
- * Click routing for each row goes through [PlayerNavigation] — same
- * factory methods the Home / Categories / Highlights fragments call —
- * so the user's selected row kicks off the standard playback flow
- * (PlayerActivity with EXTRA_EVENT_ID for Event taps, EXTRA_VIDEO_URL
- * for Highlight taps).
+ * Phase 5.7 — channels are now in the search surface. Three sections
+ * render under the EditText (CHANNELS / MATCHES / HIGHLIGHTS) when a
+ * non-blank query produces hits in two or more lists. Sections with no
+ * hits are skipped so a precise query doesn't show empty section
+ * headers.
  *
- * Step 5.6 limitation: channels are NOT searched (channels live in a
- * separate fragment-scoped CategoriesViewModel; MainSnapshot doesn't
- * carry them). Channel browsing stays on the Categories tab via its
- * chip filter. Channel hit-row types remain in the adapter for forward
- * compatibility — a Phase 6 polish pass can re-add them by hoisting
- * CategoriesViewModel up to activity-scope and .combine()ing its
- * channels into SearchResults.
+ * Sources (Phase 5.7 widening):
+ *  - `mainVm: MainViewModel`     → events + highlights from MainSnapshot
+ *  - `catVm: CategoriesViewModel` → channels from CategoriesSnapshot.allChannels
+ *  Both are activity-scoped via `activityViewModels { ... }` so the
+ *  instance survives Fragment recreation (and both VMs are still
+ *  usable from the Categories tab since they aren't replaced
+ *  per-Fragment).
+ *
+ * Filtering: case-insensitive substring on each shape's primary +
+ * secondary text fields — handled by `SearchResults.filter(...)`.
+ *
+ * Click routing: each row goes through [PlayerNavigation] — same
+ * factory methods the Home / Categories / Highlights fragments call.
  */
 class SearchFragment : Fragment() {
 
@@ -79,12 +81,32 @@ class SearchFragment : Fragment() {
         }
     }
 
+    /**
+     * Phase 5.7 — Channels join the search surface. Activity-scoped
+     * via [activityViewModels] so the channel list is loaded once for
+     * the whole MainActivity (Categories tab + Search tab share the
+     * same instance).
+     */
+    private val catVm: CategoriesViewModel by activityViewModels {
+        val app = requireActivity().application as SportStreamApp
+        object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
+                CategoriesViewModel(app.repository.mainRepository) as T
+        }
+    }
+
     private val searchVm: SearchViewModel by viewModels {
         val app = requireActivity().application as SportStreamApp
         object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
-                SearchViewModel(app, mainVm, PlayerPrefs(app.applicationContext)) as T
+                SearchViewModel(
+                    app = app,
+                    mainVm = mainVm,
+                    catVm = catVm,
+                    prefs = PlayerPrefs(app.applicationContext),
+                ) as T
         }
     }
 
@@ -108,9 +130,9 @@ class SearchFragment : Fragment() {
                 PlayerNavigation.startPlayerForEvent(requireContext(), event.id, event.title)
             },
             onChannelClick = { channel ->
-                // Reserved for Phase 6 polish — channel surfacing is off
-                // until CategoriesViewModel is hoisted to activity-scope.
-                // Kept in the ctor signature so the adapter compiles.
+                // Phase 5.7 — channels row click now reaches the
+                // standard player launcher because channels are
+                // first-class search results.
                 searchVm.recordSearch(binding.searchQueryInput.text?.toString().orEmpty())
                 PlayerNavigation.startPlayerForChannel(
                     requireContext(),
@@ -160,6 +182,13 @@ class SearchFragment : Fragment() {
             searchVm.clearRecent()
         }
 
+        // Phase 5.7 — kick the CategoriesVM refresh if SearchFragment
+        // is the FIRST activity tab the user lands on (Categories tab
+        // hasn't run its own onViewCreated yet → state.value is Idle).
+        if (catVm.state.value is UiState.Idle) {
+            catVm.refresh()
+        }
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 searchVm.results.collect { state -> renderResults(state) }
@@ -202,6 +231,10 @@ class SearchFragment : Fragment() {
             is UiState.Success -> {
                 val items = mutableListOf<SearchItem>()
                 val res = state.value
+                if (res.channels.isNotEmpty()) {
+                    items += SearchItem.Header(getString(R.string.search_section_channels))
+                    items += res.channels.map { SearchItem.ChannelRow(it) }
+                }
                 if (res.events.isNotEmpty()) {
                     items += SearchItem.Header(getString(R.string.search_section_events))
                     items += res.events.map { SearchItem.EventRow(it) }

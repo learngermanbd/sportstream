@@ -134,13 +134,23 @@ class NoticeRepository(
     }
 
     /**
-     * Sweep push-sourced rows older than 7 days. Safe to call on
-     * cold start; runs ~milliseconds.
+     * Phase 5 · Step 5.7 — housekeeping sweep covering BOTH
+     * push-sourced TTL (>7 days old) and server-sourced expiry
+     * (`expiresAt` in the past). Two DAO calls so each is a
+     * single-pass DELETE; log a summary line so we can see prune
+     * activity in Sentry/logcat.
      */
-    suspend fun pruneOldPushNotices() = withContext(Dispatchers.IO) {
+    suspend fun pruneOldNotices() = withContext(Dispatchers.IO) {
         val sevenDaysAgoMs = System.currentTimeMillis() - 7L * 24L * 60L * 60L * 1000L
-        val removed = noticeDao.prunePushSourced(sevenDaysAgoMs)
-        if (removed > 0) Log.i(TAG, "Pruned $removed stale push-sourced notices")
+        val nowMs = System.currentTimeMillis()
+        val removedPush   = noticeDao.prunePushSourced(sevenDaysAgoMs)
+        val removedExpired = noticeDao.pruneExpiredServerRows(nowMs)
+        if (removedPush > 0 || removedExpired > 0) {
+            Log.i(
+                TAG,
+                "Pruned $removedPush push-sourced & $removedExpired expired server-sourced notices"
+            )
+        }
     }
 
     companion object {

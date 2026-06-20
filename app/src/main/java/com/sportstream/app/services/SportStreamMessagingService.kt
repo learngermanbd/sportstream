@@ -5,6 +5,10 @@ import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.sportstream.app.SportStreamApp
+import com.sportstream.app.data.models.Notice
+import com.sportstream.app.data.models.NoticeAttachment
+import com.sportstream.app.data.models.NoticeSection
+import com.sportstream.app.data.repository.NoticeRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -15,6 +19,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
 import org.json.JSONObject
 
 /**
@@ -42,6 +47,10 @@ import org.json.JSONObject
  * messaging intent-filter (manifest-declared), so we use a
  * SupervisorJob-backed scope to keep a single failed API call from
  * cancelling any in-flight delivery.
+ *
+ * Phase 5 · Step 5.7 harden: notice-sync hot-guards the access to
+ * `(applicationContext as SportStreamApp).repository.noticeRepository`
+ * so a Phase 6 async-init re-ordering can't crash silently.
  */
 class SportStreamMessagingService : FirebaseMessagingService() {
 
@@ -73,11 +82,12 @@ class SportStreamMessagingService : FirebaseMessagingService() {
         val data = message.data
 
         // Phase 5 v2 · Step 5.5 — branch on the `type` discriminator.
-        // `type == "notice"` payload is a v2 NoticeEntry; we (a) persist
-        // it to Room so the NoticeFragment's Flow auto-re-emits, and
-        // (b) ALSO show the OS-level Live Events banner so users with
-        // the app in the background get a heads-up. For legacy
-        // live-event pushes, the previous v1 code path runs unchanged.
+        // `type == "notice"` payload is a v2 NoticeEntry; we route to
+        // handleNoticePayload which (a) persists to Room so the
+        // NoticeFragment Flow auto-re-emits, and (b) ALSO surfaces the
+        // OS-level Live Events banner so users with the app in the
+        // background get a heads-up. For legacy live-event pushes,
+        // the previous v1 code path runs unchanged.
         if (data["type"]?.equals("notice", ignoreCase = true) == true) {
             handleNoticePayload(message)
             return
@@ -121,7 +131,7 @@ class SportStreamMessagingService : FirebaseMessagingService() {
      *  }
      *
      * Two parallel side-effects:
-     *  1. Persist to Room via [com.sportstream.app.data.repository.NoticeRepository.insertPushSourced].
+     *  1. Persist to Room via [NoticeRepository.insertPushSourced].
      *     This makes the NoticeFragment observe-and-render the new item
      *     without a tap on the FAB.
      *  2. Show OS-level notification via [NotificationHelper] so the
@@ -133,9 +143,8 @@ class SportStreamMessagingService : FirebaseMessagingService() {
         val title = data["title"] ?: getString(com.sportstream.app.R.string.notification_default_title)
         val body  = data["body"] ?: getString(com.sportstream.app.R.string.notification_default_body)
         val sectionStr = data["section"]?.uppercase() ?: "INFO"
-        val section = runCatching {
-            com.sportstream.app.data.models.NoticeSection.valueOf(sectionStr)
-        }.getOrDefault(com.sportstream.app.data.models.NoticeSection.INFO)
+        val section = runCatching { NoticeSection.valueOf(sectionStr) }
+            .getOrDefault(NoticeSection.INFO)
         val priority = data["priority"]?.toIntOrNull() ?: 0
         val expiresAt = data["expiresAt"]?.toLongOrNull()
         val deepLink = data["deepLink"]?.takeIf { it.isNotBlank() }
@@ -144,17 +153,15 @@ class SportStreamMessagingService : FirebaseMessagingService() {
 
         val attachments = data["attachments"]?.let { raw ->
             runCatching {
-                org.json.JSONArray(raw).let { arr ->
+                JSONArray(raw).let { arr ->
                     List(arr.length()) { i ->
-                        com.sportstream.app.data.models.NoticeAttachment.fromJson(
-                            arr.optJSONObject(i) ?: org.json.JSONObject()
-                        )
+                        NoticeAttachment.fromJson(arr.optJSONObject(i) ?: JSONObject())
                     }
                 }
             }.getOrDefault(emptyList())
         } ?: emptyList()
 
-        val notice = com.sportstream.app.data.models.Notice(
+        val notice = Notice(
             id = id,
             title = title,
             body = body,
@@ -168,9 +175,18 @@ class SportStreamMessagingService : FirebaseMessagingService() {
         )
 
         // (1) Persist — Observe-and-render via the Fragment.
-        val app = applicationContext as SportStreamApp
+        //    Phase 5.7 hot-guard: if (rare) the app is mid-initialisation
+        //    and `app.repository` hasn't been resolved yet (e.g. a Phase 6
+        //    async-init split), bail quietly — we'll get the next push.
+        val noticeRepo: NoticeRepository? = (applicationContext as? SportStreamApp)
+            ?.repository
+            ?.noticeRepository
+        if (noticeRepo == null) {
+            Log.w("FCMService", "notice insert skipped: app.repository not yet resolved")
+            return
+        }
         scope.launch {
-            runCatching { app.repository.noticeRepository.insertPushSourced(notice) }
+            runCatching { noticeRepo.insertPushSourced(notice) }
                 .onFailure { Log.w("FCMService", "notice insert failed: ${it.message}", it) }
         }
 

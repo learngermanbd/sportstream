@@ -2,50 +2,56 @@ package com.sportstream.app.data.models
 
 
 /**
- * Phase 5 · Step 5.6 — Search hit aggregate.
+ * Phase 5 · Step 5.6 + Step 5.7 — Search hit aggregate.
  *
  * SearchViewModel reduces a [com.sportstream.app.ui.viewmodels.MainViewModel]
- * MainSnapshot to this aggregate by case-insensitive substring matching the
- * typed query against each shape's primary + secondary text fields:
+ * MainSnapshot AND the activity-scoped CategoriesViewModel
+ * [com.sportstream.app.ui.viewmodels.CategoriesViewModel] state into
+ * this aggregate by case-insensitive substring matching the typed
+ * query against each shape's primary + secondary text fields:
  *  - Event     → title + teamA.name + teamB.name + category
  *  - Highlight → title
+ *  - Channel   → name + category
  *
- * Channels are intentionally NOT part of the search surface: they live in
- * a separate [com.sportstream.app.ui.viewmodels.CategoriesSnapshot] (held
- * by the Categories tab's fragment-scoped ViewModel). Channel browsing is
- * driven by the chip filter in the Categories tab; search keeps its focus
- * on text-rich categories (Events + Highlights) where the substring
- * matching the user types yields high-quality homing. A future polish
- * pass can re-add channels by hoisting CategoriesViewModel up to
- * activity-scope and `.combine()` its channels into this aggregate.
+ * Phase 5.7: channels are now part of the search surface.
+ * The SearchViewModel reaches both MainViewModel.state (events +
+ * highlights) AND CategoriesViewModel.state (channels). Both VMs
+ * are activity-scoped so SearchFragment can `.combine()` their flows.
  *
- * Passed to the adapter as two discrete lists so each rendering branch
- * can own its own section header + row layout (mirrors the per-row layout
- * patterns established in Phase 3 · Step 3.3/3.5).
+ * Passed to the adapter as three discrete lists so each rendering
+ * branch can own its own section header + row layout (mirrors the
+ * per-row layout patterns established in Phase 3 · Step 3.3/3.5).
  */
 data class SearchResults(
     val events: List<Event>,
-    val highlights: List<Highlight>
+    val highlights: List<Highlight>,
+    val channels: List<Channel> = emptyList(),
 ) {
     val isEmpty: Boolean
-        get() = events.isEmpty() && highlights.isEmpty()
+        get() = events.isEmpty() && highlights.isEmpty() && channels.isEmpty()
 
     val hasAny: Boolean
         get() = !isEmpty
 
     companion object {
         /** Empty aggregate for the Idle state. */
-        val EMPTY = SearchResults(emptyList(), emptyList())
+        val EMPTY = SearchResults(emptyList(), emptyList(), emptyList())
 
         /**
          * Reduce a snapshot's full lists down to the matching subset for
          * [query]. Prefix-aware ordering (matches-at-front) is intentionally
          * NOT here — adapters sort within section so a fresh user query
          * doesn't surprise the position of items already in view.
+         *
+         * Channel matching: case-insensitive substring on `name` OR
+         * `category`. We deliberately do not match on `streamUrl` so a
+         * user search for a sports bar URL like "espn.com/watch" doesn't
+         * surface every channel that happens to point at that URL.
          */
         fun filter(
             events: List<Event>,
             highlights: List<Highlight>,
+            channels: List<Channel>,
             query: String
         ): SearchResults {
             val q = query.trim()
@@ -58,9 +64,12 @@ data class SearchResults(
                         event.teamB.name.lowercase().contains(qLower) ||
                         event.category.lowercase().contains(qLower)
                 },
-                highlights = highlights.filter { it.title.lowercase().contains(qLower) }
+                highlights = highlights.filter { it.title.lowercase().contains(qLower) },
+                channels = channels.filter { channel ->
+                    channel.name.lowercase().contains(qLower) ||
+                        channel.category.lowercase().contains(qLower)
+                },
             )
         }
     }
 }
-

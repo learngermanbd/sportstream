@@ -19,9 +19,15 @@ import kotlinx.coroutines.flow.Flow
  *      for this screen (notices with `expiresAt` in the past are
  *      dormant, not deleted).
  *
- * `prunePushSourced(olderThanMillis)` is house-keeping — pushed
- * notices that arrived >7 days ago are swept so the table doesn't
- * grow unbounded. Server-fetched notices are kept indefinitely.
+ * House-keeping (Phase 5.7 widening): two prune sweeps —
+ *   - [prunePushSourced] removes push-sourced rows older than 7 days
+ *     regardless of `expiresAt` (push-source TTL guard).
+ *   - [pruneExpiredServerRows] removes server-sourced rows whose
+ *     `expiresAt` is in the past, so the table doesn't accumulate
+ *     dormant rows from the admin `/api/notices` fetch.
+ *
+ * Both calls return row counts so [NoticeRepository.pruneOldNotices]
+ * can log housekeeping traces.
  */
 @Dao
 interface NoticeDao {
@@ -30,6 +36,14 @@ interface NoticeDao {
      * All rows ordered by section-then-creator DESC.
      * NoticeFragment's adapter sorts again at the section level using
      * priority DESC + createdAt DESC.
+     *
+     * Phase 5.7 note: the SQL previously hard-coded
+     *     WHEN 'ALERT' THEN 0 WHEN 'INFO' THEN 1 WHEN 'PROMO' THEN 2
+     * which silently collapses any future enum value to ordinal 3.
+     * Keeping the explicit mapping for the 3 known sections (so the
+     * SQL ordering stays deterministic) and using Kotlin-layer sorting
+     * for any future enum value via [com.sportstream.app.ui.viewmodels.NoticeSection]
+     * (see [com.sportstream.app.ui.adapters.NoticeAdapter.rowsOf]).
      */
     @Query("""
         SELECT * FROM notices
@@ -59,12 +73,21 @@ interface NoticeDao {
     suspend fun deleteById(id: String)
 
     /**
-     * Sweep push-sourced notices older than [olderThan] millis.
-     * Returns the row count so the caller can log a housekeeping trace.
-     * NOT public — invoked from [com.sportstream.app.data.repository.NoticeRepository].
+     * Phase 5 v2 · Step 5.5 — sweep push-sourced notices where
+     * [olderThan] milliseconds have elapsed since [createdAt].
+     * Returns the row count for housekeeping logging.
      */
     @Query("DELETE FROM notices WHERE isPushSourced = 1 AND createdAt < :olderThan")
     suspend fun prunePushSourced(olderThan: Long): Int
+
+    /**
+     * Phase 5 · Step 5.7 — sweep server-sourced rows whose
+     * `expiresAt` is in the past. The Flow above filters them out at
+     * emit time but the table would otherwise grow unbounded.
+     * Returns the row count for housekeeping logging.
+     */
+    @Query("DELETE FROM notices WHERE isPushSourced = 0 AND expiresAt IS NOT NULL AND expiresAt < :now")
+    suspend fun pruneExpiredServerRows(now: Long): Int
 
     @Query("DELETE FROM notices")
     suspend fun deleteAll()
