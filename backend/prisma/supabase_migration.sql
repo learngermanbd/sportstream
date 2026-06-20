@@ -1,21 +1,18 @@
 -- ============================================================
--- SportStream Supabase Migration
--- Run this in: Supabase Dashboard → SQL Editor → New Query
+-- SportStream Supabase Migration (v2 — bulletproof)
+-- Run in: Supabase Dashboard → SQL Editor → New Query
+-- Select ALL text and click Run
 -- ============================================================
 
--- ─── Enums ───
-CREATE TYPE "AdminRole" AS ENUM ('SUPER_ADMIN', 'EDITOR', 'VIEWER');
-CREATE TYPE "EventStatus" AS ENUM ('DRAFT', 'SCHEDULED', 'LIVE', 'ENDED');
-CREATE TYPE "VideoQuality" AS ENUM ('AUTO', 'HD', 'SD');
-CREATE TYPE "NotificationStatus" AS ENUM ('PENDING', 'SCHEDULED', 'SENT', 'FAILED', 'CANCELLED');
+BEGIN;
 
 -- ─── Admin ───
-CREATE TABLE "Admin" (
+CREATE TABLE IF NOT EXISTS "Admin" (
   "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "email" TEXT UNIQUE NOT NULL,
   "passwordHash" TEXT NOT NULL,
   "name" TEXT NOT NULL,
-  "role" "AdminRole" DEFAULT 'EDITOR'::"AdminRole",
+  "role" TEXT DEFAULT 'EDITOR' CHECK ("role" IN ('SUPER_ADMIN', 'EDITOR', 'VIEWER')),
   "avatarUrl" TEXT,
   "lastLoginAt" TIMESTAMPTZ,
   "createdAt" TIMESTAMPTZ DEFAULT now(),
@@ -23,7 +20,7 @@ CREATE TABLE "Admin" (
 );
 
 -- ─── Category ───
-CREATE TABLE "Category" (
+CREATE TABLE IF NOT EXISTS "Category" (
   "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "name" TEXT NOT NULL,
   "iconUrl" TEXT,
@@ -32,7 +29,7 @@ CREATE TABLE "Category" (
 );
 
 -- ─── Channel ───
-CREATE TABLE "Channel" (
+CREATE TABLE IF NOT EXISTS "Channel" (
   "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "name" TEXT NOT NULL,
   "logoUrl" TEXT,
@@ -45,7 +42,7 @@ CREATE TABLE "Channel" (
 );
 
 -- ─── Event ───
-CREATE TABLE "Event" (
+CREATE TABLE IF NOT EXISTS "Event" (
   "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "title" TEXT NOT NULL,
   "description" TEXT,
@@ -57,29 +54,29 @@ CREATE TABLE "Event" (
   "date" TEXT,
   "time" TEXT,
   "isLive" BOOLEAN DEFAULT false,
-  "status" "EventStatus" DEFAULT 'DRAFT'::"EventStatus",
+  "status" TEXT DEFAULT 'DRAFT' CHECK ("status" IN ('DRAFT', 'SCHEDULED', 'LIVE', 'ENDED')),
   "thumbnailUrl" TEXT,
   "scheduledFor" TIMESTAMPTZ,
   "createdAt" TIMESTAMPTZ DEFAULT now(),
   "updatedAt" TIMESTAMPTZ DEFAULT now()
 );
-CREATE INDEX idx_event_status ON "Event"("status");
-CREATE INDEX idx_event_category ON "Event"("categoryId");
+CREATE INDEX IF NOT EXISTS idx_event_status ON "Event"("status");
+CREATE INDEX IF NOT EXISTS idx_event_category ON "Event"("categoryId");
 
 -- ─── StreamLink ───
-CREATE TABLE "StreamLink" (
+CREATE TABLE IF NOT EXISTS "StreamLink" (
   "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "eventId" TEXT NOT NULL REFERENCES "Event"("id") ON DELETE CASCADE,
   "name" TEXT NOT NULL,
   "url" TEXT NOT NULL,
-  "quality" "VideoQuality" DEFAULT 'AUTO'::"VideoQuality",
+  "quality" TEXT DEFAULT 'AUTO' CHECK ("quality" IN ('AUTO', 'HD', 'SD')),
   "sortOrder" INTEGER DEFAULT 0,
   "isActive" BOOLEAN DEFAULT true
 );
-CREATE INDEX idx_streamlink_event ON "StreamLink"("eventId");
+CREATE INDEX IF NOT EXISTS idx_streamlink_event ON "StreamLink"("eventId");
 
 -- ─── Highlight ───
-CREATE TABLE "Highlight" (
+CREATE TABLE IF NOT EXISTS "Highlight" (
   "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "title" TEXT NOT NULL,
   "thumbnailUrl" TEXT NOT NULL,
@@ -91,7 +88,7 @@ CREATE TABLE "Highlight" (
 );
 
 -- ─── Banner ───
-CREATE TABLE "Banner" (
+CREATE TABLE IF NOT EXISTS "Banner" (
   "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "title" TEXT NOT NULL,
   "imageUrl" TEXT NOT NULL,
@@ -103,7 +100,7 @@ CREATE TABLE "Banner" (
 );
 
 -- ─── AppConfig ───
-CREATE TABLE "AppConfig" (
+CREATE TABLE IF NOT EXISTS "AppConfig" (
   "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "apiBaseUrl" TEXT NOT NULL DEFAULT '',
   "updateUrl" TEXT,
@@ -116,7 +113,7 @@ CREATE TABLE "AppConfig" (
 );
 
 -- ─── Notification ───
-CREATE TABLE "Notification" (
+CREATE TABLE IF NOT EXISTS "Notification" (
   "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "title" TEXT NOT NULL,
   "body" TEXT NOT NULL,
@@ -125,13 +122,13 @@ CREATE TABLE "Notification" (
   "deepLink" TEXT,
   "scheduledAt" TIMESTAMPTZ,
   "sentAt" TIMESTAMPTZ,
-  "status" "NotificationStatus" DEFAULT 'PENDING'::"NotificationStatus",
+  "status" TEXT DEFAULT 'PENDING' CHECK ("status" IN ('PENDING', 'SCHEDULED', 'SENT', 'FAILED', 'CANCELLED')),
   "sentById" TEXT REFERENCES "Admin"("id") ON DELETE SET NULL,
   "createdAt" TIMESTAMPTZ DEFAULT now()
 );
 
 -- ─── DeviceToken ───
-CREATE TABLE "DeviceToken" (
+CREATE TABLE IF NOT EXISTS "DeviceToken" (
   "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "token" TEXT UNIQUE NOT NULL,
   "platform" TEXT,
@@ -140,7 +137,7 @@ CREATE TABLE "DeviceToken" (
 );
 
 -- ─── AnalyticsEvent ───
-CREATE TABLE "AnalyticsEvent" (
+CREATE TABLE IF NOT EXISTS "AnalyticsEvent" (
   "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "eventType" TEXT NOT NULL,
   "eventName" TEXT NOT NULL,
@@ -151,7 +148,7 @@ CREATE TABLE "AnalyticsEvent" (
   "country" TEXT,
   "occurredAt" TIMESTAMPTZ DEFAULT now()
 );
-CREATE INDEX idx_analytics_type ON "AnalyticsEvent"("eventType", "occurredAt");
+CREATE INDEX IF NOT EXISTS idx_analytics_type ON "AnalyticsEvent"("eventType", "occurredAt");
 
 -- ─── Seed: first SUPER_ADMIN (password: admin123) ───
 INSERT INTO "Admin" ("id", "email", "passwordHash", "name", "role")
@@ -166,3 +163,5 @@ VALUES (
 -- ─── Seed: default AppConfig ───
 INSERT INTO "AppConfig" ("id", "apiBaseUrl")
 VALUES (gen_random_uuid()::text, 'http://localhost:4000');
+
+COMMIT;
