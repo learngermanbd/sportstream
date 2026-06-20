@@ -15,7 +15,10 @@ import com.sportstream.app.data.remote.NetworkModule
 import com.sportstream.app.data.remote.RemoteConfigHelper
 import com.sportstream.app.data.repository.RepositoryModule
 import com.sportstream.app.data.update.AppUpdateManager
+import com.sportstream.app.security.IntegrityChecker
 import com.sportstream.app.security.SecurityModule
+import com.sportstream.app.security.SelfHealing
+import com.sportstream.app.security.TamperDetector
 import com.sportstream.app.services.UpdateWorker
 import io.sentry.SentryEvent
 import io.sentry.SentryOptions
@@ -206,6 +209,24 @@ class SportStreamApp : Application() {
         // WorkManager coalesces duplicates via KEEP policy so this is
         // safe to call on every cold start.
         UpdateWorker.enqueue(this)
+
+        // Phase 7 · Step 7.5 — APK integrity & anti-tampering checks.
+        // Runs on a background thread to avoid blocking the main thread.
+        // Checks: signing certificate, file integrity, installer source,
+        // META-INF anomalies, hook detection, debuggable flag.
+        // If tampering is detected, SelfHealing initiates gradual
+        // degradation (silent logging → feature disable → exit).
+        Thread {
+            val integrityResult = IntegrityChecker.check(applicationContext)
+            if (integrityResult.isTamper) {
+                SelfHealing.onTamperDetected(applicationContext, integrityResult)
+                return@Thread
+            }
+            val tamperResult = TamperDetector.detect(applicationContext)
+            if (tamperResult.isTamper) {
+                SelfHealing.onTamperDetected(applicationContext, tamperResult)
+            }
+        }.start()
     }
 
     /**

@@ -99,3 +99,9 @@
     native <methods>;
     static java.lang.String bytesToHex(byte[]);
 }
+
+# ── Phase 7 · Step 7.5 — Integrity / Tamper / SelfHealing ──────────────
+# IntegrityChecker and TamperDetector use PackageManager reflection
+# and ZipFile iteration (no reflection-based field access).  SelfHealing
+# references BuildConfig.DEBUG and Sentry.captureEvent (kept by Sentry
+# rules above).  No additional keep rules needed — direct calls only.
