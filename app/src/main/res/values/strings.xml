@@ -44,6 +44,18 @@
     <string name="theme_picker_dark">Dark</string>
     <string name="fragment_settings_version_template">SportStream v%1$s</string>
 
+    <!--
+        Phase 6 · Step 6.4 — Crash recovery UI strings.
+        CrashActivity reads the local dump from filesDir + exposes a
+        Restart button (cold-launches MainActivity) + Copy details
+        (ClipboardManager of the dump text).
+    -->
+    <string name="crash_title">Something went wrong</string>
+    <string name="crash_body_template">Tap Restart to relaunch SportStream, or Copy details to share a report with our support team.</string>
+    <string name="crash_restart">Restart</string>
+    <string name="crash_copy">Copy details</string>
+    <string name="crash_copied_to_clipboard">Crash report copied to clipboard.</string>
+
     <!-- Home tab (Step 3.3) — section header + empty-state copy. -->
     <string name="fragment_home_header">LIVE EVENTS</string>
     <string name="fragment_home_empty">No live matches right now</string>

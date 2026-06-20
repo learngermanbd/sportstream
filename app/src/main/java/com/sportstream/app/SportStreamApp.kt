@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.datastore.preferences.preferencesDataStore
+import com.sportstream.app.data.crash.CrashHandler
 import com.sportstream.app.data.local.LocalModule
 import com.sportstream.app.data.prefs.ThemePrefs
 import com.sportstream.app.data.prefs.UpdatePrefs
@@ -47,7 +48,33 @@ class SportStreamApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // Phase 6 · Step 6.4 — early-return guard for the isolated 
+        // `:crash` process (AndroidManifest's `android:process=":crash"` 
+        // on CrashActivity). When the dying main process's handler 
+        // forks the recovery Activity, a new Application instance is 
+        // created in the `:crash` process. We must skip the heavy 
+        // initialisation (Sentry client + themePrefs DataStore + 
+        // network/module lazy seams) so we don't duplicate Sentry 
+        // telemetry, don't block the LAUNCH of CrashActivity on a 
+        // 10–50 ms DataStore read, and don't accidentally fire any of 
+        // the receivers/wiren that the dying main process just tore 
+        // down.
+        val processName = android.os.Process.myProcessName()
+        val isCrashProcess = processName.endsWith(":crash")
+        if (isCrashProcess) {
+            CrashHandler.install(applicationContext)
+            return
+        }
+
         initSentry()
+        // Phase 6 · Step 6.4 — install the global UncaughtExceptionHandler
+        // right after Sentry initialises so the chain is: this handler
+        // (writes local dump + spawns CrashActivity) -> Sentry's handler
+        // (sync-flush + capture) -> Android KillApplicationHandler
+        // (process death). Installing AFTER Sentry means Sentry's handler
+        // is captured as our `previous` and gets the syncing flush before
+        // the process exits.
+        CrashHandler.install(applicationContext)
         // We deliberately do NOT initialize Firebase here — FirebaseApp
         // auto-initializes from the `google-services.json` plugin and we
         // only rely on FirebaseMessaging (Phase 5 · Step 5.4).

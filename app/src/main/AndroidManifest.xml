@@ -78,6 +78,22 @@
             android:taskAffinity=""
             android:theme="@style/Theme.SportStream" />
 
+        <!--
+            Phase 6 · Step 6.4 — Crash recovery UI. Runs in an isolated
+            process (`:crash`) so it can spawn cleanly even when the
+            main process's SportStreamApp.onCreate itself crashed. The
+            taskAffinity="" attribute tells ActivityManager not to
+            inherit the doomed task, and excludeFromRecents keeps the
+            recoveries out of the user's Recent tasks list.
+        -->
+        <activity
+            android:name=".ui.crash.CrashActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:taskAffinity=""
+            android:process=":crash"
+            android:theme="@style/Theme.SportStream" />
+
         <service
             android:name=".ui.player.FloatingPlayerService"
             android:exported="false"
