@@ -865,6 +865,28 @@
                 <p><strong>Commit:</strong> 214a991 on origin/main.</p>
             </div>
         </section>
+
+        <section class="turn role-commit" id="turn-22">
+            <div class="step-header">
+                <span class="step-num">022</span>
+                <span class="agent commit">Shipped</span>
+                <span class="ts">turn 76-80</span>
+            </div>
+            <h4>STEP 7.6 SHIPPED - Root, Emulator &amp; Hook Detection + SecurityGate Risk Scoring</h4>
+            <div class="response-body">
+                <p><strong>Components delivered</strong> (Step 7.6 - Root &amp; Emulator Detection):</p>
+                <ul>
+                    <li><strong>RootDetector.kt</strong> (new) - Kotlin-side root detection: Build.TAGS test-keys, ro.debuggable/ro.secure properties, SELinux getenforce check, Magisk indicators (/data/adb/magisk, Zygisk property), su binary which check. RootResult sealed class.</li>
+                    <li><strong>EmulatorDetector.kt</strong> (new) - Build property matching (FINGERPRINT, MODEL, MANUFACTURER, BRAND, DEVICE, HARDWARE, PRODUCT), emulator file detection (/dev/qemu_pipe, /dev/goldfish_pipe, etc.), score-based approach with threshold >= 4. isLikelyEmulator() quick check. DetectionResult data class.</li>
+                    <li><strong>HookDetector.kt</strong> (new) - Xposed/LSPosed class loader inspection (Class.forName), Frida port 27042 probe with 1s timeout, hooking framework file checks, stack trace analysis for XposedBridge/Frida/LSPosed frames. Score-based with threshold >= 5.</li>
+                    <li><strong>SecurityGate.kt</strong> (new) - Risk-scoring orchestrator running 6 check layers: native root/debug/emulator/hook + Kotlin root + Kotlin emulator + Kotlin hook + integrity + tamper. AtomicBoolean hasRun flag. Score thresholds: CLEAN (0), SOFT (1-4), HARD (5-9), CRITICAL (10+). Integrates with SelfHealing.</li>
+                    <li><strong>SportStreamApp.kt</strong> - Replaced direct IntegrityChecker/TamperDetector calls with SecurityGate.runChecks() for unified risk scoring.</li>
+                </ul>
+                <p><strong>Code review fixes:</strong> Frida port probe now uses Socket.connect with 1s timeout (was blocking indefinitely). SecurityGate.hasRun changed to AtomicBoolean with compareAndSet (was non-atomic @Volatile check).</p>
+                <p><strong>Build:</strong> ./gradlew :app:compileDebugKotlin BUILD SUCCESSFUL (53s).</p>
+                <p><strong>Commit:</strong> 2e52946 on origin/main.</p>
+            </div>
+        </section>
     </main>
 
     <div class="container">
