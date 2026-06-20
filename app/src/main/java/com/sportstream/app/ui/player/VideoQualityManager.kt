@@ -33,7 +33,7 @@ object VideoQualityManager {
     fun apply(exoPlayer: ExoPlayer, mode: VideoQualityMode) {
         val currentTracks: Tracks = exoPlayer.currentTracks
         val params: TrackSelectionParameters = exoPlayer.trackSelectionParameters
-        val builder = if (mode == VideoQualityMode.AUTO) {
+        val newParams = if (mode == VideoQualityMode.AUTO) {
             // Strip any prior override we stamped so adaptive selection returns.
             params.buildUpon()
                 .clearOverridesOfType(C.TRACK_TYPE_VIDEO)
@@ -52,7 +52,7 @@ object VideoQualityManager {
                     .build()
             }
         }
-        exoPlayer.trackSelectionParameters = params
+        exoPlayer.trackSelectionParameters = newParams
     }
 
     /**

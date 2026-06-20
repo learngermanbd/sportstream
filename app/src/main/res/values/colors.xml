@@ -27,6 +27,14 @@
     <color name="success_green">#22C55E</color>
     <color name="warning_orange">#F59E0B</color>
 
+    <!--
+        Phase 5 · Step 5.1 — swiped-row background for the Favorites
+        RecyclerView's ItemTouchHelper. 0x33 = 51/255 ≈ 20% alpha over
+        the live_red base so the user sees a clear red wash as the row
+        slides off-screen, but the row content stays legible mid-swipe.
+    -->
+    <color name="swipe_delete_background">#33E11D48</color>
+
     <!-- Common -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>

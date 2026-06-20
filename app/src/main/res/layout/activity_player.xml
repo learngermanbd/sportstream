@@ -119,6 +119,20 @@
             app:icon="@android:drawable/ic_lock_lock"
             app:iconTint="@color/text" />
 
+        <!-- Step 4.6 — btnDetach. Sits between btnLock and btnPip so the
+             top-bar ordering stays (back / title / lock / detach / pip /
+             subtitle / quality / resize / settings). Mirrors the PiP
+             entry-point iconographically (both are "smallify the player"
+             affordances). -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDetach"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:contentDescription="@string/player_top_detach"
+            app:icon="@android:drawable/ic_menu_send"
+            app:iconTint="@color/text" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnPip"
             style="@style/Widget.Material3.Button.IconButton"
@@ -291,6 +305,38 @@
             android:max="100"
             android:progressTint="@color/primary"
             android:thumbTint="@color/primary" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnFavorite"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="6dp"
+            android:contentDescription="@string/player_favorite_add_desc"
+            app:icon="@drawable/ic_heart_outline"
+            app:iconSize="24dp"
+            app:iconTint="@color/text" />
+
+        <!--
+            Phase 5 · Step 5.2 — Add-to-playlist launcher.
+
+            Sits between the heart and fullscreen in the bottom bar
+            so the ordering stays (volume slider → favorite →
+            add-to-playlist → fullscreen). Tapping opens
+            [com.sportstream.app.ui.player.AddToPlaylistDialogFragment]
+            with the currently-playing [StreamLink] as the pending
+            single stream to add.
+        -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAddToPlaylist"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="2dp"
+            android:contentDescription="@string/player_add_to_playlist_desc"
+            app:icon="@android:drawable/ic_menu_sort_by_size"
+            app:iconSize="24dp"
+            app:iconTint="@color/text" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnFullscreen"

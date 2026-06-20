@@ -1,43 +1,39 @@
 package com.sportstream.app.ui.activities
 
+import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.provider.Settings
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.sportstream.app.R
 import com.sportstream.app.SportStreamApp
 import com.sportstream.app.databinding.ActivitySplashBinding
+import com.sportstream.app.services.NotificationHelper
 import com.sportstream.app.ui.viewmodels.MainViewModel
 
 /**
  * Phase 3 · Step 3.1 — Splash screen.
  *
- * Visual stack: glass logo card + circular loader + status text + version
- * number at the bottom. The network-error card structure is in the layout
- * but initially gone; Step 3.5 wires it to the actual MainViewModel.Error
- * branch.
- *
- * Auto-navigates to [MainActivity] after [navDelayMs] (2 s). While the user
- * stares at the splash, we also kick off [MainViewModel.load] so the home
- * screen has a populated UiState on the very first frame — no flash of
- * `UiState.Loading`.
+ * Phase 5 · Step 5.4 — On API 33+, the splash gate also requests
+ * `POST_NOTIFICATIONS` permission so FCM-driven Live Events
+ * (`NotificationHelper.showLiveEventNotification`) actually render.
+ * On API < 33 the permission is implied at install; no request
+ * needed. Idempotent — calls when already granted are silent no-ops.
  */
 class SplashActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySplashBinding
 
-    /**
-     * Lazy-resolved [MainViewModel] scoped to this Activity. Uses raw
-     * [ViewModelProvider] (not the `by viewModels { … }` Kotlin DSL) so
-     * we don't have to add `androidx.activity:activity-ktx` to deps just
-     * for this one call site.
-     */
     private val mainVm: MainViewModel by lazy {
         val app = application as SportStreamApp
         val factory = object : ViewModelProvider.Factory {
@@ -57,14 +53,36 @@ class SplashActivity : AppCompatActivity() {
         finish()
     }
 
+    /**
+     * Phase 5 · Step 5.4 — POST_NOTIFICATIONS runner. We use the
+     * modern Activity Result API to avoid `onRequestPermissionsResult`
+     * boilerplate.
+     */
+    private val requestNotificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* result ignored — UI only */ }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Version string pulled from PackageManager so it reflects whatever
-        // versionCode/name Gradle sets in app/build.gradle.kts. Hard-coded
-        // "1.0.0" only fires if the package can't be resolved (sandbox / test).
+        // Phase 5 · Step 5.4 — Pre-create the FCM notification channels
+        // before any push arrives. Idempotent and cheap.
+        NotificationHelper.ensureChannels(applicationContext)
+
+        // Phase 5 · Step 5.4 — runtime ask for POST_NOTIFICATIONS on
+        // API 33+ so future Live Events render. The system dialog
+        // shows once; if denied, we silently continue — notifications
+        // simply won't surface, but the rest of the app works fine.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val granted = ContextCompat.checkSelfPermission(
+                this, Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+            if (!granted) {
+                requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+
         val version = try {
             packageManager.getPackageInfo(packageName, 0).versionName ?: "1.0.0"
         } catch (_: android.content.pm.PackageManager.NameNotFoundException) {
@@ -72,7 +90,6 @@ class SplashActivity : AppCompatActivity() {
         }
         binding.versionText.text = getString(R.string.splash_version_template, version)
 
-        // RETRY button re-hides the error card + restarts the 2 s nav.
         binding.retryButton.setOnClickListener {
             binding.errorCard.visibility = View.GONE
             binding.loader.visibility = View.VISIBLE
@@ -81,42 +98,19 @@ class SplashActivity : AppCompatActivity() {
             handler.postDelayed(navigateRunnable, navDelayMs)
         }
 
-        // WiFi button — plan Step 3.1 says the offline card offers
-        // WiFi/Mobile/Retry. Open the system WiFi settings so the user
-        // can flip a network on without leaving the app for the Settings
-        // launcher. ACTION_WIFI_SETTINGS is API 1+, available on every
-        // device we ship on (minSdk 23). We catch ActivityNotFoundException
-        // (rare OEM stripping) and fall back to the main Settings screen.
         binding.wifiButton.setOnClickListener { openSettingsOrFallback(Settings.ACTION_WIFI_SETTINGS) }
-
-        // Mobile button — same idea; open the data usage settings. The
-        // alias is API 16+ (we ship minSdk 23) and the OS routes to the
-        // equivalent Network & Internet page on Android 11+ where the
-        // raw alias is omitted.
         binding.mobileButton.setOnClickListener { openSettingsOrFallback(Settings.ACTION_DATA_USAGE_SETTINGS) }
 
-        // Kick off the home-screen data fetch so Main's first frame already
-        // has data. The viewModelScope cancels automatically when this
-        // Activity finishes via [navigateRunnable].
         mainVm.load()
 
-        // Auto-navigate after the splash delay.
         handler.postDelayed(navigateRunnable, navDelayMs)
     }
 
     override fun onDestroy() {
-        // Structured cancellation — never navigate a destroyed Activity.
         handler.removeCallbacks(navigateRunnable)
         super.onDestroy()
     }
 
-    /**
-     * Open a system Settings screen by action; if the OEM has stripped the
-     * specific alias (rare), fall back to the main Settings page so the
-     * user can still recover. Both branches use FLAG_ACTIVITY_NEW_TASK
-     * because Settings are launched from an Activity context and the new
-     * task keeps them outside our own back-stack.
-     */
     private fun openSettingsOrFallback(action: String) {
         try {
             startActivity(Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))

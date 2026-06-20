@@ -6,9 +6,12 @@ import android.content.res.Configuration
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
+import android.net.Uri
+import android.provider.Settings
 import android.util.Rational
 import android.view.View
 import android.view.WindowManager
+import android.view.animation.AnimationUtils
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -42,6 +45,7 @@ import com.sportstream.app.databinding.ActivityPlayerBinding
 import com.sportstream.app.ui.adapters.PlayerLinkAdapter
 import com.sportstream.app.ui.common.UiState
 import com.sportstream.app.ui.gestures.SwipeGestureDetector
+import com.sportstream.app.ui.player.AddToPlaylistDialogFragment
 import com.sportstream.app.ui.player.TrackSelectionDialogFragment
 import com.sportstream.app.ui.player.VideoQualityManager
 import com.sportstream.app.data.prefs.PlayerPrefs
@@ -49,6 +53,7 @@ import com.sportstream.app.data.prefs.VideoQualityMode
 import com.sportstream.app.ui.viewmodels.PlayerSnapshot
 import com.sportstream.app.ui.viewmodels.PlayerViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
@@ -197,6 +202,12 @@ class PlayerActivity : AppCompatActivity() {
         // onSaveInstanceState keys (parallel to the Intent extras above).
         const val STATE_POS = "player_pos_ms"
         const val STATE_PWR = "player_pwr"
+
+        // Step 4.6 — system permission request code for ACTION_MANAGE_OVERLAY_PERMISSION
+        // (Settings → Apps → SportStream → "Display over other apps"); consumed by
+        // onActivityResult to retry FloatingPlayerService.launchStart when the user
+        // grants the runtime overlay permission.
+        const val REQ_CODE_OVERLAY_PERMISSION = 0x46C0
     }
 
     // TODO Step 4.7 (Code Review): swap the bottom SeekBar + volume slider
@@ -248,6 +259,12 @@ class PlayerActivity : AppCompatActivity() {
             // (subtitle + quality pickers). Step 4.5 wired those into their
             // own buttons; this remains a hook for future settings.
         }
+        // Step 4.6 — Detach to floating overlay (TYPE_APPLICATION_OVERLAY).
+        // Mirrors btnPip's "smallify" affordance; btnDetach keeps playback
+        // running when PlayerActivity finishes. Captures URL + position +
+        // title from the active MediaItem + bindings; launches
+        // FloatingPlayerService once SYSTEM_ALERT_WINDOW is granted.
+        binding.btnDetach.setOnClickListener { onDetachClicked() }
 
         // Center buttons.
         binding.btnRewind.setOnClickListener { exoPlayer?.seekBack() }
@@ -276,6 +293,24 @@ class PlayerActivity : AppCompatActivity() {
         })
 
         binding.btnFullscreen.setOnClickListener { cycleFullscreen() }
+
+        // Phase 5 · Step 5.1 — heart toggle. The icon flips based on
+        // the latest PlayerSnapshot.isFavorite (observed below in
+        // observePlayerVm). Tapping calls PlayerViewModel.toggleFavorite()
+        // (already wired in Step 2.5) and runs a brief overshoot pop so
+        // the user gets the same feedback most apps give on a favorite
+        // star.
+        binding.btnFavorite.setOnClickListener {
+            playerVm.toggleFavorite()
+            applyFavoritePulse()
+        }
+
+        // Phase 5 · Step 5.2 — Add-to-playlist launcher. Pops
+        // [AddToPlaylistDialogFragment] with the currently-streaming
+        // [StreamLink] as the pending single stream to add. The dialog
+        // calls back via Listener.onPicked so the player can show a
+        // Snackbar confirming which playlist the stream joined.
+        binding.btnAddToPlaylist.setOnClickListener { onAddToPlaylistClicked() }
 
         // Phase 4 · Step 4.3 — attach the gesture detector. The detector returns
         // true on ACTION_DOWN, claiming the touch stream for the touch lifetime so
@@ -473,10 +508,9 @@ class PlayerActivity : AppCompatActivity() {
     private fun hideGestureIndicatorAfterDelay() {
         val scope = lifecycleScope
         indicatorHideJob?.cancel()
-        // MINOR #4 (pass-4 review) — seed the bar so it's not empty for the first MOVE.
-        // 50% is a safe neutral start for brightness / volume / seek; the next
-        // onIndicatorUpdate from the detector refines it within one frame.
-        binding.swipeGestureOverlay.swipeGestureBar.progress = 50
+        // NOTE: do NOT seed the bar to 50% here — onIndicatorUpdate calls
+        // bindIndicator() before this method, so the bar already reflects the
+        // real gesture value. Seeding would cause a brief visual flash to 50%.
         indicatorHideJob = scope.launch {
             delay(1000L)
             // Re-check visibility guards before hiding: if the user
@@ -495,13 +529,207 @@ class PlayerActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        // Future: re-resolve on new intent if needed.
+        // Re-resolve the stream from the new intent so a second
+        // PlayerNavigation call while the activity is alive doesn't
+        // play stale content.
+        when {
+            intent.hasExtra(EXTRA_VIDEO_URL) -> {
+                val url = intent.getStringExtra(EXTRA_VIDEO_URL).orEmpty()
+                val title = intent.getStringExtra(EXTRA_TITLE).orEmpty()
+                binding.titleText.text = title.ifBlank { getString(R.string.player_title_extra) }
+                currentLinks = listOf(
+                    StreamLink(name = getString(R.string.player_links_empty), url = url, quality = com.sportstream.app.data.models.VideoQuality.AUTO)
+                )
+                selectedLinkIndex = 0
+                pendingSubtitleUrl = intent.getStringExtra(EXTRA_SUBTITLE_URL).orEmpty()
+                pendingSubtitleLang = intent.getStringExtra(EXTRA_SUBTITLE_LANG)
+                submitCurrentLink(url)
+            }
+            intent.hasExtra(EXTRA_CHANNEL_ID) -> {
+                val channelId = intent.getStringExtra(EXTRA_CHANNEL_ID).orEmpty()
+                binding.titleText.text = getString(R.string.player_channel_loading)
+                observePlayerVm(channelId)
+            }
+        }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         // PiP-enter/exit causes config changes; surfacing back here is
         // handled by [onPictureInPictureModeChanged] above.
+    }
+
+    /**
+     * Step 4.6 — Catch the return from ACTION_MANAGE_OVERLAY_PERMISSION.
+     * If the user granted the runtime overlay permission we resume the
+     * pending detach (captured Dialog positive-button click). If the
+     * user denied (or navigated back without granting) we drop the
+     * pending payload — they're back on PlayerActivity with the
+     * PlayerView still playing.
+     */
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != REQ_CODE_OVERLAY_PERMISSION) return
+        val payload = pendingDetach
+        pendingDetach = null
+        if (payload != null && Settings.canDrawOverlays(this)) {
+            startFloatingPlayer(payload)
+        }
+    }
+
+    // ----- Step 4.6 detach helpers -----
+
+    /**
+     * Snapshot of the stream fields needed by [FloatingPlayerService.launchStart].
+     * Captured at btnDetach click time so a slow Settings-screen round-trip
+     * doesn't lose the user's last position.
+     */
+    private data class DetachPayload(
+        val url: String,
+        val title: String,
+        val positionMs: Long,
+        val subUrl: String?,
+        val subLang: String?
+    )
+
+    /** Carried across the SYSTEM_ALERT_WINDOW permission flow. Null when idle. */
+    private var pendingDetach: DetachPayload? = null
+
+    /**
+     * Pre-flight the detach click: capture current stream + position, then
+     * either start the overlay service directly or surface the rationale
+     * dialog followed by the system-overlay-permission settings screen.
+     */
+    private fun onDetachClicked() {
+        if (pendingDetach != null) return  // re-tap during pending Settings round-trip
+        val url = currentStreamUrl()
+        if (url.isBlank()) {
+            android.widget.Toast.makeText(
+                this,
+                R.string.player_error_no_url,
+                android.widget.Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+        val payload = DetachPayload(
+            url = url,
+            title = binding.titleText.text?.toString().orEmpty(),
+            positionMs = exoPlayer?.currentPosition ?: 0L,
+            subUrl = pendingSubtitleUrl.takeIf { it.isNotBlank() },
+            subLang = pendingSubtitleLang
+        )
+        if (Settings.canDrawOverlays(this)) {
+            startFloatingPlayer(payload)
+        } else {
+            pendingDetach = payload
+            showOverlayPermissionRationale()
+        }
+    }
+
+    /**
+     * MaterialAlertDialog explaining the SYSTEM_ALERT_WINDOW runtime grant.
+     * Positive button launches Settings.ACTION_MANAGE_OVERLAY_PERMISSION
+     * scoped to our package; negative drops the pending payload silently.
+     */
+    private fun showOverlayPermissionRationale() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.player_floating_permission_required_title)
+            .setMessage(R.string.player_floating_permission_required_message)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val intent = Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName")
+                )
+                runCatching { startActivityForResult(intent, REQ_CODE_OVERLAY_PERMISSION) }
+                    .onFailure {
+                        pendingDetach = null
+                        android.widget.Toast.makeText(
+                            this,
+                            android.R.string.cancel,
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    }
+            }
+            .setNegativeButton(android.R.string.cancel) { _, _ ->
+                pendingDetach = null
+            }
+            .show()
+    }
+
+    /**
+     * Hand-off step. Release the Activity-owned ExoPlayer NOW so its surface
+     * tears down BEFORE the Service adds its OWN PlayerView to the overlay
+     * (avoids the brief double-surface / flicker that happens when both
+     * PlayerViews are alive simultaneously). Then launch the service and
+     * finish so the user sees the overlay over whatever app they return to.
+     */
+    private fun startFloatingPlayer(payload: DetachPayload) {
+        releasePlayer()
+        com.sportstream.app.ui.player.FloatingPlayerService.launchStart(
+            context = this,
+            videoUrl = payload.url,
+            title = payload.title,
+            positionMs = payload.positionMs,
+            subtitleUrl = payload.subUrl,
+            subtitleLang = payload.subLang
+        )
+        finish()
+    }
+
+    /**
+     * Resolve the URL the floating service should resume from. Mirrors what
+     * `submitCurrentLink` last submitted — falls back to the original intent
+     * extra when the link bar hasn't been populated yet (direct video URL
+     * route from Highlights/Network Stream).
+     */
+    private fun currentStreamUrl(): String {
+        val link = currentLinks.getOrNull(selectedLinkIndex)
+        val linkUrl = link?.url.orEmpty()
+        if (linkUrl.isNotBlank()) return linkUrl
+        return intent.getStringExtra(EXTRA_VIDEO_URL).orEmpty()
+    }
+
+    // ----- Step 5.2 add-to-playlist -----
+
+    /**
+     * Show [AddToPlaylistDialogFragment] with the currently-active
+     * [StreamLink] as the pending payload. Uses supportFragmentManager
+     * because PlayerActivity hosts the dialog; the dialog's lifecycle
+     * is bound to the Activity. The playWhenReady state is captured
+     * but not paused — playback continues while the sheet is open.
+     */
+    private fun onAddToPlaylistClicked() {
+        val stream = currentLinks.getOrNull(selectedLinkIndex)
+            ?: StreamLink(
+                name = getString(R.string.player_links_empty),
+                url = intent.getStringExtra(EXTRA_VIDEO_URL).orEmpty(),
+                quality = com.sportstream.app.data.models.VideoQuality.AUTO
+            )
+        val title = binding.titleText.text?.toString().orEmpty()
+        // Promote the channel/stream name so the dialog shows a useful
+        // "Add 'X' to ..." subtitle rather than a blank line.
+        val payload = stream.copy(name = stream.name.ifBlank { title })
+        if (payload.url.isBlank()) {
+            android.widget.Toast.makeText(
+                this,
+                R.string.player_error_no_url,
+                android.widget.Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+        AddToPlaylistDialogFragment.show(
+            fm = supportFragmentManager,
+            stream = payload,
+            listener = object : AddToPlaylistDialogFragment.Listener {
+                override fun onPicked(playlistId: String, playlistName: String) {
+                    Snackbar.make(
+                        binding.root,
+                        getString(R.string.add_to_playlist_added_template, playlistName),
+                        Snackbar.LENGTH_SHORT
+                    ).setAnchorView(binding.bottomBar).show()
+                }
+            }
+        )
     }
 
     // ----- Initialization -----
@@ -616,11 +844,17 @@ class PlayerActivity : AppCompatActivity() {
     // ----- Routing branch: PlayerViewModel-driven channel -----
 
     private fun observePlayerVm(channelId: String) {
+        // Step 4.7 / Step 5.1 unification — one repeatOnLifecycle collector
+        // handles BOTH the snapshot apply + the heart-icon sync, so every
+        // re-emit runs through the same path.
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 playerVm.state.collectLatest { state ->
                     when (state) {
-                        is UiState.Success -> applySnapshot(state.value)
+                        is UiState.Success -> {
+                            applySnapshot(state.value)
+                            bindFavoriteIcon(state.value.isFavorite)
+                        }
                         is UiState.Error -> showError(state.message)
                         UiState.Loading -> showLoading()
                         UiState.Idle -> Unit
@@ -629,6 +863,26 @@ class PlayerActivity : AppCompatActivity() {
             }
         }
         playerVm.load(channelId)
+    }
+
+    private fun bindFavoriteIcon(isFavorite: Boolean) {
+        val iconRes = if (isFavorite) R.drawable.ic_heart_filled else R.drawable.ic_heart_outline
+        binding.btnFavorite.setIconResource(iconRes)
+        binding.btnFavorite.setIconTintResource(
+            if (isFavorite) R.color.live_red else R.color.text
+        )
+        binding.btnFavorite.contentDescription = getString(
+            if (isFavorite) R.string.player_favorite_remove_desc
+            else R.string.player_favorite_add_desc
+        )
+    }
+
+    private fun applyFavoritePulse() {
+        // Step 5.1 — short overshoot pop, same Phase-1.5 overshoot
+        // interpolator used by livePulse.xml for the LIVE badge, so
+        // the feedback feels uniform with the rest of the app.
+        val anim = AnimationUtils.loadAnimation(this, R.anim.heart_pulse)
+        binding.btnFavorite.startAnimation(anim)
     }
 
     private fun applySnapshot(snapshot: PlayerSnapshot) {
@@ -722,7 +976,7 @@ class PlayerActivity : AppCompatActivity() {
                 val picked = modes[which]
                 currentQuality = picked
                 exoPlayer?.let { VideoQualityManager.apply(it, picked) }
-                kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
                     playerPrefs.setVideoQualityMode(picked)
                 }
                 dialog.dismiss()

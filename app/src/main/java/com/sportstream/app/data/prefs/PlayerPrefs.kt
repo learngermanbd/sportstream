@@ -4,25 +4,30 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.sportstream.app.data.models.RecentStreamUrl
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import org.json.JSONArray
+import org.json.JSONObject
 
 /**
- * Step 4.5 — DataStore-backed preferences for player settings.
+ * Step 4.5 (+ Step 4.6 overlay position + Step 5.3 recent URLs) —
+ * DataStore-backed preferences for player settings.
  *
- * Two keys today:
- *  - KEY_VIDEO_QUALITY ("video_quality_mode")  → [VideoQualityMode.name] (AUTO / FHD / HD / SD / LD)
- *  - KEY_SUBTITLE_LANG  ("subtitle_track_id")  → opaque track id or empty / OFF
+ * Keys:
+ *  - KEY_VIDEO_QUALITY            ("video_quality_mode")      → [VideoQualityMode.name]
+ *  - KEY_SUBTITLE_LANG            ("subtitle_track_id")       → opaque track id
+ *  - KEY_FLOATING_X_RATIO         ("floating_player_x_ratio") → 0.0..1.0
+ *  - KEY_FLOATING_Y_RATIO         ("floating_player_y_ratio") → 0.0..1.0
+ *  - KEY_RECENT_NETWORK_URLS      ("recent_network_urls")     → JSON list
  *
- * Scope: GLOBAL (one value applies to every video player session). Per-URL override
- * maps (URL → quality) are deferred to Step 4.7 polish per the strict-plan
- * deviation list — the user explicitly preferred per-URL persistence noted in the plan
- * but the v1 code keeps it simple.
- *
- * Reads are suspend (use [first] for one-shot reads inside coroutines); writes use [edit].
+ * Scope: GLOBAL. Reads are suspend (use [first] for one-shot reads);
+ * writes use [edit].
  */
 val Context.playerDataStore: DataStore<Preferences> by preferencesDataStore(name = "player_prefs")
 
@@ -41,6 +46,23 @@ class PlayerPrefs(private val context: Context) {
             prefs[KEY_SUBTITLE_LANG].orEmpty()
         }
 
+    /**
+     * Step 4.6 — Floating overlay horizontal position ratio (0.0 = left
+     * edge, 1.0 = right edge). Default 0.95 = top-right corner with
+     * comfortable edge inset on portrait phones.
+     */
+    val floatingPlayerXRatioFlow: Flow<Float>
+        get() = context.playerDataStore.data.map { prefs ->
+            prefs[KEY_FLOATING_X_RATIO] ?: DEFAULT_FLOATING_X_RATIO
+        }
+
+    /** Step 4.6 — Floating overlay vertical position ratio (0.0 = top
+     *  edge, 1.0 = bottom edge). Default 0.05. */
+    val floatingPlayerYRatioFlow: Flow<Float>
+        get() = context.playerDataStore.data.map { prefs ->
+            prefs[KEY_FLOATING_Y_RATIO] ?: DEFAULT_FLOATING_Y_RATIO
+        }
+
     suspend fun setVideoQualityMode(mode: VideoQualityMode) {
         context.playerDataStore.edit { prefs ->
             prefs[KEY_VIDEO_QUALITY] = mode.storageKey
@@ -53,6 +75,93 @@ class PlayerPrefs(private val context: Context) {
         }
     }
 
+    /** Step 4.6 — Persist floating overlay position; both ratios clamped
+     *  0f..1f by the caller (FloatingPlayerService snap-to-edge math). */
+    suspend fun setFloatingPlayerPosition(xRatio: Float, yRatio: Float) {
+        context.playerDataStore.edit { prefs ->
+            prefs[KEY_FLOATING_X_RATIO] = xRatio.coerceIn(0f, 1f)
+            prefs[KEY_FLOATING_Y_RATIO] = yRatio.coerceIn(0f, 1f)
+        }
+    }
+
+    // ----- Phase 5 · Step 5.3 — Recent network URLs -----
+
+    /**
+     * Flow of the most-recent [MAX_RECENT_URLS] streams the user opened.
+     * Backed by a JSON-encoded string preference so we can carry the
+     * user's per-URL [RecentStreamUrl.formatLabel] choice (info-only —
+     * Media3 auto-detects the actual playback format).
+     */
+    val recentNetworkUrlsFlow: Flow<List<RecentStreamUrl>>
+        get() = context.playerDataStore.data.map { prefs ->
+            decodeRecentUrls(prefs[KEY_RECENT_NETWORK_URLS])
+        }
+
+    /**
+     * Add (or move-to-front) a network URL. De-duplicates by URL
+     * (case-insensitive — matches [removeRecentNetworkUrl] semantics),
+     * then prepends so the freshest entry is at the top of the list.
+     * Caps to [MAX_RECENT_URLS] by trimming the oldest (last) entry.
+     */
+    suspend fun addRecentNetworkUrl(url: String, formatLabel: String) {
+        val cleaned = url.trim()
+        if (cleaned.isBlank()) return
+        context.playerDataStore.edit { prefs ->
+            val current = decodeRecentUrls(prefs[KEY_RECENT_NETWORK_URLS]).toMutableList()
+            current.removeAll { it.url.equals(cleaned, ignoreCase = true) }
+            current.add(
+                0,
+                RecentStreamUrl(
+                    url = cleaned,
+                    formatLabel = formatLabel.ifBlank { RecentStreamUrl.FORMAT_AUTO },
+                    addedAtMs = System.currentTimeMillis()
+                )
+            )
+            while (current.size > MAX_RECENT_URLS) current.removeAt(current.size - 1)
+            prefs[KEY_RECENT_NETWORK_URLS] = encodeRecentUrls(current)
+        }
+    }
+
+    /**
+     * Remove a recent URL (e.g. on user long-press delete). Lookup is
+     * case-insensitive to mirror [addRecentNetworkUrl]'s de-dup semantics
+     * — a URL saved as `Https://live.foo/playlist.m3u8` must still be
+     * reachable here regardless of how the user types it on tap.
+     */
+    suspend fun removeRecentNetworkUrl(url: String) {
+        context.playerDataStore.edit { prefs ->
+            val current = decodeRecentUrls(prefs[KEY_RECENT_NETWORK_URLS]).toMutableList()
+            val removedAny = current.removeAll { it.url.equals(url, ignoreCase = true) }
+            if (removedAny) prefs[KEY_RECENT_NETWORK_URLS] = encodeRecentUrls(current)
+        }
+    }
+
+    /**
+     * JSON list decoder. Re-throws CancellationException so a Flow
+     * collection cancellation mid-iteration doesn't silently fall back
+     * to an empty list. Malformed JSON returns empty list (defensive
+     * against hand-edited DataStore blobs / schema drift).
+     */
+    private fun decodeRecentUrls(raw: String?): List<RecentStreamUrl> {
+        if (raw.isNullOrBlank()) return emptyList()
+        return try {
+            val arr = JSONArray(raw)
+            (0 until arr.length()).mapNotNull { i -> runCatching {
+                RecentStreamUrl.fromJson(arr.getJSONObject(i))
+            }.getOrNull() }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            emptyList()
+        }
+    }
+
+    private fun encodeRecentUrls(list: List<RecentStreamUrl>): String {
+        val arr = JSONArray()
+        list.forEach { arr.put(it.toJson()) }
+        return arr.toString()
+    }
+
     /** One-shot read for the startup-apply step. */
     suspend fun readVideoQualityMode(): VideoQualityMode = videoQualityModeFlow.first()
     suspend fun readSubtitleTrackId(): String = subtitleTrackIdFlow.first()
@@ -60,13 +169,24 @@ class PlayerPrefs(private val context: Context) {
     companion object {
         val KEY_VIDEO_QUALITY = stringPreferencesKey("video_quality_mode")
         val KEY_SUBTITLE_LANG = stringPreferencesKey("subtitle_track_id")
+        // Step 4.6 — floating overlay position.
+        val KEY_FLOATING_X_RATIO = floatPreferencesKey("floating_player_x_ratio")
+        val KEY_FLOATING_Y_RATIO = floatPreferencesKey("floating_player_y_ratio")
+        // Phase 5 · Step 5.3 — recent network URLs (JSON-encoded).
+        val KEY_RECENT_NETWORK_URLS = stringPreferencesKey("recent_network_urls")
+
+        const val DEFAULT_FLOATING_X_RATIO = 0.95f
+        const val DEFAULT_FLOATING_Y_RATIO = 0.05f
+
+        /** Phase 5 · Step 5.3 — Cap on the recent-URL list. */
+        const val MAX_RECENT_URLS = 10
     }
 }
 
 /**
  * Resolution ladder for [VideoQualityManager].
  *
- *  - [AUTO]  — leave Media3 adaptive selection enabled. No TrackSelectionOverride.
+ *  - [AUTO]  — leave Media3 adaptive selection enabled.
  *  - [FHD]   — ≤ 1080p and > 720p track wins if present.
  *  - [HD]    — ≤ 720p  and > 480p track wins if present.
  *  - [SD]    — ≤ 480p  and > 360p track wins if present.

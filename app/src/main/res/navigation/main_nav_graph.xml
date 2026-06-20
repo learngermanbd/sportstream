@@ -2,11 +2,7 @@
 <!--
     Phase 3 · Step 3.2 — Navigation graph for the post-splash Main screen.
     Hosts the 4 bottom-nav destinations (Home / Categories / Favorites / Settings).
-    Destination IDs MUST match menu item IDs in res/menu/bottom_nav_menu.xml —
-    that is what makes BottomNavigationView.setupWithNavController() resolve
-    taps without any manual navController.navigate(...) wiring.
-    Deep-link / action graphs land in Steps 3.x–5.x as the Live / Player /
-    Settings screens actually route to other screens.
+    Destinations IDs MUST match menu item IDs in res/menu/bottom_nav_menu.xml.
 -->
 <navigation
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -41,18 +37,36 @@
 
     <!--
         Phase 3 · Step 3.5 — Highlights destination.
-
         Not in bottom_nav_menu.xml (BottomNav is reserved for the 4
         always-visible tabs Home / Categories / Favorites / Settings).
-        Reachable from the Step 5.5 Drawer menu (drawer item "Highlights"
-        -> navController.navigate(R.id.highlightsFragment)) and from any
-        future PlayerActivity intent that wants to surface related
-        highlights as a sub-list.
+        Reachable from the Drawer menu drawer_highlights item.
     -->
     <fragment
         android:id="@+id/highlightsFragment"
         android:name="com.sportstream.app.ui.fragments.HighlightsFragment"
         android:label="@string/fragment_highlights_header"
         tools:layout="@layout/fragment_highlights" />
+
+    <!--
+        Phase 5 · Step 5.2 — Playlists destination.
+        Reachable from the Drawer menu drawer_playlists item.
+    -->
+    <fragment
+        android:id="@+id/playlistsFragment"
+        android:name="com.sportstream.app.ui.fragments.PlaylistsFragment"
+        android:label="@string/fragment_playlists_title"
+        tools:layout="@layout/fragment_playlists" />
+
+    <!--
+        Phase 5 · Step 5.3 — Network Stream destination.
+        Reachable from the Drawer menu drawer_network_stream item via
+        MainActivity.onNavigationItemSelected. URL input + AUTO/HLS/DASH
+        format selector + recent-URLs list backed by PlayerPrefs DataStore.
+    -->
+    <fragment
+        android:id="@+id/networkStreamFragment"
+        android:name="com.sportstream.app.ui.fragments.NetworkStreamFragment"
+        android:label="@string/network_stream_section_header"
+        tools:layout="@layout/fragment_network_stream" />
 
 </navigation>

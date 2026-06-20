@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Phase 5 · Step 5.1 — Favorites screen.
+    Phase 5 · Step 5.2 — Playlists screen.
 
-    Section header ("FAVORITES") + vertical RecyclerView + a centered
-    empty-state TextView (visible when adapter is empty) + a centered
-    ProgressIndicator shown during initial Loading. The
-    MaterialCardView-row layout lives at view_item_favorite.xml.
+    Section header + RecyclerView (1 column of glass-card rows from
+    view_item_playlist.xml) + FloatingActionButton anchored bottom-right
+    for "Create playlist". Loading + empty-state follow the same
+    pattern as FavoritesFragment so the two screens feel symmetric to
+    the user.
 
-    ItemTouchHelper (swipe-to-delete) is attached programmatically by
-    FavoritesFragment.onViewCreated so it can drive the undo snackbar
-    using the same VM instance.
+    ItemTouchHelper swipe-to-delete is attached programmatically by
+    PlaylistsFragment.onViewCreated (drives an undo Snackbar that
+    re-inserts via the VM's create() with the original name).
 -->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -18,12 +19,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!--
-        Section header pill — uppercase, brand primary, 12 sp font,
-        letter-spaced for the same look as the Home / Categories headers.
-    -->
     <TextView
-        android:id="@+id/favoriteSectionHeader"
+        android:id="@+id/playlistsSectionHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
@@ -32,7 +29,7 @@
         android:letterSpacing="0.22"
         android:paddingHorizontal="14dp"
         android:paddingVertical="6dp"
-        android:text="@string/fragment_favorites_title"
+        android:text="@string/fragment_playlists_title"
         android:textColor="@color/text"
         android:textSize="12sp"
         android:textStyle="bold"
@@ -40,20 +37,19 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/favoritesRecyclerView"
+        android:id="@+id/playlistsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingBottom="20dp"
+        android:paddingBottom="96dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/favoriteSectionHeader"
-        tools:ignore="MissingDefaultResource"
-        tools:listitem="@layout/view_item_favorite" />
+        app:layout_constraintTop_toBottomOf="@id/playlistsSectionHeader"
+        tools:listitem="@layout/view_item_playlist" />
 
     <com.google.android.material.progressindicator.CircularProgressIndicator
-        android:id="@+id/favoritesLoadingIndicator"
+        android:id="@+id/playlistsLoadingIndicator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:indeterminate="true"
@@ -65,7 +61,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/favoritesEmptyText"
+        android:id="@+id/playlistsEmptyText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="40dp"
@@ -73,7 +69,7 @@
         android:fontFamily="@font/poppins_regular"
         android:gravity="center"
         android:letterSpacing="0.04"
-        android:text="@string/favorites_empty"
+        android:text="@string/playlists_empty"
         android:textColor="@color/text_muted"
         android:textSize="14sp"
         android:visibility="gone"
@@ -81,4 +77,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/playlistsFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:contentDescription="@string/playlists_create_fab_desc"
+        app:backgroundTint="@color/primary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@android:drawable/ic_input_add"
+        app:tint="@color/dark_bg" />
 </androidx.constraintlayout.widget.ConstraintLayout>

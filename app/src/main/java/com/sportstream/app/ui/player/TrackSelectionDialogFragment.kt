@@ -18,7 +18,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.sportstream.app.R
 import com.sportstream.app.data.prefs.PlayerPrefs
-import kotlinx.coroutines.CoroutineScope
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -88,7 +89,7 @@ class TrackSelectionDialogFragment : BottomSheetDialogFragment() {
                     id = View.generateViewId()
                     text = label.displayName
                     isChecked = (currentId == label.stableId) || (idx == 0 && currentId.isEmpty() && label.displayName == requireContext().getString(R.string.player_track_off))
-                    setTextColor(resources.getColor(R.color.text, requireContext().theme))
+                    setTextColor(ContextCompat.getColor(requireContext(), R.color.text))
                 }
                 rb.tag = label.stableId
                 group.addView(rb)
@@ -98,7 +99,7 @@ class TrackSelectionDialogFragment : BottomSheetDialogFragment() {
                 val pickedId = rb.tag as? String ?: return@setOnCheckedChangeListener
                 applySubtitleChoice(exoPlayer, pickedId, labels)
                 prefs?.let {
-                    CoroutineScope(Dispatchers.IO).launch {
+                    viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
                         it.setSubtitleTrackId(pickedId)
                     }
                 }

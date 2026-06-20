@@ -107,6 +107,9 @@ class SwipeGestureDetector(
                 initialX = event.x
                 initialY = event.y
                 gestureType = Type.NONE  // re-decide on first move
+                // Reset IPC-gate sentinel so the first MOVE of a new brightness
+                // gesture is never falsely gated against a stale prior value.
+                lastAppliedBrightness = -1f
 
                 // MAJOR #1 (revised pass-5/6) — capture pre-gesture brightness as the math
                 // baseline. We do NOT restore on UP/CANCEL because per-window
@@ -160,7 +163,14 @@ class SwipeGestureDetector(
                             onSeekFinalize?.invoke(newPos)
                         }
                     }
+                    Type.VERTICAL_BRIGHTNESS -> {
+                        // Explicitly hide the indicator so brightness gestures
+                        // don't rely solely on the MOVE-timer chain.
+                        onIndicatorVisibilityChanged?.invoke(false)
+                    }
                     Type.VERTICAL_VOLUME -> {
+                        // Explicitly hide the indicator (consistency with brightness).
+                        onIndicatorVisibilityChanged?.invoke(false)
                         // MAJOR #1 — restore the pre-gesture STREAM_MUSIC volume so it
                         // doesn't leak into the next media app. Brightness is NOT restored
                         // here: per-window LayoutParams.screenBrightness dies naturally

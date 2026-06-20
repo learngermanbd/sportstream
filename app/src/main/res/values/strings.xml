@@ -72,13 +72,7 @@
         Drawer menu (Step 3.2 retro-fix).
         Plan Step 3.2 prompt box lists 9 items: Network Stream,
         Playlists, Floating Player, Video Quality, Notice, Join Us,
-        Share, Update, Exit. This block ships those 9 + Highlights (the
-        10th Drawer-top entry, the canonical surface for Highlights now
-        that the post-realignment BottomNav is 4 tabs not 3).
-
-        drawer_coming_soon_template is a printf-style placeholder used
-        by MainActivity.upcomingStepFor(itemId) to render Snackbar
-        messages like "Playlists — Coming in Step 5.2".
+        Share, Update, Exit.
     -->
     <string name="drawer_highlights">Highlights</string>
     <string name="drawer_network_stream">Network Stream</string>
@@ -121,10 +115,7 @@
     <string name="player_error_network">Network error contacting stream source</string>
     <string name="player_title_extra">Live channel</string>
 
-    <!-- Phase 4 · Step 4.3 — Swipe-gesture indicator labels.
-         Icon + label + horizontal progress live in
-         layout_swipe_gesture.xml; only the strings differ per gesture
-         type. -->
+    <!-- Phase 4 · Step 4.3 — Swipe-gesture indicator labels. -->
     <string name="player_gesture_generic_label">Gestures</string>
     <string name="player_gesture_brightness_label">Brightness</string>
     <string name="player_gesture_volume_label">Volume</string>
@@ -148,6 +139,98 @@
     <string name="player_track_selection_done">Done</string>
     <string name="player_track_off">Off</string>
     <string name="player_subtitle_url_desc">Subtitle URL</string>
-    <!-- Step 4.5 — intent routing extras. -->
     <string name="player_subtitle_url_unknown_mime">Unknown subtitle MIME for URL — attaching as best-effort VTT</string>
+    <!-- Step 4.6 — Floating player surface. -->
+    <string name="player_top_detach">Float player over other apps</string>
+    <string name="player_floating_close_desc">Close floating player</string>
+    <string name="player_floating_drag_desc">Drag floating player</string>
+    <string name="player_floating_notification_text">Playing in floating window</string>
+    <string name="player_floating_action_stop">Stop</string>
+    <string name="player_floating_channel_name">Floating player</string>
+    <string name="player_floating_default_title">Live stream</string>
+    <string name="player_floating_permission_required_title">Overlay permission required</string>
+    <string name="player_floating_permission_required_message">SportStream needs \"Display over other apps\" to show a floating player. Tap Settings to grant it, then tap Detach again.</string>
+
+    <!--
+        Phase 5 · Step 5.1 — Favorites screen strings.
+        Used by FavoritesFragment, FavoriteAdapter, and the heart toggle
+        button / animation in PlayerActivity.
+    -->
+    <string name="favorites_empty">No favorites yet.\nTap the heart on a channel to save it.</string>
+    <string name="favorites_removed_template">Removed %1$s from favorites</string>
+    <string name="favorites_action_undo">UNDO</string>
+    <string name="view_item_favorite_default_category">Channel</string>
+    <string name="favorites_heart_remove_desc">Remove from favorites</string>
+    <string name="player_favorite_add_desc">Add to favorites</string>
+    <string name="player_favorite_remove_desc">Remove from favorites</string>
+
+    <!-- Phase 5 - Step 5.2 Playlists strings -->
+    <string name="fragment_playlists_title">PLAYLISTS</string>
+    <string name="playlists_empty">No playlists yet.\nTap + to create one and add streams from the player.</string>
+    <string name="playlists_default_name">Untitled playlist</string>
+    <string name="playlists_icon_desc">Playlist</string>
+    <string name="playlists_create_fab_desc">Create new playlist</string>
+    <string name="playlists_create_title">New playlist</string>
+    <string name="playlists_create_hint">Playlist name</string>
+    <string name="playlists_create_confirm">Create</string>
+    <string name="playlists_rename_title">Rename playlist</string>
+    <string name="playlists_action_rename">Rename</string>
+    <string name="playlists_action_delete">Delete</string>
+    <string name="playlists_confirm_delete_title">Delete playlist?</string>
+    <string name="playlists_confirm_delete_message">“%1$s” will be removed. This can’t be undone.</string>
+    <string name="playlists_deleted_template">Deleted %1$s</string>
+    <string name="playlists_undo_note">Tap the playlist to re-add the streams manually.</string>
+    <string name="playlists_detail_empty">This playlist is empty. Open a stream and tap the playlist icon to add it.</string>
+    <string name="player_add_to_playlist_desc">Add current stream to a playlist</string>
+    <string name="add_to_playlist_title">Add to playlist</string>
+    <string name="add_to_playlist_subtitle">Choose a playlist for this stream</string>
+    <string name="add_to_playlist_subtitle_template">Add “%1$s” to…</string>
+    <string name="add_to_playlist_create_new">Create new playlist…</string>
+    <string name="add_to_playlist_empty">No playlists yet. Tap “Create new playlist…” first.</string>
+    <string name="add_to_playlist_added_template">Added to %1$s</string>
+    <plurals name="playlists_item_count">
+        <item quantity="one">%d stream</item>
+        <item quantity="other">%d streams</item>
+    </plurals>
+
+    <!--
+        Phase 5 · Step 5.3 — Network Stream screen.
+        Used by NetworkStreamFragment + RecentUrlAdapter.
+        Form lets the user paste/type an HTTP(S) URL, pick an
+        AUTO/HLS/DASH format hint, and tap PLAY. Recent URLs survive
+        across app launches via the player-prefs DataStore.
+    -->
+    <string name="network_stream_section_header">NETWORK STREAM</string>
+    <string name="network_stream_url_hint">Stream URL (http:// or https://)</string>
+    <string name="network_stream_paste_desc">Paste from clipboard</string>
+    <string name="network_stream_format_auto">Auto</string>
+    <string name="network_stream_format_hls">HLS</string>
+    <string name="network_stream_format_dash">DASH</string>
+    <string name="network_stream_play">Play stream</string>
+    <string name="network_stream_recent_section">RECENTLY OPENED</string>
+    <string name="network_stream_recent_empty">No streams yet. Paste a URL above and tap Play.</string>
+    <string name="network_stream_recent_removed_template">Removed %1$s</string>
+    <string name="network_stream_undo">UNDO</string>
+    <string name="network_stream_url_required">Enter a stream URL first</string>
+    <string name="network_stream_url_invalid_scheme">URL must start with http:// or https://</string>
+    <string name="network_stream_default_title">Network stream</string>
+    <string name="network_stream_paste_empty">Clipboard is empty</string>
+    <string name="network_stream_icon_desc">Network stream</string>
+    <string name="network_stream_recent_remove_desc">Remove from recent</string>
+
+    <!--
+        Phase 5 · Step 5.4 — Push notifications.
+        Used by NotificationHelper + SportStreamMessagingService. The
+        default_channel_id MUST match NotificationHelper.CHANNEL_ID_LIVE_EVENTS
+        — pre-create the channel from SplashActivity.onCreate so the
+        first push that arrives after cold launch lands in the right
+        importance bucket.
+    -->
+    <string name="notification_default_title">Live update</string>
+    <string name="notification_default_body">A new event is happening. Tap to view.</string>
+    <string name="notification_default_channel_id">live_events</string>
+    <string name="notification_live_event_channel_name">Live Events</string>
+    <string name="notification_live_event_channel_desc">Heads-up notifications when a match goes live or a favorite team scores.</string>
+    <string name="notification_general_channel_name">General</string>
+    <string name="notification_general_channel_desc">App announcements and maintenance notices.</string>
 </resources>
