@@ -376,9 +376,9 @@ android.sourceSets.getByName("main") {
     java.srcDir(layout.buildDirectory.dir("generated/source/encryption/main"))
 }
 
-// Ensure encryption runs before any Kotlin compile task.
+// Ensure encryption runs before any Kotlin compile or KSP task.
 tasks.configureEach {
-    if (name.matches(Regex("compile.*Kotlin(?!Test).*"))) {
+    if (name.matches(Regex("(compile|ksp).*Kotlin(?!Test).*"))) {
         dependsOn(encryptSecrets)
     }
 }

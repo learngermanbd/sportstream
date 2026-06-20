@@ -1,11 +1,50 @@
 # =========================================================================
-# Phase 6 · Step 6.5 / Phase 7 · Step 7.2 — ProGuard / R8 rules
+# Phase 7 · Step 7.3 — Aggressive R8 full-mode obfuscation
 # =========================================================================
 #
-# Keep rules for reflection-driven libraries and security classes.
-# Most libraries ship their own consumer ProGuard rules; these are the
-# project-specific additions that R8 cannot infer automatically.
+# R8 full mode is enabled in gradle.properties:
+#   android.enableR8.fullMode=true
+#
+# This file configures:
+#   1. Aggressive optimization + obfuscation flags
+#   2. CJK rename dictionary (visually confusing class/method names)
+#   3. Source-file attribute stripping (removes file:line from stack traces)
+#   4. Keep rules for reflection-driven libraries and security classes
+#
+# Debugging: use `-printusage usage.txt` to see what R8 strips.
 # =========================================================================
+
+# ── Aggressive optimization ──────────────────────────────────────────────
+# Repackage all classes into a single root package (hides real structure).
+-repackageclasses ''
+# Broaden access modifiers to enable more optimizations.
+-allowaccessmodification
+# Rename methods with different signatures to the same name.
+-overloadaggressively
+# Merge interfaces when implementation classes overlap.
+-mergeinterfacesaggressively
+
+# ── CJK rename dictionary ────────────────────────────────────────────────
+# Replaces standard a/b/c class/method names with CJK characters.
+# Breaks many decompilers' display logic and creates massive cognitive
+# burden for reverse engineers.
+-obfuscationdictionary proguard-cjk-dictionary.txt
+-classobfuscationdictionary proguard-cjk-dictionary.txt
+-packageobfuscationdictionary proguard-cjk-dictionary.txt
+
+# ── Strip source-file information ────────────────────────────────────────
+# Removes SourceFile + LineNumberTable attributes from class files.
+# Stack traces will show obfuscated names with no file/line info.
+# Sentry's uploaded mapping.txt still allows deobfuscation server-side.
+-keepattributes !SourceFile,!LineNumberTable
+-renamesourcefileattribute ''
+
+# ── Debugging (uncomment to inspect what R8 strips) ──────────────────────
+# -printusage build/r8-usage.txt
+# -printseeds build/r8-seeds.txt
+# -printmapping build/r8-mapping.txt
+
+# ── Keep rules for reflection-driven libraries ──────────────────────────
 
 # ── Gson ─────────────────────────────────────────────────────────────────
 # @SerializedName fields are accessed via reflection.
