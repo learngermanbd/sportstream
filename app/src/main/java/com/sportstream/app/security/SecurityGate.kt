@@ -2,6 +2,7 @@ package com.sportstream.app.security
 
 import android.content.Context
 import android.util.Log
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -44,6 +45,11 @@ object SecurityGate {
     /** Whether the gate has already run this process lifetime. */
     private val hasRun = AtomicBoolean(false)
 
+    /** Managed single-thread executor for security checks. */
+    private val executor = Executors.newSingleThreadExecutor { r ->
+        Thread(r, "SecurityGate-worker").apply { isDaemon = true }
+    }
+
     /**
      * Run all security checks and return the combined [GateResult].
      * Safe to call multiple times (subsequent calls return the cached
@@ -56,7 +62,7 @@ object SecurityGate {
     fun runChecks(context: Context, onComplete: (GateResult) -> Unit) {
         if (!hasRun.compareAndSet(false, true)) return
 
-        Thread {
+        executor.execute {
             val result = executeChecks(context)
             Log.i(TAG, "Security gate result: score=${result.score}, " +
                 "level=${result.level}, indicators=${result.indicators.size}")
@@ -90,7 +96,7 @@ object SecurityGate {
             }
 
             onComplete(result)
-        }.start()
+        }
     }
 
     private fun executeChecks(context: Context): GateResult {
@@ -198,12 +204,15 @@ object SecurityGate {
                 }
             }
         }
-        // Add cached verdict score if available
+        // Note: Play Integrity verdict is NOT used for client-side
+        // risk scoring because the JWS signature cannot be verified
+        // offline.  The token is sent to the backend (Phase 8) for
+        // authoritative verification.  A failed/meets-no-requirements
+        // result is logged as an indicator only.
         PlayIntegrityManager.getCachedVerdict()?.let { verdict ->
-            val verdictScore = verdict.toRiskScore()
-            if (verdictScore > 0) {
-                score += verdictScore
-                indicators.add("INTEGRITY_API:score=$verdictScore")
+            if (!verdict.meetsMinimumRequirements()) {
+                indicators.add("INTEGRITY_API:below_minimum")
+                // Do NOT add to score — wait for server-side verification
             }
         }
 

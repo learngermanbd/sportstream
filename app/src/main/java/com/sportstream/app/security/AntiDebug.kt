@@ -36,10 +36,13 @@ object AntiDebug {
     private const val TAG = "AntiDebug"
 
     /**
-     * Timing threshold in nanoseconds.  A normal `detect()` call
-     * should take < 5ms; > 50ms suggests breakpoints.
+     * Timing threshold in nanoseconds (thread CPU time).
+     * Uses [android.os.SystemClock.currentThreadTimeMillis] to
+     * measure only CPU time spent on this thread, avoiding false
+     * positives from OS scheduling on low-tier devices.
+     * Normal `detect()` takes < 10ms CPU; > 300ms suggests breakpoints.
      */
-    private const val TIMING_THRESHOLD_NS = 50_000_000L  // 50ms
+    private const val TIMING_THRESHOLD_NS = 300_000_000L  // 300ms CPU time
 
     /** How many consecutive timing violations before flagging. */
     private const val TIMING_VIOLATION_THRESHOLD = 3
@@ -51,7 +54,7 @@ object AntiDebug {
      * Run all anti-debug checks and return a composite result.
      */
     fun detect(): DebugResult {
-        val startNs = System.nanoTime()
+        val startCpuMs = android.os.SystemClock.currentThreadTimeMillis()
         val indicators = mutableListOf<String>()
 
         // ── Check 1: Android's built-in debugger flag ─────────────
@@ -75,12 +78,12 @@ object AntiDebug {
             indicators.add("jdwpActive")
         }
 
-        // ── Check 5: Timing anomaly ──────────────────────────────
-        val elapsedNs = System.nanoTime() - startNs
-        if (elapsedNs > TIMING_THRESHOLD_NS) {
+        // ── Check 5: Timing anomaly (CPU time, not wall clock) ───
+        val elapsedCpuNs = (android.os.SystemClock.currentThreadTimeMillis() - startCpuMs) * 1_000_000L
+        if (elapsedCpuNs > TIMING_THRESHOLD_NS) {
             consecutiveTimingViolations++
             if (consecutiveTimingViolations >= TIMING_VIOLATION_THRESHOLD) {
-                indicators.add("timingAnomaly:${elapsedNs / 1_000_000}ms")
+                indicators.add("timingAnomaly:${elapsedCpuNs / 1_000_000}ms")
             }
         } else {
             consecutiveTimingViolations = 0

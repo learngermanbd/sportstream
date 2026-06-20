@@ -88,23 +88,29 @@ object IntentFilterSecurity {
 
     /**
      * Validate that the intent came from a trusted source.
+     *
+     * Note: `activity.referrer` can be spoofed via
+     * `Intent.EXTRA_REFERRER`, so we use `getCallingActivity()`
+     * (which is cryptographically bound via PendingIntent) as the
+     * primary signal.  The referrer is logged but not trusted for
+     * security decisions.
      */
     private fun validateSource(activity: Activity, intent: Intent): IntentValidation {
-        // If FLAG_ACTIVITY_NEW_TASK is set, getCallingActivity() returns null
-        // This is expected for deep links and notifications, so we allow it.
-        val caller = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            val referrer = activity.referrer
-            referrer?.host
-        } else {
-            @Suppress("DEPRECATION")
-            activity.callingActivity?.packageName
+        // getCallingActivity() is reliable for startActivityForResult flows
+        // (bound via PendingIntent — cannot be spoofed). Returns null for
+        // deep links and notifications (which we allow).
+        val callingPkg = activity.callingActivity?.packageName
+        if (callingPkg != null && !isTrustedPackage(callingPkg)) {
+            Log.w(TAG, "Untrusted callingActivity: $callingPkg")
+            // Block explicit calls from untrusted apps to sensitive activities
+            return IntentValidation.Unsafe("untrusted_caller:$callingPkg")
         }
 
-        // If we can identify the caller, verify it's trusted
-        if (caller != null && !isTrustedPackage(caller)) {
-            Log.w(TAG, "Untrusted caller: $caller")
-            // Report but don't block — some legitimate callers may not be in our trust list
-            // This is a soft check; the other validations provide hard protection
+        // Log referrer for audit only (not trusted for security decisions)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            activity.referrer?.host?.let { referrerHost ->
+                Log.d(TAG, "Intent referrer (audit only): $referrerHost")
+            }
         }
 
         return IntentValidation.Safe
