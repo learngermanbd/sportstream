@@ -48,10 +48,10 @@
         android:paddingBottom="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/sectionTitle"
-        tools:listitem="@layout/view_item_highlight"
-        tools:itemCount="5" />
+        app:layout_constraintStart_toStartOf="parent"            app:layout_constraintTop_toBottomOf="@id/sectionTitle"
+            android:layoutAnimation="@anim/layout_anim_fall_down"
+            tools:listitem="@layout/view_item_highlight"
+            tools:itemCount="5" />
 
     <!-- Empty state overlay. -->
     <TextView

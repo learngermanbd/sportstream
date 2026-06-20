@@ -72,10 +72,10 @@
         android:paddingBottom="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/chipScroll"
-        tools:listitem="@layout/view_item_channel"
-        tools:itemCount="6" />
+        app:layout_constraintStart_toStartOf="parent"            app:layout_constraintTop_toBottomOf="@id/chipScroll"
+            android:layoutAnimation="@anim/layout_anim_fall_down"
+            tools:listitem="@layout/view_item_channel"
+            tools:itemCount="6" />
 
     <!-- Empty state overlay. -->
     <TextView

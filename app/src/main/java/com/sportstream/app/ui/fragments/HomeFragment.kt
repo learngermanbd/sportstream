@@ -197,6 +197,11 @@ class HomeFragment : Fragment() {
                             binding.loadingIndicator.isVisible = false
                             binding.swipeRefresh.isRefreshing = false
                             adapter.submitList(state.value)
+                            // Phase 6 · Step 6.3 — re-trigger the
+                            // staggered fall-down cascade on every fresh
+                            // dataset (PairNull skip on empty so the
+                            // empty-state overlay doesn't shimmer).
+                            if (state.value.isNotEmpty()) binding.homeRv.scheduleLayoutAnimation()
                             binding.emptyState.isVisible = state.value.isEmpty()
                             // Banners are bound from Collector #1 (mainVm.state)
                             // — homeVm.state.value is List<Event>, not MainSnapshot,

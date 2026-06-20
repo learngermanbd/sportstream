@@ -159,9 +159,9 @@
         android:paddingBottom="14dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/searchRecentRow"
-        tools:listitem="@layout/view_search_event" />
+        app:layout_constraintStart_toStartOf="parent"            app:layout_constraintTop_toBottomOf="@id/searchRecentRow"
+            android:layoutAnimation="@anim/layout_anim_fall_down"
+            tools:listitem="@layout/view_search_event" />
 
     <!--
         Loading indicator \u2014 only shown while upstream MainViewModel is in

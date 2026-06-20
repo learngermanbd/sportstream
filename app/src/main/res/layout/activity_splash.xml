@@ -60,16 +60,24 @@
             android:textSize="14sp" />
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Circular loader (Material 3) -->
-    <com.google.android.material.progressindicator.CircularProgressIndicator
+    <!--
+        Phase 6 · Step 6.3 — Lottie loading animation (replaces the Material 3
+        CircularProgressIndicator used in Phase 3 · Step 3.1). The 3-dot
+        bouncing loader lives at res/raw/sportstream_loading.json (200×200,
+        60 frames, 30 fps, looping). Auto-plays on attach via
+        app:lottie_autoPlay="true"; the SDK exposes LottieAnimationView as a
+        FrameLayout subclass so the existing SplashActivity binding.loader
+        compile reference (.visibility = View.VISIBLE on retry path) still
+        resolves through to View.setVisibility(int).
+    -->
+    <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/loader"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
         android:layout_marginTop="32dp"
-        android:indeterminate="true"
-        app:indicatorColor="@color/primary"
-        app:indicatorSize="44dp"
-        app:trackThickness="4dp"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/sportstream_loading"
         app:layout_constraintTop_toBottomOf="@id/logoCard"
         app:layout_constraintBottom_toTopOf="@id/statusText"
         app:layout_constraintStart_toStartOf="parent"

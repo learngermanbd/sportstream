@@ -116,6 +116,12 @@ class FavoritesFragment : Fragment() {
                 binding.favoritesLoadingIndicator.isVisible = false
                 binding.favoritesEmptyText.text = ""
                 adapter.submitList(state.value)
+                // Phase 6 · Step 6.3 — staggered fall-down cascade on
+                // every fresh favorites list (initial load + swipe-undo
+                // restore). Empty-state guarded so the empty card stays
+                // static when a swipe-undo returns the last removed row
+                // (in which case the cascade plays once more thereafter).
+                if (state.value.isNotEmpty()) binding.favoritesRecyclerView.scheduleLayoutAnimation()
                 val empty = state.value.isEmpty()
                 binding.favoritesEmptyText.isVisible = empty
                 binding.favoritesRecyclerView.isVisible = !empty

@@ -20,6 +20,11 @@ import com.sportstream.app.databinding.ActivitySplashBinding
 import com.sportstream.app.services.NotificationHelper
 import com.sportstream.app.ui.update.UpdateActivity
 import com.sportstream.app.ui.viewmodels.MainViewModel
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
+import com.airbnb.lottie.LottieProperty
+import com.airbnb.lottie.model.KeyPath
+import com.airbnb.lottie.value.LottieValueCallback
 import kotlinx.coroutines.launch
 
 /**
@@ -76,6 +81,26 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Phase 6 · Step 6.3 — code-reviewer fix #1: sportstream_loading.json
+        // bakes a hardcoded cyan (#1CCBD4) into the dot fills, which clashed
+        // with the brand @color/primary the CircularProgressIndicator used
+        // before the swap. Override at runtime via LottieValueCallback so the
+        // animation stays brand-agnostic (reusable in other surface areas
+        // without per-screen colour edits) while the splash dots match the
+        // @color/primary used everywhere else. Must run before
+        // autoPlay's first frame fires (autoPlay triggers on onAttachedToWindow
+        // after onCreate returns, so placing this in onCreate is on-time).
+        binding.loader.addValueCallback(
+            KeyPath("**"),
+            LottieProperty.COLOR_FILTER,
+            LottieValueCallback(
+                PorterDuffColorFilter(
+                    ContextCompat.getColor(this, R.color.primary),
+                    PorterDuff.Mode.SRC_ATOP
+                )
+            )
+        )
 
         NotificationHelper.ensureChannels(applicationContext)
 

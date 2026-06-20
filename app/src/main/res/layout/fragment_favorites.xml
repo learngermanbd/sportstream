@@ -49,6 +49,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/favoriteSectionHeader"
+        android:layoutAnimation="@anim/layout_anim_fall_down"
         tools:ignore="MissingDefaultResource"
         tools:listitem="@layout/view_item_favorite" />
 

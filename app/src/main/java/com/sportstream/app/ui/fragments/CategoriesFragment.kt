@@ -203,6 +203,11 @@ class CategoriesFragment : Fragment() {
 
         // 2) Bind the grid.
         adapter.submitList(snap.visibleChannels)
+        // Phase 6 · Step 6.3 — re-trigger the staggered fall-down
+        // cascade on every category-filter change. The fragment is
+        // scope-bound to the user already, so the re-animation on each
+        // tap acts as confirmation feedback.
+        if (snap.visibleChannels.isNotEmpty()) binding.channelsRv.scheduleLayoutAnimation()
     }
 
     companion object {

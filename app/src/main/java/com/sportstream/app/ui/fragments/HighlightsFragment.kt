@@ -110,6 +110,9 @@ class HighlightsFragment : Fragment() {
                             val snapshot = state.value as MainSnapshot
                             binding.loadingIndicator.isVisible = false
                             adapter.submitList(snapshot.highlights)
+                            // Phase 6 · Step 6.3 — staggered fall-down
+                            // cascade on every fresh highlight snapshot.
+                            if (snapshot.highlights.isNotEmpty()) binding.highlightsRv.scheduleLayoutAnimation()
                             binding.emptyState.isVisible = snapshot.highlights.isEmpty()
                         }
                         is UiState.Error -> {
