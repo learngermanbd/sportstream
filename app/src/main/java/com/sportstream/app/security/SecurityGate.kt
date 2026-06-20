@@ -175,6 +175,38 @@ object SecurityGate {
             )
         }
 
+        // ── Layer 10: Device attestation (Step 7.10) ─────────────
+        val attestationResult = DeviceAttestation.check(context)
+        if (attestationResult.riskScore > 0) {
+            score += attestationResult.riskScore
+            indicators.add("ATTEST:${attestationResult.indicators.joinToString("|")}")
+        }
+
+        // ── Layer 11: Play Integrity (Step 7.10) ─────────────────
+        // Fire-and-forget: request token, cache result.
+        // On subsequent runs the cached verdict contributes to the score.
+        PlayIntegrityManager.requestToken(context) { result ->
+            when (result) {
+                is IntegrityTokenResult.Success -> {
+                    val v = result.verdict
+                    if (!v.meetsMinimumRequirements()) {
+                        Log.w(TAG, "Play Integrity: device does not meet minimum requirements")
+                    }
+                }
+                is IntegrityTokenResult.Error -> {
+                    Log.w(TAG, "Play Integrity request failed: ${result.message}")
+                }
+            }
+        }
+        // Add cached verdict score if available
+        PlayIntegrityManager.getCachedVerdict()?.let { verdict ->
+            val verdictScore = verdict.toRiskScore()
+            if (verdictScore > 0) {
+                score += verdictScore
+                indicators.add("INTEGRITY_API:score=$verdictScore")
+            }
+        }
+
         // Determine risk level
         val level = when {
             score >= THRESHOLD_CRITICAL -> RiskLevel.CRITICAL

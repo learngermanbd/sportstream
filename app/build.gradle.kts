@@ -225,6 +225,7 @@ dependencies {
     // Crashlytics intentionally replaced by Sentry (below).
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
+    implementation(libs.play.integrity)          // Step 7.10 — Play Integrity API & device attestation
 
     // ── Sentry — crash reporting (replaces Firebase Crashlytics) ──
     implementation(libs.sentry.android)

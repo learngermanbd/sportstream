@@ -50,6 +50,7 @@ room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 # Firebase — messaging ONLY (Remote Config replaced by /api/config; Crashlytics replaced by Sentry)
 firebase-bom       = { module = "com.google.firebase:firebase-bom",          version.ref = "firebaseBom" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging" }  # version managed by BoM
+play-integrity     = { module = "com.google.android.play:integrity",        version = "1.4.0" }  # Step 7.10
 
 # Sentry — crash reporting (replaces Crashlytics)
 sentry-android = { module = "io.sentry:sentry-android", version.ref = "sentry" }
