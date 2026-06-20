@@ -89,3 +89,13 @@
 # ── Crash handler ────────────────────────────────────────────────────────
 # CrashActivity is launched via Intent from the UncaughtExceptionHandler.
 -keep class com.sportstream.app.data.crash.CrashActivity { *; }
+
+# ── Phase 7 · Step 7.4 — Native JNI bridge ───────────────────────────────
+# NativeSecurityManager's companion static method bytesToHex is called
+# from JNI (RegisterNatives).  The class and its native methods must
+# survive R8 renaming.  The actual JNI bindings use RegisterNatives in
+# JNI_OnLoad, so the standard JNI naming convention does not apply.
+-keep class com.sportstream.app.security.NativeSecurityManager {
+    native <methods>;
+    static java.lang.String bytesToHex(byte[]);
+}

@@ -25,6 +25,7 @@ import javax.crypto.spec.SecretKeySpec
 android {
     namespace = "com.sportstream.app"
     compileSdk = 35
+    ndkVersion = "27.3.13750724"  // Phase 7 · Step 7.4 — NDK r27c for native_security
 
     // -----------------------------------------------------------------
     // Phase 6 · Step 6.5 — Hoisted signing.properties read so both the
@@ -60,11 +61,45 @@ android {
             "SENTRY_DSN",
             "\"" + (rootSigningProps.getProperty("APP_SENTRY_DSN") ?: "") + "\""
         )
+
+        // Phase 7 · Step 7.4 — NDK ABI targets + CMake compile flags.
+        externalNativeBuild {
+            cmake {
+                cppFlags(
+                    "-std=c++17",
+                    "-fvisibility=hidden",
+                    "-fno-rtti",
+                    "-fno-exceptions"
+                )
+                arguments(
+                    "-DANDROID_STL=c++_static",
+                    "-DCMAKE_SYSTEM_NAME=Android"
+                )
+            }
+            ndk {
+                abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")
+            }
+        }
     }
 
     buildFeatures {
         viewBinding = true   // Step 1.2 — enables type-safe view binding across all UI screens
         buildConfig = true   // Step 2.2 — opt in to AGP-generated BuildConfig (DEBUG, VERSION_NAME, APPLICATION_ID)
+    }
+
+    // -----------------------------------------------------------------
+    // Phase 7 · Step 7.4 — NDK / CMake build for native_security.
+    //
+    // CMake builds libnative_security.so from src/main/cpp/.
+    // Compile flags: hidden visibility, no RTTI, no exceptions,
+    // stack protector.  Linker strips all symbols + excludes
+    // static-lib exports (see CMakeLists.txt for linker flags).
+    // -----------------------------------------------------------------
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.31.5"
+        }
     }
 
     // -----------------------------------------------------------------
