@@ -16,15 +16,16 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Step 4.5 (+ Step 4.6 overlay position + Step 5.3 recent URLs) —
- * DataStore-backed preferences for player settings.
+ * Step 4.5 (+ Step 4.6 overlay position + Step 5.3 recent URLs + Step 5.6
+ * recent searches) — DataStore-backed preferences for player settings.
  *
  * Keys:
  *  - KEY_VIDEO_QUALITY            ("video_quality_mode")      → [VideoQualityMode.name]
  *  - KEY_SUBTITLE_LANG            ("subtitle_track_id")       → opaque track id
  *  - KEY_FLOATING_X_RATIO         ("floating_player_x_ratio") → 0.0..1.0
  *  - KEY_FLOATING_Y_RATIO         ("floating_player_y_ratio") → 0.0..1.0
- *  - KEY_RECENT_NETWORK_URLS      ("recent_network_urls")     → JSON list
+ *  - KEY_RECENT_NETWORK_URLS      ("recent_network_urls")     → JSON list of objects
+ *  - KEY_RECENT_SEARCHES          ("recent_searches")         → JSON list of strings
  *
  * Scope: GLOBAL. Reads are suspend (use [first] for one-shot reads);
  * writes use [edit].
@@ -162,6 +163,70 @@ class PlayerPrefs(private val context: Context) {
         return arr.toString()
     }
 
+    // ----- Phase 5 · Step 5.6 — Recent search queries -----
+
+    /**
+     * Most-recent [MAX_RECENT_SEARCHES] queries the user has submitted
+     * from the Search screen. Plain strings (no URL / format metadata)
+     * so the JSON-encoded list is `["foo","bar"]` rather than a list of
+     * objects. Mirror of the recent-URL flow above; same DataStore.
+     */
+    val recentSearchesFlow: Flow<List<String>>
+        get() = context.playerDataStore.data.map { prefs ->
+            decodeRecentSearches(prefs[KEY_RECENT_SEARCHES])
+        }
+
+    /**
+     * Add (or move-to-front) a query. De-duplicates case-insensitively
+     * (parallels [addRecentNetworkUrl]'s scheme so users who re-type
+     * `"liverpool"` after a previous `"Liverpool"` hit don't see a
+     * duplicate chip). Blank input is a no-op so the chip strip doesn't
+     * grow an empty placeholder.
+     */
+    suspend fun addRecentSearch(query: String) {
+        val cleaned = query.trim()
+        if (cleaned.isBlank()) return
+        context.playerDataStore.edit { prefs ->
+            val current = decodeRecentSearches(prefs[KEY_RECENT_SEARCHES]).toMutableList()
+            current.removeAll { it.equals(cleaned, ignoreCase = true) }
+            current.add(0, cleaned)
+            while (current.size > MAX_RECENT_SEARCHES) current.removeAt(current.size - 1)
+            prefs[KEY_RECENT_SEARCHES] = encodeRecentSearches(current)
+        }
+    }
+
+    /**
+     * Remove a recent search (e.g. on chip close-icon tap). Lookup is
+     * case-insensitive to mirror [addRecentSearch]'s de-dup semantics.
+     */
+    suspend fun removeRecentSearch(query: String) {
+        context.playerDataStore.edit { prefs ->
+            val current = decodeRecentSearches(prefs[KEY_RECENT_SEARCHES]).toMutableList()
+            val removedAny = current.removeAll { it.equals(query, ignoreCase = true) }
+            if (removedAny) prefs[KEY_RECENT_SEARCHES] = encodeRecentSearches(current)
+        }
+    }
+
+    private fun decodeRecentSearches(raw: String?): List<String> {
+        if (raw.isNullOrBlank()) return emptyList()
+        return try {
+            val arr = JSONArray(raw)
+            (0 until arr.length()).mapNotNull { i ->
+                runCatching { arr.getString(i) }.getOrNull()?.takeIf { it.isNotBlank() }
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            emptyList()
+        }
+    }
+
+    private fun encodeRecentSearches(list: List<String>): String {
+        val arr = JSONArray()
+        list.forEach { arr.put(it) }
+        return arr.toString()
+    }
+
     /** One-shot read for the startup-apply step. */
     suspend fun readVideoQualityMode(): VideoQualityMode = videoQualityModeFlow.first()
     suspend fun readSubtitleTrackId(): String = subtitleTrackIdFlow.first()
@@ -175,11 +240,17 @@ class PlayerPrefs(private val context: Context) {
         // Phase 5 · Step 5.3 — recent network URLs (JSON-encoded).
         val KEY_RECENT_NETWORK_URLS = stringPreferencesKey("recent_network_urls")
 
+        // Phase 5 · Step 5.6 — recent search queries (JSON-encoded list of strings).
+        val KEY_RECENT_SEARCHES = stringPreferencesKey("recent_searches")
+
         const val DEFAULT_FLOATING_X_RATIO = 0.95f
         const val DEFAULT_FLOATING_Y_RATIO = 0.05f
 
         /** Phase 5 · Step 5.3 — Cap on the recent-URL list. */
         const val MAX_RECENT_URLS = 10
+
+        /** Phase 5 · Step 5.6 — Cap on the recent-search chip strip. */
+        const val MAX_RECENT_SEARCHES = 8
     }
 }
 

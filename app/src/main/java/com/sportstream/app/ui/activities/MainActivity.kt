@@ -26,17 +26,27 @@ import kotlinx.coroutines.launch
 /**
  * Phase 3 · Step 3.2 — Main host Activity.
  *
- * Hosts the BottomNavigationView (4 tabs) + the Drawer menu (10 items).
+ * Hosts the BottomNavigationView (4 tabs) + the Drawer menu (10 items) +
+ * (Phase 5 · Step 5.6) the MaterialToolbar with a Search action.
+ *
  * Drawer items with real destinations navigate directly; the rest show
- * a Snackbar with `upcomingStepFor(itemId)`.
+ * a Snackbar with `upcomingStepFor(itemId)`. The Toolbar's Search icon
+ * navigates to R.id.searchFragment on every tap (single destination).
  *
  * As of Phase 5:
  *  - drawer_highlights      → R.id.highlightsFragment  (3.5)
  *  - drawer_playlists       → R.id.playlistsFragment   (5.2)
- *  - drawer_network_stream  → R.id.networkStreamFragment (5.3) — NEW
+ *  - drawer_network_stream  → R.id.networkStreamFragment (5.3)
+ *  - drawer_notice          → R.id.noticeFragment      (5.5)
  *  - drawer_share / drawer_exit → system actions
- *  - drawer_floating_player / drawer_video_quality / drawer_notice
- *    / drawer_join_us / drawer_update → Snackbar placeholders
+ *  - drawer_floating_player / drawer_video_quality /
+ *    drawer_join_us / drawer_update → Snackbar placeholders
+ *  - main_toolbar_action_search (toolbar menu) → R.id.searchFragment (5.6)
+ *
+ * Window-inset policy: the toolbar absorbs the top system-bar inset
+ * (status bar) so its title sits below the camera notch / cutout; the
+ * NavHost no longer pads itself for top because the toolbar now sits
+ * above it. The bottom-nav still absorbs the bottom system-bar inset.
  */
 class MainActivity : AppCompatActivity() {
 
@@ -63,11 +73,11 @@ class MainActivity : AppCompatActivity() {
             v.updatePadding(bottom = sysBars.bottom)
             insets
         }
-        ViewCompat.setOnApplyWindowInsetsListener(binding.navHostFragment) { v, insets ->
-            val bars = insets.getInsets(
-                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
-            )
-            v.updatePadding(top = bars.top)
+        // Toolbar absorbs the status-bar inset; NavHost then sits flush
+        // against the toolbar with no extra top padding (Phase 5 · Step 5.6).
+        ViewCompat.setOnApplyWindowInsetsListener(binding.mainToolbar) { v, insets ->
+            val sysBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updatePadding(top = sysBars.top)
             insets
         }
 
@@ -75,6 +85,19 @@ class MainActivity : AppCompatActivity() {
             .findFragmentById(R.id.navHostFragment) as NavHostFragment
         val navController = navHost.navController
         binding.bottomNav.setupWithNavController(navController)
+
+        // Phase 5 · Step 5.6 — Toolbar search-action wiring. Menu is
+        // inflated declaratively via activity_main.xml `app:menu=`, so the
+        // listener only routes the click to navController.
+        binding.mainToolbar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.main_toolbar_action_search -> {
+                    navController.navigate(R.id.searchFragment)
+                    true
+                }
+                else -> false
+            }
+        }
 
         binding.navView.setNavigationItemSelectedListener { item ->
             when (item.itemId) {
@@ -88,13 +111,13 @@ class MainActivity : AppCompatActivity() {
                     binding.drawerRoot.closeDrawers()
                     true
                 }
-                // Phase 5 · Step 5.3 — Network Stream now has a real
-                // destination (R.id.networkStreamFragment wired in
-                // main_nav_graph.xml), so the drawer item navigates
-                // there directly instead of showing the
-                // "Coming in Step 5.3" placeholder Snackbar.
                 R.id.drawer_network_stream -> {
                     navController.navigate(R.id.networkStreamFragment)
+                    binding.drawerRoot.closeDrawers()
+                    true
+                }
+                R.id.drawer_notice -> {
+                    navController.navigate(R.id.noticeFragment)
                     binding.drawerRoot.closeDrawers()
                     true
                 }
@@ -144,13 +167,13 @@ class MainActivity : AppCompatActivity() {
     /**
      * Map a placeholder Drawer item id to the plan-listed step where its
      * real screen ships (e.g. "Video Quality — Coming in Step 4.5").
-     * Playlists (5.2) + Network Stream (5.3) have real destinations and
-     * were removed from this map in their respective steps.
+     * Playlists (5.2) + Network Stream (5.3) + Notice (5.5) have real
+     * destinations and were removed from this map in their respective
+     * steps.
      */
     private fun upcomingStepFor(itemId: Int): String = when (itemId) {
         R.id.drawer_floating_player  -> "4.6"
         R.id.drawer_video_quality    -> "4.5"
-        R.id.drawer_notice           -> "5.5"
         R.id.drawer_join_us          -> "8.x"
         R.id.drawer_update           -> "6.2"
         else                          -> "TBD"

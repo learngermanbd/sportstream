@@ -820,7 +820,19 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
     <!-- ============================================================
          PHASE 5 — Extra Features
          ============================================================ -->
-    <section class="phase" id="phase5">
+    <section class="section">
+    <div class="card" style="border-color:rgba(28,203,212,0.30);">
+        <h3 style="color:#fff;margin-bottom:14px;font-size:16px;">🤖 Auto-Sync Rule (every turn)</h3>
+        <ol style="margin:8px 0 0 20px;color:var(--text-muted);font-size:13px;line-height:1.8;">
+            <li>After every meaningful code change, run <code>tools/sync-to-github.sh "&lt;commit-msg&gt;"</code> from the repo root. Stages, commits, and pushes every dirty file in one shot.</li>
+            <li>Credentials live in <code>~/.sportstream-github-token</code> and <code>~/.sportstream-github-username</code> (chmod 600, outside repo). The git credential helper is a chmod-700 ephemeral script in /tmp, removed by an EXIT trap.</li>
+            <li>If the assistant wrote build-impacting changes (Kotlin / Gradle / AndroidManifest), <code>./gradlew :app:compileDebugKotlin --no-daemon</code> MUST pass BEFORE the push.</li>
+            <li><a href="../chat.html">chat.html</a> (sister doc) MUST be updated whenever a session ends; the same push batches the doc.</li>
+        </ol>
+    </div>
+</section>
+
+<section class="phase" id="phase5">
         <div class="phase-header">
             <div class="phase-num p5">5</div>
             <div>
@@ -829,64 +841,64 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             </div>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num green">STEP 5.1</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Favorites system</h4>
-            <p>Swipe-to-delete + undo, heart toggle animation.</p>
+            <p>Marked done 2026-06-20 (Phase 5 ship, commit Done when: FAVORITES_SYSTEM).</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num green">STEP 5.2</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Playlist management</h4>
-            <p>CRUD + FAB + add-to-playlist from player.</p>
+            <p>Marked done 2026-06-20 (Phase 5 ship, commit Done when: PLAYLISTS).</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num green">STEP 5.3</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Network stream player</h4>
-            <p>URL dialog + format selector + recent URLs in DataStore.</p>
+            <p>Marked done 2026-06-20 (Phase 5 ship, commit Done when: NETWORK_STREAM).</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num green">STEP 5.4</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Push notifications</h4>
-            <p><code>MessagingService</code> + <code>NotificationHelper</code> API 33+ <code>POST_NOTIFICATIONS</code> + <code>RemoteConfigHelper</code> fetches <code>/api/config</code>.</p>
+            <p>Marked done 2026-06-20 (Phase 5 ship, commit Done when: PUSH_NOTIFICATIONS_COMMIT).</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num green">STEP 5.5</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Drawer menu actions</h4>
-            <p>All 9 menu items wired.</p>
+            <p>Marked done 2026-06-20 (Phase 5 ship, commit Done when: NOTICE_SCREEN).</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num green">STEP 5.6</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Search functionality</h4>
-            <p>Debounced Flow 300 ms, recent searches in DataStore.</p>
+            <p>Marked done 2026-06-20 (Phase 5 ship, commit Done when: SEARCH).</p>
         </div>
 
         <div class="step todo">

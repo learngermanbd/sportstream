@@ -233,4 +233,43 @@
     <string name="notification_live_event_channel_desc">Heads-up notifications when a match goes live or a favorite team scores.</string>
     <string name="notification_general_channel_name">General</string>
     <string name="notification_general_channel_desc">App announcements and maintenance notices.</string>
+
+    <!--
+        Phase 5 · Step 5.5 — Notice screen.
+        Reachable from the Drawer menu's drawer_notice item; rendered
+        by NoticeFragment + fragment_notice.xml. Renders the free-form
+        `noticeText` string the admin sets via RemoteConfigHelper's
+        cached /api/config payload.
+    -->
+    <string name="fragment_notice_title">NOTICE</string>
+    <string name="fragment_notice_subtitle">Updates from the SportStream team</string>
+    <string name="notice_section_header">Notice</string>
+    <string name="notice_empty_title">No active notice</string>
+    <string name="notice_empty_subtitle">There\'s nothing to read right now.</string>
+    <string name="notice_refresh">Refresh</string>
+    <string name="notice_error_title">Couldn\'t load notice</string>
+    <string name="notice_error_retry">Retry</string>
+
+    <!--
+        Phase 5 · Step 5.6 — Search screen + toolbar search action.
+        Touched by SearchFragment, fragment_search.xml, SearchAdapter,
+        and main_toolbar_menu.xml. Mirrors the protocol of the existing
+        playlist / network-stream strings (section header + content hints).
+    -->
+    <string name="main_toolbar_search_title">Search</string>
+    <string name="main_toolbar_search_desc">Open the search screen</string>
+    <string name="fragment_search_title">SEARCH</string>
+    <string name="search_hint">Search events, channels, highlights</string>
+    <string name="search_back_desc">Back</string>
+    <string name="search_clear_desc">Clear search</string>
+    <string name="search_empty">No results. Try fewer or different keywords.</string>
+    <string name="search_section_events">MATCHES</string>
+    <string name="search_section_channels">CHANNELS</string>
+    <string name="search_section_highlights">HIGHLIGHTS</string>
+    <string name="search_recent_header">RECENT SEARCHES</string>
+    <string name="search_recent_clear">Clear all</string>
+    <string name="search_no_recent">No recent searches yet</string>
+    <string name="search_remove_recent_desc">Remove this recent search</string>
+    <string name="search_meta_views_label">%1$s views</string>
+    <string name="search_section_header">Search</string>
 </resources>

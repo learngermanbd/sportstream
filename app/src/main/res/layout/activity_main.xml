@@ -20,6 +20,14 @@
 
     The NavigationView anchors to drawer_menu.xml (9 plan items +
     Highlights as a 10th Drawer-top entry).
+
+    Phase 5 · Step 5.6 addition: a MaterialToolbar (`@+id/mainToolbar`)
+    layered ABOVE the NavHost, inside the inner ConstraintLayout. The
+    toolbar hosts the Search action (res/menu/main_toolbar_menu.xml) and
+    consumes the status-bar inset via setOnApplyWindowInsetsListener in
+    MainActivity. We do not call setSupportActionBar — toolbar.inflateMenu
+    / setOnMenuItemClickListener gives us enough surface without forcing
+    a full ActionBar rewrite that would re-style all the BottomNav items.
 -->
 <androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -30,20 +38,46 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_splash">
 
-    <!-- Main content — existing ConstraintLayout with NavHost + BottomNav. -->
+    <!-- Main content — Toolbar + NavHost + BottomNav layered by Step 5.6. -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <!--
+            Phase 5 · Step 5.6 — MaterialToolbar with a single Search action item.
+            The toolbar lives at the top of the inner ConstraintLayout, above
+            the NavHost, so taps on the search icon route to SearchFragment via
+            MainActivity. Inflating the menu is done declaratively via the
+            `app:menu=` attribute (no setSupportActionBar invocation — we use
+            Toolbar.setOnMenuItemClickListener to keep the action-bar contract
+            simple and the BottomNav's existing selection behavior intact).
+        -->
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/mainToolbar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@color/secondary"
+            android:elevation="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:menu="@menu/main_toolbar_menu"
+            app:title="@string/app_name"
+            app:titleTextAppearance="@style/TextAppearance.Material3.TitleMedium"
+            app:titleTextColor="@color/text" />
+
         <!-- NavHostFragment hosts res/navigation/main_nav_graph.xml
-             (5 destinations: Home / Categories / Favorites / Settings / Highlights). -->
+             (now 7 destinations: Home / Categories / Favorites / Settings /
+             Highlights / Notice / Search). Anchored BELOW the toolbar so
+             the toolbar's status-bar inset doesn't double up with one from
+             the NavHost (MainActivity strips the NavHost's top inset). -->
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/navHostFragment"
             android:name="androidx.navigation.fragment.NavHostFragment"
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:defaultNavHost="true"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/mainToolbar"
             app:layout_constraintBottom_toTopOf="@+id/bottomNav"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
