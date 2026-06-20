@@ -912,6 +912,28 @@
         </section>
     </main>
 
+        <section class="turn role-commit" id="turn-25">
+            <div class="step-header">
+                <span class="step-num">025</span>
+                <span class="agent commit">Shipped</span>
+                <span class="ts">turn 86-90</span>
+            </div>
+            <h4>STEP 7.9 SHIPPED - Anti-Debugging &amp; Runtime Protection</h4>
+            <div class="response-body">
+                <p><strong>Components delivered</strong> (Step 7.9 - Anti-Debugging &amp; Runtime Protection):</p>
+                <ul>
+                    <li><strong>AntiDebug.kt</strong> (new) - Kotlin-side anti-debugging: isDebuggerConnected, waitingForDebugger, TracerPid from /proc/self/status, JDWP port scan via /proc/net/tcp (8000-8999 range), timing anomaly detection (50ms threshold, 3 consecutive violations). DebugResult data class.</li>
+                    <li><strong>RuntimeMonitor.kt</strong> (new) - /proc/self/maps scan for 20+ suspicious libraries (Frida, Xposed, Substrate, LSPosed, SandHook, Whale, BlackBox, VirtualApp, TaiChi, Pine). Thread count monitoring (warn 60, critical 80). Dual scan via File API and Runtime.exec for hooking resistance. MonitorResult data class.</li>
+                    <li><strong>CodeObfuscationRuntime.kt</strong> (new) - XOR-encrypted method/class name dispatch (key 0x5A). invokeEncrypted() with reflection + memory wipe, loadClassEncrypted(), dualPath() for multi-path execution, timeBasedSelector(). Pre-encrypted class names in EncryptedClasses object.</li>
+                    <li><strong>AntiScreenCapture.kt</strong> (new) - FLAG_SECURE management delegating to MemoryProtection. Screen recording detection via suspicious package check. Recents protection. Memory-trim callback for re-applying protection. PROTECTED_ACTIVITY_NAMES set.</li>
+                    <li><strong>HoneyPotManager.kt</strong> (new) - Fake API endpoints (admin/debug/metrics/export), decoy encryption keys, canary system (premium_unlock, admin_access, debug_config, key_export). Dead code paths that trigger canaries. ConcurrentHashMap for thread safety. Sentry reporting on trigger.</li>
+                    <li><strong>SecurityGate.kt</strong> (modified) - Added 3 new check layers: Layer 7 AntiDebug (+4), Layer 8 RuntimeMonitor (+3), Layer 9 HoneyPotManager canaries (+6).</li>
+                    <li><strong>SportStreamApp.kt</strong> (modified) - Added HoneyPotManager.init() before SecurityGate.runChecks().</li>
+                </ul>
+                <p><strong>Build:</strong> ./gradlew :app:compileDebugKotlin — BUILD SUCCESSFUL (50s)</p>
+            </div>
+        </section>
+
         <section class="turn role-commit" id="turn-24">
             <div class="step-header">
                 <span class="step-num">024</span>
