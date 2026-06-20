@@ -842,6 +842,29 @@
                 <p><strong>Commit:</strong> 72dc2f8 on origin/main.</p>
             </div>
         </section>
+
+        <section class="turn role-commit" id="turn-21">
+            <div class="step-header">
+                <span class="step-num">021</span>
+                <span class="agent commit">Shipped</span>
+                <span class="ts">turn 69-75</span>
+            </div>
+            <h4>STEP 7.5 SHIPPED - APK Integrity & Anti-Tampering</h4>
+            <div class="response-body">
+                <p><strong>Components delivered</strong> (Step 7.5 - APK Integrity & Anti-Tampering):</p>
+                <ul>
+                    <li><strong>IntegrityChecker.kt</strong> (new) - Runtime APK integrity verification: signing certificate SHA-256 verification (GET_SIGNING_CERTIFICATES API 28+ / GET_SIGNATURES legacy), SHA-256 file integrity for APK ZipFile entries (classes.dex, resources.arsc), installer source validation (Play Store, Galaxy Store, Amazon, null for ADB). TamperResult sealed class with 9 subtypes.</li>
+                    <li><strong>TamperDetector.kt</strong> (new) - META-INF inspection for suspicious entries (apktool, lucky, patcher, crack, hack), entry count anomaly check (>10 entries), native environment checks via NativeSecurityManager (Frida/Xposed/Substrate hooks + root), debuggable flag check (FLAG_DEBUGGABLE in release builds = repackaged).</li>
+                    <li><strong>SelfHealing.kt</strong> (new) - Gradual degradation strategy: NONE → LOGGING → FEATURES_DISABLED → FINAL. Silent Sentry reporting, feature flag disabling (premium_streaming, favorites, playlists, push, PiP, subtitles, quality), deceptive error messages (never reveals tamper detection), random 30-120s delay before exitProcess to prevent attacker correlation.</li>
+                    <li><strong>SportStreamApp.kt</strong> - Integrity checks run on background Thread after UpdateWorker.enqueue. IntegrityChecker first, then TamperDetector if clean. SelfHealing.onTamperDetected on failure.</li>
+                    <li><strong>proguard-rules.pro</strong> - Comment noting no additional keep rules needed for integrity/tamper/selfhealing classes.</li>
+                </ul>
+                <p><strong>Known limitation:</strong> IntegrityChecker.expectedSignatureSha256 and expectedEntryHashes are not yet populated (deferred to Step 7.13 — Security build &amp; verify pipeline). Installer source check is fully functional.</p>
+                <p><strong>Code review fix:</strong> SentryEvent.level shadowed by function parameter — resolved with this.level = sentryLevel.</p>
+                <p><strong>Build:</strong> ./gradlew :app:compileDebugKotlin BUILD SUCCESSFUL.</p>
+                <p><strong>Commit:</strong> 214a991 on origin/main.</p>
+            </div>
+        </section>
     </main>
 
     <div class="container">
