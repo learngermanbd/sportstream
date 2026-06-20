@@ -799,6 +799,27 @@
                 <p><strong>Commit:</strong> 14f4675 + 0f172c0 on origin/main.</p>
             </div>
         </section>
+
+        <section class="turn role-commit" id="turn-19">
+            <div class="step-header">
+                <span class="step-num">019</span>
+                <span class="agent commit">Shipped</span>
+                <span class="ts">turn 56-59</span>
+            </div>
+            <h4>STEP 7.3 SHIPPED - ProGuard/R8 full-mode obfuscation</h4>
+            <div class="response-body">
+                <p><strong>Components delivered</strong> (Step 7.3 - R8 Obfuscation):</p>
+                <ul>
+                    <li><strong>proguard-cjk-dictionary.txt</strong> (new) - CJK character dictionary (~120 Unicode CJK characters) used by R8 for class/method/field renaming. Makes decompiled code visually unreadable and breaks many decompilers.</li>
+                    <li><strong>proguard-rules.pro</strong> (updated) - Added aggressive optimization flags: -repackageclasses (repackages all non-kept classes into root package), -allowaccessmodification (broadens access for more optimizations), -overloadaggressively (renames different-signature methods to same name), -mergeinterfacesaggressively (merges overlapping interfaces). Added CJK dictionary references: -obfuscationdictionary, -classobfuscationdictionary, -packageobfuscationdictionary. Added source-file stripping: -keepattributes !SourceFile,!LineNumberTable + -renamesourcefileattribute (removes file:line from class files; Sentry mapping.txt still allows server-side deobfuscation). Added commented-out debugging flags: -printusage, -printseeds, -printmapping.</li>
+                    <li><strong>build.gradle.kts</strong> (fix) - Extended encryptSecrets task dependency regex to also match KSP tasks (kspDebugKotlin, kspReleaseKotlin) to fix implicit dependency error.</li>
+                </ul>
+                <p><strong>R8 full mode</strong> was already enabled in gradle.properties (android.enableR8.fullMode=true) from Step 6.5.</p>
+                <p><strong>Code review fix:</strong> Removed ASCII line (abcdefghijklmnopqrstuvwxyza) from CJK dictionary — all entries should be CJK characters for consistent unreadability.</p>
+                <p><strong>Build:</strong> ./gradlew :app:compileDebugKotlin BUILD SUCCESSFUL (1m 25s).</p>
+                <p><strong>Commit:</strong> 5a3ec4a on origin/main.</p>
+            </div>
+        </section>
     </main>
 
     <div class="container">
