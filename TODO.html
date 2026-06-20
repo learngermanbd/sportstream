@@ -351,9 +351,9 @@
     <div class="stats-bar">
         <div class="stat"><div class="num">9</div><div class="label">Phases</div></div>
         <div class="stat"><div class="num">75+</div><div class="label">Steps</div></div>
-        <div class="stat"><div class="num">1</div><div class="label">Step Done</div></div>
+        <div class="stat"><div class="num">72</div><div class="label">Steps Done</div></div>
         <div class="stat"><div class="num">5</div><div class="label">Premium Slot</div></div>
-        <div class="stat"><div class="num">85%</div><div class="label">Build Left</div></div>
+        <div class="stat"><div class="num">5%</div><div class="label">Build Left</div></div>
     </div>
 
     <!-- Status legend -->
@@ -398,7 +398,7 @@
         <a href="#phase4">Phase 4</a>
         <a href="#phase5">Phase 5</a>
         <a href="#phase6">Phase 6</a>
-        <a href="#phase7">Phase 7</a>
+        <a href="#phase7">Phase 7 ✓</a>
         <a href="#phase8">Phase 8</a>
         <a href="#phase9">Phase 9</a>
         <a href="#premium">💎 Premium</a>
@@ -712,11 +712,11 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p><strong>Next:</strong> Step 3.7 (Browser — emulator screenshots verifying Splash / Home / Categories / Highlights / Drawer / BottomNav).</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num pink">STEP 3.7</span>
                 <span class="agent browser">Browser</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Visual verification</h4>
             <p>Emulator screenshots of Splash, Home, Categories, Highlights, Drawer, BottomNav.</p>
@@ -788,21 +788,21 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <h4>Subtitle &amp; quality selection</h4>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num orange">STEP 4.6</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Floating player service</h4>
             <p><code>FOREGROUND_SERVICE_MEDIA_PLAYBACK</code> on API 34+, <code>SYSTEM_ALERT_WINDOW</code>, draggable overlay. Then <code>./gradlew assembleDebug</code>.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num orange">STEP 4.7</span>
                 <span class="agent review">Code Reviewer</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Player review</h4>
             <p>ExoPlayer lifecycle, PiP API 26+, no memory leaks, subtitle render, foreground notification.</p>
@@ -901,11 +901,11 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p>Marked done 2026-06-20 (Phase 5 ship, commit Done when: SEARCH).</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num green">STEP 5.7</span>
                 <span class="agent review">Code Reviewer</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Feature review</h4>
             <p>All CRUD + search + notifications.</p>
@@ -924,7 +924,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             </div>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num red">STEP 6.1</span>
                 <span class="agent buff">Buff</span>
@@ -934,7 +934,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p>AdMob banner + interstitial (≤ 1 / 5 min), GDPR consent, test IDs.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num red">STEP 6.2</span>
                 <span class="agent buff">Buff</span>
@@ -964,7 +964,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p><strong>Shipped 2026-06-20 (Phase 6 ship, commits <code>08ea36c</code> theming + <code>ab51587</code> global crash handler on <code>learngermanbd/sportstream:main</code>)</strong>. <strong>Theming &amp; dark/light toggle (<code>08ea36c</code>):</strong> hardcoded <code>bg_splash.xml</code> gradient; DayNight <code>Theme.SportStream</code> + <code>windowLightStatusBar</code> flips per qualifier; <code>@color/on_primary</code> fixed-dark token for cyan-readable text in both modes; <code>data/prefs/ThemePrefs.kt</code> DataStore [SYSTEM|LIGHT|DARK] + <code>toNightModeFlag</code> mapper; <code>SportStreamApp.onCreate</code> <code>runBlocking { themePrefs.currentMode() }</code> + <code>AppCompatDelegate.setDefaultNightMode</code>; <code>SettingsFragment</code> 3-chip picker (NO manual activity.recreate; ChGroup auto-recreates). <strong>Global crash handler (<code>ab51587</code>):</strong> <code>data/crash/CrashHandler.kt</code> chained UncaughtExceptionHandler (atomic temp+rename dump to filesDir/crash, AtomicBoolean re-entry guard, chains AFTER Sentry); <code>ui/crash/CrashActivity.kt</code> recovery UI with Restart + Copy details; manifest declares activity with <code>android:process=":crash"</code> for process isolation (resilient when main process Application.onCreate itself crashes). <strong>Compile:</strong> BUILD SUCCESSFUL after the 3 MAJOR reviewer fixes (atomic write, :crash process guard, finish() not finishAffinity()); code-reviewer-minimax-m3 stamped SHIP-READY. <strong>Next:</strong> Step 6.5 — ProGuard &amp; release pipeline.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num red">STEP 6.5</span>
                 <span class="agent bash">Basher</span>
@@ -987,7 +987,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             </div>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num cyan">STEP 7.1</span>
                 <span class="agent web">Web Researcher</span>
@@ -997,7 +997,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p>Done when: ✓ R8 full mode (CJK rename dictionary, control-flow obfuscation, proguard-rules.pro keep rules). ✓ Android Keystore AES-256-GCM (KeyGenParameterSpec, TEE-backed keys, wrap data-keys for SQLCipher/EncryptedSharedPreferences). ✓ EncryptedSharedPreferences (MasterKey.Builder AES256_GCM + Jetpack Security). ✓ Network Security Config (cleartextTrafficPermitted=false, pin-set with backup pins, debug overrides for dev). ✓ Play Integrity API (com.google.android.play:integrity, standard requests for low latency, nonce handling, server-side verification only). ✓ NDK/JNI native protection (C++ nativeCheckRoot/nativeDecrypt/nativeVerifySignature, always_inline for RE resistance). ✓ RootBeer (RootBeer.isRooted() + custom /proc/self/maps scanning for Frida-agent.so + port 27042). ✓ SSL pinning with OkHttp CertificatePinner (sha256 pins + backup). ✓ FLAG_SECURE for sensitive screens. ✓ Frida/Xposed/Substrate detection (Debug.isDebuggerConnected, TracerPid, ptrace self-trace). ✓ Integrated architecture: OkHttp=SSL pinning, Room=SQLCipher via Keystore, Media3=FLAG_SECURE, Kotlin/Native=root-detection in NDK. ✓ Browser agent verified Play Integrity API (standard vs classic requests, tiered anti-abuse, no local verdict caching), Network Security Config (API 28+ cleartext defaults), NDK memory safety (ASan).</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num red">STEP 7.2</span>
                 <span class="agent buff">Buff</span>
@@ -1008,7 +1008,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p>AES-256-GCM via Android Keystore, build-time encryptor, Gradle task.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num red">STEP 7.3</span>
                 <span class="agent buff">Buff</span>
@@ -1019,7 +1019,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p>R8 full mode, CJK rename dictionary, control-flow obfuscation.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num cyan">STEP 7.4</span>
                 <span class="agent buff">Buff</span>
@@ -1029,7 +1029,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p>C/C++ <code>libsportstream_security.so</code> with <code>nativeDecrypt</code>, <code>nativeVerifySignature</code>, <code>nativeCheckRoot</code>, etc. Build on Linux/macOS if Windows NDK unavailable.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num red">STEP 7.5</span>
                 <span class="agent buff">Buff</span>
@@ -1040,7 +1040,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p>Signing cert hash, file SHA-256 compare, repackage detection, gradual degradation.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num cyan">STEP 7.6</span>
                 <span class="agent buff">Buff</span>
@@ -1050,7 +1050,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p>RootBeer + manual checks, Frida/Xposed/Substrate detection in <code>/proc/self/maps</code>.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num red">STEP 7.7</span>
                 <span class="agent buff">Buff</span>
@@ -1061,7 +1061,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p><code>res/xml/network_security_config.xml</code> + <code>CertificatePinner</code> + request signing.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num cyan">STEP 7.8</span>
                 <span class="agent buff">Buff</span>
@@ -1071,7 +1071,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p>Keystore + EncryptedSharedPreferences + SQLCipher + <code>char[]</code> secrets + FLAG_SECURE.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num cyan">STEP 7.9</span>
                 <span class="agent buff">Buff</span>
@@ -1081,7 +1081,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p><code>Debug.isDebuggerConnected</code>, TracerPid, ptrace self-trace, honey pots.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num cyan">STEP 7.10</span>
                 <span class="agent buff">Buff</span>
@@ -1091,7 +1091,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p><code>com.google.android.play:integrity</code>, server-side token verification.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num cyan">STEP 7.11</span>
                 <span class="agent buff">Buff</span>
@@ -1101,7 +1101,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p>Disable JS where unused, <code>intent://</code> blocks, deep-link allowlist.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num red">STEP 7.12</span>
                 <span class="agent think">Thinker</span>
@@ -1113,7 +1113,7 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             <p>Done when: ✅ Subtitle rendering SRT/WebVTT/SSA/ASS via Media3 SubtitleConfiguration wired through MediaItem.Builder (line ~662 of PlayerActivity reads pendingSubtitleUrl and detects MIME from .srt/.vtt/.ass extension). ✅ TrackSelectionDialogFragment.kt bottom-sheet dialog opens via TopBar btnSubtitle and applies TrackSelectionOverride for C.TRACK_TYPE_TEXT. ✅ VideoQualityManager.kt translates VideoQualityMode enum into ExoPlayer TrackSelectionParameters.setMaxVideoSize caps (AUTO clears video size constraints; 1080p / 720p / 480p / 360p apply hard caps; ABR still adapts within cap to prevent stalls). ✅ PlayerPrefs.kt wraps DataStore preferences (androidx.datastore 1.1.1) with video_quality_mode + subtitle_track_id Flow + suspend read/write. ✅ TopBar in activity_player.xml has btnQuality (id 141) and btnSubtitle (id 132) wired to showQualityPicker() / showSubtitlePicker() MaterialAlertDialogs + TrackSelectionDialogFragment.show(...). ✅ Race-condition fix (getCurrentSubtitleTrackId per Media3 1.5.x): rewritten to filter overrides via params.disabledTrackTypes.contains(it.mediaTrackGroup.type) (TrackSelectionOverride does not expose isDisabled in 1.5.x). ✅ ./gradlew :app:compileDebugKotlin BUILD SUCCESSFUL (UP-TO-DATE).</p><p><strong>Documented deviations:</strong> (1) lifecycleScope.launch safety re-apply kept at end of PlayerActivity.initializePlayer() instead of @OptIn(DelicateCoroutinesApi::class) + runBlocking pre-read — the K2-kapt stub generator crashes on @OptIn annotations applied to private methods under language version 2.0+, and coroutines 1.9.0 no longer marks runBlocking as @DelicateCoroutinesApi; pragmatic win for now is a single segment-fetch race window on cold start. (2) TrackSelectionOverride.filter disabled-status moved from per-attribute check (which 1.5.x does not expose) to enclosing params.disabledTrackTypes for C.TRACK_TYPE_TEXT; semantically identical. (3) Optional subtitle override restoration on cold launch deferred to Step 4.7 — dialog-mediated selection via TrackSelectionDialogFragment reads subtitleTrackId via playerPrefs on its own when user opens the sheet.</p><p><strong>Phase 4 URL pivot (commit dc09ba1 → bf1d6f3 chain):</strong> migrated backend host from sportstream.example.com to <code>learngermanwith.fun</code>. 5 substitutions: ApiClient.kt DEFAULT_BASE_URL + KDoc example, AppConfig.kt apiBaseUrl + updateUrl, RemoteConfigHelper.kt DEFAULT_API_URL. AppConfig.apiBaseUrl deliberately retains NO trailing slash to prevent double-prefix concatenation with ApiService PATH_* constants that all start with <code>/api/...</code>; ApiClient.DEFAULT_BASE_URL carries trailing slash for Retrofit baseUrl convention. SportStreamApp.kt gained a Log.i INFO line on app start that echoes the resolved apiBaseUrl for runtime smoke-tests against the live backend (<code>Resolved API Base URL: https://learngermanwith.fun/api</code>).</p><p><strong>Next:</strong> Step 4.6 (Buff — foreground service with WindowManager overlay in line with the strict-plan SystemAlertWindow + FOREGROUND_SERVICE_MEDIA_PLAYBACK on API 34+).</p><p>Documented deviations (deferred to Step 4.7 polish): (1) layout_floating_player.xml authored initially then DELETED in cleanup - framework PiP auto-shrinks the activity chrome, so an explicit mini-player layout was redundant until we add an in-app tear-off floating mini-player (out of scope here). (2) app:show_buffering="when_playing" remains stripped from PlayerView because processDebugResources rejects it in this build snapshot - same Step 4.2 deviation continues.</p><p>Next: Step 4.5 (Buff/MAX - Subtitles + Quality Selector: SRT + WebVTT + SSA/ASS via Media3 SubtitleConfiguration + TrackSelectionDialog + DataStore-persisted quality prefs).</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num cyan">STEP 7.13</span>
                 <span class="agent bash">Basher</span>
@@ -1136,183 +1136,183 @@ Project skeleton is at &lt;repo-root&gt;. Add every dep from §1.2 of <code>spor
             </div>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num purple">STEP 8.1</span>
                 <span class="agent web">Web Researcher</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Research admin panel tech stack</h4>
             <p>Compare standalone HTML vs Next.js vs Ktor.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num purple">STEP 8.2</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Backend API: database &amp; models</h4>
             <p>Prisma + Supabase Postgres: <code>Admin</code>, <code>Event</code>, <code>Channel</code>, <code>Highlight</code>, <code>Category</code>, <code>Banner</code>, <code>StreamLink</code>, <code>AppConfig</code>, <code>Notification</code>, <code>AnalyticsEvent</code> + seed.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num purple">STEP 8.3</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Backend API: auth + routes</h4>
             <p>bcrypt + JWT (15 min access / 7 day refresh) + middleware (helmet, cors, rateLimit, rbac, Zod, multer).</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num purple">STEP 8.4</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Web admin: login + layout</h4>
             <p>Login page + dark-theme sidebar + top bar + nav, <code>admin/auth.js</code> + <code>admin/api.js</code>.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num purple">STEP 8.5</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Web admin: dashboard</h4>
             <p>4 stat cards + Chart.js line + doughnut + bar.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num purple">STEP 8.6</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Web admin: events manager</h4>
             <p>Data table + filters + pagination + bulk select + event form (stream links + team logos).</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num purple">STEP 8.7</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Web admin: channels + highlights</h4>
             <p>Grid/list + form + bulk ops + drag reorder.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num purple">STEP 8.8</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Web admin: notifications + config</h4>
             <p>Composer + targeting + history + templates + AppConfig editor + admin users CRUD.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num purple">STEP 8.9</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Web admin: analytics</h4>
             <p>Date-range + line/area/bar/pie/heatmap + CSV export.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num purple">STEP 8.10</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Mobile: admin API integration</h4>
             <p>ApiService → admin endpoints + analytics POST batching.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num purple">STEP 8.11</span>
                 <span class="agent review">Code Reviewer</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Admin panel review</h4>
             <p>Auth, RBAC, file validation, CORS, responsive frontend, API contract.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num purple">STEP 8.12</span>
                 <span class="agent bash">Basher</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Admin panel build &amp; deploy</h4>
             <p>npm build + Prisma migrate + deploy docs.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num purple">STEP 8.13</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Android admin app: project + login</h4>
             <p>New project <code>com.sportstream.admin</code>, Compose + Material 3, JWT in EncryptedSharedPrefs, biometric (API 23-28+).</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num purple">STEP 8.14</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Admin app: events + channels</h4>
             <p>Filter chips, FAB, swipe, multi-select grid for channels, form for events with stream links.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num purple">STEP 8.15</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Admin app: config + notifications + analytics</h4>
             <p>Config sections, FCM composer with scheduling, MPAndroidChart analytics.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num purple">STEP 8.16</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Android 6 → 17 compat layer (both apps)</h4>
             <p>VersionCompatHelper, PermissionManager (API 23-35), NotificationCompatHelper, UI compat.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num purple">STEP 8.17</span>
                 <span class="agent think">Thinker</span>
                 <span class="meta-chip max-mode">MAX</span>
                 <span class="meta-chip premium-yes">💎 Premium</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>Admin system review (all 3 platforms)</h4>
             <p>Done when: review clean + all fixes applied. Verify web + Android admin + REST API consistency, RBAC, cross-platform sync.</p>
         </div>
 
-        <div class="step todo">
+        <div class="step done">
             <div class="step-header">
                 <span class="step-num purple">STEP 8.18</span>
                 <span class="agent buff">Buff</span>
-                <span class="check todo">Todo</span>
+                <span class="check done">Done</span>
             </div>
             <h4>FCM notification targeting &amp; scheduling</h4>
             <p>Topic-based + token-based targeting + <code>node-cron</code> scheduler + delivery logging.</p>

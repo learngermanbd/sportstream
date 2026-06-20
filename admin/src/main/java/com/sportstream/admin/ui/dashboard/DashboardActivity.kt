@@ -1,35 +1,112 @@
 package com.sportstream.admin.ui.dashboard
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import com.sportstream.admin.SportStreamAdminApp
+import com.sportstream.admin.data.AdminApi
 import com.sportstream.admin.databinding.ActivityDashboardBinding
+import com.sportstream.admin.ui.login.LoginActivity
+import com.sportstream.admin.ui.events.EventsFragment
+import com.sportstream.admin.ui.channels.ChannelsFragment
+import com.sportstream.admin.ui.highlights.HighlightsFragment
+import com.sportstream.admin.ui.categories.CategoriesFragment
+import com.sportstream.admin.ui.config.ConfigFragment
+import com.sportstream.admin.ui.notifications.NotificationsFragment
+import kotlinx.coroutines.launch
 
 /**
- * Phase 8 \u00b7 Step 8.13 \u2014 Post-auth landing screen (placeholder).
+ * Phase 8 · Step 8.14-8.15 — Admin Dashboard with fragment-based management.
  *
- * Shows three quick stats (live events, total channels, today's highlights)
- * fetched via [com.sportstream.admin.data.AdminApi.fetchDashboardStats].
- * The full Phase 8 dashboard (events/channels/highlights/config/analytics
- * sub-sections) lands across Steps 8.14\u20138.15; this activity is the
- * minimal functional entry point that proves the auth \u2192 fetch pipeline
- * end-to-end.
+ * Toolbar buttons switch between management sections:
+ * Events, Channels, Highlights, Categories, Config, Notifications.
+ * The AdminApi singleton is wired through the Application class token.
  */
 class DashboardActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDashboardBinding
+    lateinit var api: AdminApi
+        private set
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Step 8.14 will wire the chips + FAB + list adapters; for now just
-        // reflect that we're past login.
-        binding.tvWelcome.text = "SportStream Admin \u2014 Dashboard"
-        binding.statsCard.visibility = View.VISIBLE
-        binding.statsText.text =
-            "Live events: \u2014   Channels: \u2014   Highlights: \u2014\n" +
-            "(Backend wired in Step 8.14)"
+        val app = applicationContext as SportStreamAdminApp
+        api = AdminApi(
+            baseUrl = SportStreamAdminApp.ADMIN_API_BASE_URL,
+            httpClient = app.httpClient,
+            tokenProvider = { app.adminToken }
+        )
+
+        binding.tvTitle.text = "Admin · ${app.adminName}"
+        binding.tvRole.text = app.adminRole
+
+        // Load dashboard stats
+        loadStats()
+
+        // Section buttons
+        binding.btnEvents.setOnClickListener { showFragment("events") }
+        binding.btnChannels.setOnClickListener { showFragment("channels") }
+        binding.btnHighlights.setOnClickListener { showFragment("highlights") }
+        binding.btnCategories.setOnClickListener { showFragment("categories") }
+        binding.btnConfig.setOnClickListener { showFragment("config") }
+        binding.btnNotifications.setOnClickListener { showFragment("notifications") }
+        binding.btnLogout.setOnClickListener {
+            app.adminToken = ""
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        }
+
+        // Default: events
+        showFragment("events")
+    }
+
+    private fun loadStats() {
+        lifecycleScope.launch {
+            when (val result = api.getAnalytics()) {
+                is AdminApi.ApiResult.Success -> {
+                    val o = result.data
+                    val liveEvents = o.optJSONObject("overview")?.optInt("liveEvents", 0) ?: 0
+                    val totalEvents = o.optJSONObject("overview")?.optInt("totalEvents", 0) ?: 0
+                    val totalChannels = o.optJSONObject("overview")?.optInt("totalChannels", 0) ?: 0
+                    binding.tvStats.text = "Live: $liveEvents | Events: $totalEvents | Channels: $totalChannels"
+                }
+                is AdminApi.ApiResult.Failure -> {
+                    binding.tvStats.text = "Could not load stats"
+                }
+            }
+        }
+    }
+
+    private fun showFragment(name: String) {
+        // Reset button styles
+        listOf(binding.btnEvents, binding.btnChannels, binding.btnHighlights,
+            binding.btnCategories, binding.btnConfig, binding.btnNotifications).forEach {
+            it.isSelected = false
+        }
+
+        val fragment: Fragment = when (name) {
+            "events" -> { binding.btnEvents.isSelected = true; EventsFragment() }
+            "channels" -> { binding.btnChannels.isSelected = true; ChannelsFragment() }
+            "highlights" -> { binding.btnHighlights.isSelected = true; HighlightsFragment() }
+            "categories" -> { binding.btnCategories.isSelected = true; CategoriesFragment() }
+            "config" -> { binding.btnConfig.isSelected = true; ConfigFragment() }
+            "notifications" -> { binding.btnNotifications.isSelected = true; NotificationsFragment() }
+            else -> EventsFragment()
+        }
+
+        supportFragmentManager.beginTransaction()
+            .replace(binding.fragmentContainer.id, fragment)
+            .commit()
+    }
+
+    fun toast(msg: String) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 }

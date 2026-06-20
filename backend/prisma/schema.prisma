@@ -14,6 +14,17 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Device tokens for FCM push (Step 8.18)
+
+model DeviceToken {
+  id         String   @id @default(cuid())
+  token      String   @unique
+  platform   String?
+  lastSeenAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+}
+
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")

@@ -7,22 +7,17 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.sportstream.admin.SportStreamAdminApp
 import com.sportstream.admin.data.AdminApi
-import com.sportstream.admin.data.LoginRequest
 import kotlinx.coroutines.launch
 
 /**
- * Phase 8 \u00b7 Step 8.13 \u2014 Login state machine.
- *
- * The admin authentication flow is intentionally minimal: a single
- * `POST /api/admin/auth/login` call to [AdminApi] tells us YES/NO. Real
- * RBAC, refresh-tokens, and Sentry-tagged crash breadcrumbs land in Step 8.16.
+ * Phase 8 · Step 8.14 — Login state machine with proper token persistence.
  */
 class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
     sealed class LoginState {
         object Idle : LoginState()
         object Loading : LoginState()
-        data class Success(val token: String) : LoginState()
+        data class Success(val token: String, val refreshToken: String, val name: String, val role: String) : LoginState()
         data class Error(val message: String) : LoginState()
     }
 
@@ -30,9 +25,12 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     val state: LiveData<LoginState> = _state
 
     private val api: AdminApi by lazy {
-        val ctx = getApplication<Application>().applicationContext
-        val app = ctx as SportStreamAdminApp
-        AdminApi(baseUrl = SportStreamAdminApp.ADMIN_API_BASE_URL, httpClient = app.httpClient)
+        val app = getApplication<SportStreamAdminApp>()
+        AdminApi(
+            baseUrl = SportStreamAdminApp.ADMIN_API_BASE_URL,
+            httpClient = app.httpClient,
+            tokenProvider = { app.adminToken }
+        )
     }
 
     fun login(email: String, password: String) {
@@ -43,12 +41,28 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
         _state.value = LoginState.Loading
         viewModelScope.launch {
-            val result = api.login(LoginRequest(email, password))
-            _state.value = when (result) {
-                is AdminApi.LoginResult.Success ->
-                    LoginState.Success(result.token)
-                is AdminApi.LoginResult.Failure ->
-                    LoginState.Error(result.message)
+            when (val result = api.login(email, password)) {
+                is AdminApi.ApiResult.Success -> {
+                    val r = result.data
+                    if (r.token.isEmpty()) {
+                        _state.value = LoginState.Error("Server returned no token")
+                    } else {
+                        // Persist token in Application
+                        val app = getApplication<SportStreamAdminApp>()
+                        app.adminToken = r.token
+                        app.adminRefreshToken = r.refreshToken
+                        app.adminName = r.user?.name ?: email.split("@")[0]
+                        app.adminRole = r.user?.role ?: "EDITOR"
+                        _state.value = LoginState.Success(
+                            token = r.token,
+                            refreshToken = r.refreshToken,
+                            name = app.adminName,
+                            role = app.adminRole
+                        )
+                    }
+                }
+                is AdminApi.ApiResult.Failure ->
+                    _state.value = LoginState.Error(result.message)
             }
         }
     }

@@ -1,49 +1,126 @@
 # SportStream Admin Backend
 
-Phase 8 / Step 8.2 - 8.3 base skeleton for the REST API that powers the
-SportStream admin panel web + Android plus the user's `/api/config` and
-`/api/*` reads.
+Phase 8 · Step 8.2-8.3 — Full REST API powering the SportStream admin panel (web + Android) plus the user app's `/api/config` and `/api/*` reads.
 
 ## Stack
 
 - **Runtime**: Node.js 18+
 - **Framework**: Express 4
 - **Database**: PostgreSQL via Prisma 5 (Supabase in prod)
-- **Auth**: JWT (`jsonwebtoken`) + bcrypt hashes (`bcryptjs`)
-- **Security**: helmet + cors + morgan; RBAC, refresh tokens and rate limiting land in Steps 8.3+ / 7.x
+- **Auth**: JWT (`jsonwebtoken`) + bcrypt hashes (`bcryptjs`) + refresh tokens
+- **Validation**: Zod schemas
+- **Security**: helmet + cors + morgan + rate limiting + RBAC
 
 ## Quick start
 
 ```bash
 cd backend
-cp .env.example .env             # then fill in DATABASE_URL + JWT_SECRET
-npm install                      # resolves express, prisma, bcrypt, etc.
-node --check src/server.js       # fast syntax check (no exec)
-npx prisma generate              # generates @prisma/client (needs DATABASE_URL)
+cp .env.example .env             # fill in DATABASE_URL + JWT_SECRET + JWT_REFRESH_SECRET
+npm install                      # already done (Step 8.2)
+node --check src/server.js       # fast syntax check
+npx prisma generate              # generates @prisma/client
+npx prisma migrate dev           # applies schema to DB
 npm run dev                      # boots on :3000
 curl http://localhost:3000/api/health
 ```
 
-## Endpoints (Step 8.2 minimum skeleton)
+## Endpoints (Phase 8.3 — full REST API)
 
-| Method | Path                          | Auth | Notes                                          |
-|--------|-------------------------------|------|------------------------------------------------|
-| GET    | `/api/health`                 | -    | Liveness probe. Returns uptime + version.      |
-| POST   | `/api/admin/auth/login`       | -    | **Dev mode**: accepts any email/password, returns mocked JWT. Real bcrypt + DB lookup lands Step 8.3. |
-| GET    | `/api/events`                 | -    | Stub: `{events: []}` until Step 8.6 ships full CRUD. |
+| Method | Path | Auth | Role | Description |
+|--------|------|------|------|-------------|
+| GET | `/api/health` | — | — | Liveness probe |
+| POST | `/api/admin/auth/login` | — | — | Login, returns JWT + refresh token |
+| POST | `/api/admin/auth/refresh` | Bearer | — | Rotate access token |
+| GET | `/api/admin/auth/me` | Bearer | — | Current user info |
+| POST | `/api/admin/auth/logout` | — | — | Client-side token discard |
+| GET | `/api/admin/users` | Bearer | SUPER_ADMIN | List admin accounts |
+| POST | `/api/admin/users` | Bearer | SUPER_ADMIN | Create admin |
+| PUT | `/api/admin/users/:id` | Bearer | SUPER_ADMIN | Update admin |
+| DELETE | `/api/admin/users/:id` | Bearer | SUPER_ADMIN | Delete admin |
+| GET | `/api/events` | — | — | List events (public) |
+| GET | `/api/events/:id` | — | — | Get event |
+| POST | `/api/events` | Bearer | EDITOR | Create event |
+| PUT | `/api/events/:id` | Bearer | EDITOR | Update event |
+| DELETE | `/api/events/:id` | Bearer | SUPER_ADMIN | Delete event |
+| GET | `/api/channels` | — | — | List channels (public) |
+| GET | `/api/channels/:id` | — | — | Get channel |
+| POST | `/api/channels` | Bearer | EDITOR | Create channel |
+| PUT | `/api/channels/:id` | Bearer | EDITOR | Update channel |
+| DELETE | `/api/channels/:id` | Bearer | SUPER_ADMIN | Delete channel |
+| GET | `/api/highlights` | — | — | List highlights (public) |
+| GET | `/api/highlights/:id` | — | — | Get highlight |
+| POST | `/api/highlights` | Bearer | EDITOR | Create highlight |
+| PUT | `/api/highlights/:id` | Bearer | EDITOR | Update highlight |
+| DELETE | `/api/highlights/:id` | Bearer | SUPER_ADMIN | Delete highlight |
+| GET | `/api/categories` | — | — | List categories (public) |
+| GET | `/api/categories/:id` | — | — | Get category |
+| POST | `/api/categories` | Bearer | EDITOR | Create category |
+| PUT | `/api/categories/:id` | Bearer | EDITOR | Update category |
+| DELETE | `/api/categories/:id` | Bearer | SUPER_ADMIN | Delete category |
+| GET | `/api/banners` | — | — | List banners (public) |
+| GET | `/api/banners/:id` | — | — | Get banner |
+| POST | `/api/banners` | Bearer | EDITOR | Create banner |
+| PUT | `/api/banners/:id` | Bearer | EDITOR | Update banner |
+| DELETE | `/api/banners/:id` | Bearer | SUPER_ADMIN | Delete banner |
+| GET | `/api/config` | — | — | App config (public) |
+| PUT | `/api/config` | Bearer | SUPER_ADMIN | Update config |
+| GET | `/api/notifications` | Bearer | — | List notifications |
+| POST | `/api/notifications/send` | Bearer | EDITOR | Send notification |
+| POST | `/api/notifications/:id/cancel` | Bearer | EDITOR | Cancel scheduled |
+| DELETE | `/api/notifications/:id` | Bearer | SUPER_ADMIN | Delete notification |
+| GET | `/api/analytics/overview` | Bearer | — | Dashboard stats |
+| GET | `/api/analytics/events` | Bearer | — | Analytics events |
+| POST | `/api/analytics/events` | — | — | Ingest event (public) |
+| POST | `/api/upload` | Bearer | EDITOR | Upload file |
 
-## Architecture (planned per sportzfy_build_plan Phase 8)
+## Architecture
 
-- **Step 8.2** - Prisma schema (10 models): `Admin`, `Event`, `Channel`, `Highlight`, `Category`, `Banner`, `StreamLink`, `AppConfig`, `Notification`, `AnalyticsEvent`.
-- **Step 8.3** - Full routes + RBAC (SUPER_ADMIN/EDITOR/VIEWER) + Zod validation + helmet/cors/rateLimit + multer file uploads to Supabase Storage.
-- **Step 8.4 - 8.9** - Web admin frontend (login, dashboard, events manager, channels, highlights, notifications composer, app config, analytics).
-- **Step 8.10** - Mobile (user) `ApiService` integration so the user app consumes the same REST API.
-- **Step 8.13 - 8.17** - Separate Android admin app (see `admin/`).
-- **Step 8.18** - FCM notifications targeting + scheduling via `node-cron`.
+- **Step 8.2** — Prisma schema (10 models) ✓
+- **Step 8.3** — Full routes + RBAC + Zod validation + rate limiting ✓
+- **Step 8.4-8.9** — Web admin frontend (pending)
+- **Step 8.10** — Mobile (user) ApiService integration (pending)
+- **Step 8.13-8.17** — Separate Android admin app (pending)
+- **Step 8.18** — FCM notifications targeting (pending)
 
-## Why both `admin/` and `backend/`?
+## Files (25 total)
 
-- **`admin/`** - Android APK installed on admins' phones for on-the-go content edits.
-- **`backend/`** - This Node.js service. Runs on Render free tier in dev, Railway $5/mo in prod.
-
-Both share the `/api/*` contract. The user Android app talks to `backend/` directly; the admin web frontend + admin app talk to `backend/` after authenticating.
+```
+backend/
+├── src/
+│   ├── server.js                          # Entry point
+│   ├── config/
+│   │   └── database.js                    # Prisma client singleton
+│   ├── middleware/
+│   │   ├── auth.js                        # JWT + bcrypt
+│   │   ├── rbac.js                        # Role-based access
+│   │   ├── validate.js                    # Zod validation (utility)
+│   │   ├── rateLimit.js                   # Rate limiting
+│   │   └── upload.js                      # Multer config
+│   ├── controllers/
+│   │   ├── eventsController.js            # Events CRUD
+│   │   ├── channelsController.js          # Channels CRUD
+│   │   ├── highlightsController.js        # Highlights CRUD
+│   │   ├── categoriesController.js        # Categories CRUD
+│   │   ├── bannersController.js           # Banners CRUD
+│   │   ├── configController.js            # App config
+│   │   ├── notificationsController.js     # Notifications
+│   │   ├── analyticsController.js         # Analytics
+│   │   └── adminUsersController.js        # Admin user management
+│   └── routes/
+│       ├── health.js
+│       ├── auth.js
+│       ├── events.js
+│       ├── channels.js
+│       ├── highlights.js
+│       ├── categories.js
+│       ├── banners.js
+│       ├── config.js
+│       ├── notifications.js
+│       ├── analytics.js
+│       ├── adminUsers.js
+│       └── upload.js
+├── prisma/
+│   └── schema.prisma
+├── package.json
+└── .env.example
+```

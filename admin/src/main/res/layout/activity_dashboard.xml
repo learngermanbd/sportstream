@@ -1,55 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Phase 8 \u00b7 Step 8.13 \u2014 Dashboard placeholder.
-    Welcome card + stats card stub. Full events/channels/highlights/config/
-    analytics sections arrive in Steps 8.14 - 8.15.
--->
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Phase 8 · Step 8.14-8.15 — Admin Dashboard with toolbar + fragment container. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/admin_bg"
-    android:fillViewport="true">
+    android:orientation="vertical"
+    android:background="@color/admin_bg">
 
+    <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp">
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical">
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardWelcome"
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            style="@style/SportStreamAdmin.GlassCard">
+            android:layout_weight="1"
+            android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tvWelcome"
-                android:layout_width="match_parent"
+                android:id="@+id/tvTitle"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="20dp"
                 android:textColor="@color/admin_text"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:text="SportStream Admin" />
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/statsCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:visibility="gone"
-            style="@style/SportStreamAdmin.GlassCard">
 
             <TextView
-                android:id="@+id/statsText"
-                android:layout_width="match_parent"
+                android:id="@+id/tvRole"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="20dp"
                 android:textColor="@color/admin_text_muted"
-                android:textSize="13sp"
-                android:fontFamily="monospace" />
-        </com.google.android.material.card.MaterialCardView>
+                android:textSize="11sp"
+                android:text="EDITOR" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Logout"
+            android:textSize="12sp"
+            android:minHeight="0dp"
+            android:padding="8dp"
+            android:backgroundTint="@color/border_default" />
     </LinearLayout>
-</ScrollView>
+
+    <!-- Stats -->
+    <TextView
+        android:id="@+id/tvStats"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:textColor="@color/admin_text_muted"
+        android:textSize="12sp" />
+
+    <!-- Section toolbar -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <Button android:id="@+id/btnEvents" android:text="Events"
+                android:textSize="12sp" android:minHeight="0dp" android:padding="8dp"
+                android:layout_marginEnd="8dp" />
+
+            <Button android:id="@+id/btnChannels" android:text="Channels"
+                android:textSize="12sp" android:minHeight="0dp" android:padding="8dp"
+                android:layout_marginEnd="8dp" />
+
+            <Button android:id="@+id/btnHighlights" android:text="Highlights"
+                android:textSize="12sp" android:minHeight="0dp" android:padding="8dp"
+                android:layout_marginEnd="8dp" />
+
+            <Button android:id="@+id/btnCategories" android:text="Categories"
+                android:textSize="12sp" android:minHeight="0dp" android:padding="8dp"
+                android:layout_marginEnd="8dp" />
+
+            <Button android:id="@+id/btnConfig" android:text="Config"
+                android:textSize="12sp" android:minHeight="0dp" android:padding="8dp"
+                android:layout_marginEnd="8dp" />
+
+            <Button android:id="@+id/btnNotifications" android:text="Notifications"
+                android:textSize="12sp" android:minHeight="0dp" android:padding="8dp" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- Fragment container -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>
