@@ -231,8 +231,8 @@
         <h1>SportStream &mdash; Codebuff Conversation Log</h1>
         <p class="subtitle">Complete session transcript, a-to-z. Every turn in chronological order, with role, verbatim prompt, substantive response, subagent calls, git commits, deviations, and cross-references to the matching TODO.html step. This page is the immutable read-only record of how the SportStream Android project was built incrementally inside this single Codebuff session.</p>
         <div class="stats-bar">
-            <div class="stat"><div class="num">17</div><div class="lbl">Total Turns</div></div>
-            <div class="stat"><div class="num">17</div><div class="lbl">Commits Shipped</div></div>
+            <div class="stat"><div class="num">18</div><div class="lbl">Total Turns</div></div>
+            <div class="stat"><div class="num">18</div><div class="lbl">Commits Shipped</div></div>
             <div class="stat"><div class="num">60+</div><div class="lbl">Subagent Calls</div></div>
             <div class="stat"><div class="num">1</div><div class="lbl">Major URL Pivot</div></div>
             <div class="stat"><div class="num">4</div><div class="lbl">Compile Breakages</div></div>
@@ -257,6 +257,7 @@
         <a href="#turn-15"><span class="turn-num">015</span>Sentry DSN</a>
         <a href="#turn-16"><span class="turn-num">016</span>Step 6.2</a>
         <a href="#turn-17"><span class="turn-num">017</span>Step 7.1</a>
+        <a href="#turn-18"><span class="turn-num">018</span>Step 7.2</a>
     </nav>
 
     <main class="container">
@@ -771,6 +772,33 @@
             </div>
         </section>
 
+
+        <section class="turn role-commit" id="turn-18">
+            <div class="step-header">
+                <span class="step-num">018</span>
+                <span class="agent commit">Shipped</span>
+                <span class="ts">turn 49-55</span>
+            </div>
+            <h4>STEP 7.2 SHIPPED - AES-256-GCM string encryption (CRITICAL)</h4>
+            <div class="response-body">
+                <p><strong>Components delivered</strong> (Step 7.2 - String Encryption):</p>
+                <ul>
+                    <li><strong>EncryptSecretsTask</strong> (build.gradle.kts) - Gradle task reads secrets from secrets.properties (gitignored) + signing.properties, generates random AES-256-GCM key per build, encrypts 5 strings (API_BASE_URL, API_CONFIG_URL, UPDATE_URL, TELEGRAM_LINK, SENTRY_DSN), XOR-obfuscates key with random salt, outputs EncryptedConstants.kt to build/generated/source/encryption/.</li>
+                    <li><strong>KeystoreManager.kt</strong> - Hardware-backed AES-256-GCM key in AndroidKeyStore (StrongBox/TEE). getOrCreateKey() + deleteKey() for rotation.</li>
+                    <li><strong>StringEncryptor.kt</strong> - AES-GCM encrypt/decrypt. decryptBuildTime() reconstructs XOR key. encrypt()/decrypt() for Keystore-backed runtime data. wipe() for secure clearing.</li>
+                    <li><strong>RuntimeStringProvider.kt</strong> - Public API: get(key): CharArray + getString(key): String. ConcurrentHashMap cache with computeIfAbsent (atomic). clearCache() wipes all values.</li>
+                    <li><strong>SecurityModule.kt</strong> - DI seam. init(context) registers ComponentCallbacks2 for onTrimMemory/onLowMemory cache clearing. Idempotent with boolean guard.</li>
+                    <li><strong>AppConfig.kt</strong> - defaults() uses RuntimeStringProvider.getString() for all URL fields.</li>
+                    <li><strong>ApiClient.kt / RemoteConfigHelper.kt / NetworkModule.kt</strong> - Plaintext URL constants replaced with RuntimeStringProvider functions.</li>
+                    <li><strong>SportStreamApp.kt</strong> - SecurityModule.init(this) in onCreate.</li>
+                    <li><strong>proguard-rules.pro</strong> - Keep rules for EncryptedConstants, Gson, Room, Sentry, data models.</li>
+                    <li><strong>secrets.properties.example</strong> + .gitignore updated (secrets.properties + generated source excluded).</li>
+                </ul>
+                <p><strong>Code review fixes:</strong> SecurityModule init made idempotent, RuntimeStringProvider uses computeIfAbsent, stale KDoc fixed, outputs.dir restored in Gradle task.</p>
+                <p><strong>Build:</strong> ./gradlew :app:compileDebugKotlin BUILD SUCCESSFUL (1m 23s). EncryptSecretsTask encrypted 5 strings.</p>
+                <p><strong>Commit:</strong> 14f4675 + 0f172c0 on origin/main.</p>
+            </div>
+        </section>
     </main>
 
     <div class="container">
