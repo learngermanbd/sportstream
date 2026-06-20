@@ -250,6 +250,7 @@ val encryptSecrets by tasks.registering {
 
     // Always regenerate: the key is random per build so up-to-date
     // checking would produce inconsistent key/ciphertext pairs.
+    outputs.dir(outputDir)
     outputs.upToDateWhen { false }
 
     doLast {
