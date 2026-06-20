@@ -184,7 +184,7 @@ class SportStreamApp : Application() {
         // on launch). DataStore.fist() returns from a tiny on-disk
         // blob (~10 ms typical, never blocks more than ~50 ms).
         //
-        // TODO(stephand): if the team enables Android StrictMode
+        // NOTE: StrictMode disabled by default — enable for debug builds only
         // `detectDiskReads()` later, move this read into a
         // ContentProvider.onCreate (which fires before
         // Application.onCreate, before StrictMode policies activate

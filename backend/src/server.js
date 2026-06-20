@@ -155,10 +155,9 @@ app.use((err, req, res, _next) => {
 
 if (require.main === module) {
   if (process.env.NODE_ENV !== 'production') {
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      console.warn('[sportstream-backend] DEV mode — set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env');
+    if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_PASSWORD) {
+      console.warn('[sportstream-backend] DEV mode — set DB_HOST, DB_USER, DB_PASSWORD in .env (direct pg connection)');
     }
-    console.warn('[sportstream-backend] Run prisma/supabase_migration.sql in Supabase SQL Editor to create tables.');
   }
   app.listen(PORT, () => {
     console.log(`[sportstream-backend] listening on :${PORT}`);
