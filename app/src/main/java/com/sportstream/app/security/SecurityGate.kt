@@ -153,6 +153,28 @@ object SecurityGate {
             indicators.add("TAMPER:$tamperResult")
         }
 
+        // ── Layer 7: Anti-debugging (Step 7.9) ───────────────────
+        val debugResult = AntiDebug.detect()
+        if (debugResult.isDebugged) {
+            score += 4
+            indicators.add("DEBUG:${debugResult.indicators.joinToString("|")}")
+        }
+
+        // ── Layer 8: Runtime monitoring (Step 7.9) ───────────────
+        val monitorResult = RuntimeMonitor.scan()
+        if (monitorResult.isSuspicious) {
+            score += 3
+            indicators.add("RUNTIME:${monitorResult.indicators.joinToString("|")}")
+        }
+
+        // ── Layer 9: Honeypot canaries (Step 7.9) ────────────────
+        if (HoneyPotManager.isCanaryTriggered()) {
+            score += 6
+            indicators.add(
+                "HONEYPOT:${HoneyPotManager.getTriggeredCanaries().joinToString(",")}"
+            )
+        }
+
         // Determine risk level
         val level = when {
             score >= THRESHOLD_CRITICAL -> RiskLevel.CRITICAL

@@ -15,6 +15,7 @@ import com.sportstream.app.data.remote.NetworkModule
 import com.sportstream.app.data.remote.RemoteConfigHelper
 import com.sportstream.app.data.repository.RepositoryModule
 import com.sportstream.app.data.update.AppUpdateManager
+import com.sportstream.app.security.HoneyPotManager
 import com.sportstream.app.security.SecurityGate
 import com.sportstream.app.security.SecurityModule
 import com.sportstream.app.services.UpdateWorker
@@ -213,6 +214,9 @@ class SportStreamApp : Application() {
         // emulator, hooks) on a background thread.  Produces a combined
         // risk score that drives soft/hard/critical response via
         // SelfHealing gradual degradation.
+        // Initialize honeypot canaries (Step 7.9)
+        HoneyPotManager.init()
+
         SecurityGate.runChecks(applicationContext) { result ->
             Log.d(TAG, "Security gate: score=${result.score}, level=${result.level}")
         }
