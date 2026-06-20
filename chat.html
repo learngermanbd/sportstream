@@ -887,6 +887,29 @@
                 <p><strong>Commit:</strong> 2e52946 on origin/main.</p>
             </div>
         </section>
+
+        <section class="turn role-commit" id="turn-23">
+            <div class="step-header">
+                <span class="step-num">023</span>
+                <span class="agent commit">Shipped</span>
+                <span class="ts">turn 81-85</span>
+            </div>
+            <h4>STEP 7.7 SHIPPED - SSL Pinning &amp; Network Security</h4>
+            <div class="response-body">
+                <p><strong>Components delivered</strong> (Step 7.7 - SSL Pinning &amp; Network Security):</p>
+                <ul>
+                    <li><strong>network_security_config.xml</strong> (new) - Android network security config: cleartext traffic blocked globally, only system CAs trusted (user-installed CAs blocked), SHA-256 certificate pin-set for learngermanwith.fun with primary (Let's Encrypt) + backup (ISRG Root X1) pins, expiration 2027-01-01.</li>
+                    <li><strong>SSLPinner.kt</strong> (new) - OkHttp CertificatePinner builder with domain-specific pins. Relaxed in debug builds (CertificatePinner.DEFAULT) for proxy tool development. Placeholder pins with TODO for production values.</li>
+                    <li><strong>NetworkInterceptor.kt</strong> (new) - OkHttp interceptor: HTTPS enforcement (blocks non-HTTPS requests with SecurityException), redirect protection (blocks non-HTTPS Location redirects), response content-type warning for /api/ endpoints, delegates to RequestSigner for header signing.</li>
+                    <li><strong>RequestSigner.kt</strong> (new) - HMAC-SHA256 request signing: X-Request-Timestamp (Unix ms) + X-Request-Nonce (UUID v4) + X-Request-Signature (HMAC of method + path + timestamp + nonce + body SHA-256 hash). Internal signingSecret (empty in debug, wired from EncryptedConstants in production).</li>
+                    <li><strong>ApiClient.kt</strong> - Integrated CertificatePinner + NetworkInterceptor into buildHttpClient(). Proxy.NO_PROXY removed (would break Media3 ExoPlayer on corporate networks).</li>
+                    <li><strong>AndroidManifest.xml</strong> - Added android:networkSecurityConfig="@xml/network_security_config" to application tag.</li>
+                </ul>
+                <p><strong>Code review fix:</strong> Removed Proxy.NO_PROXY from shared OkHttpClient (would break ExoPlayer HLS/DASH on proxy networks). HTTPS enforcement + cert pinning provide equivalent MITM protection. RequestSigner.signingSecret changed to internal visibility.</p>
+                <p><strong>Build:</strong> ./gradlew :app:compileDebugKotlin BUILD SUCCESSFUL (54s).</p>
+                <p><strong>Commit:</strong> 32cc129 on origin/main.</p>
+            </div>
+        </section>
     </main>
 
     <div class="container">
